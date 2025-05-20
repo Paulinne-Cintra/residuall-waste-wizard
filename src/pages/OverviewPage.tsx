@@ -11,7 +11,7 @@ import {
   ArrowDown,
   BrickWall,
   Layers,
-  Steel
+  Hammer
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -104,7 +104,7 @@ const OverviewPage = () => {
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
                   <div className="bg-[#FFB347] bg-opacity-10 p-3 rounded-full">
-                    <Steel size={28} className="text-[#FFB347]" />
+                    <Hammer size={28} className="text-[#FFB347]" />
                   </div>
                   <span className="text-[#FFB347] text-sm font-medium rounded-full bg-[#FFB347] bg-opacity-10 px-3 py-1">
                     15% do total
