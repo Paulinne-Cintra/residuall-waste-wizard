@@ -1,9 +1,24 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
+
+// Páginas principais do site
+import HomePage from "./pages/HomePage";
+import AboutPage from "./pages/AboutPage";
+import PlansPage from "./pages/PlansPage";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
+
+// Páginas do dashboard
+import Dashboard from "./pages/Dashboard";
+import ProjectsPage from "./pages/ProjectsPage";
+import ProjectDetailPage from "./pages/ProjectDetailPage";
+import MaterialsPage from "./pages/MaterialsPage";
+import ReportsPage from "./pages/ReportsPage";
+
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -15,8 +30,21 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          {/* Rotas públicas */}
+          <Route path="/" element={<HomePage />} />
+          <Route path="/sobre" element={<AboutPage />} />
+          <Route path="/planos" element={<PlansPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/cadastro" element={<RegisterPage />} />
+          
+          {/* Rotas do dashboard (protegidas) */}
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/dashboard/projetos" element={<ProjectsPage />} />
+          <Route path="/dashboard/projetos/:id" element={<ProjectDetailPage />} />
+          <Route path="/dashboard/materiais" element={<MaterialsPage />} />
+          <Route path="/dashboard/relatorios" element={<ReportsPage />} />
+          
+          {/* Rota 404 */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
