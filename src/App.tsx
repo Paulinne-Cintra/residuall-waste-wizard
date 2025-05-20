@@ -18,6 +18,7 @@ import ProjectsPage from "./pages/ProjectsPage";
 import ProjectDetailPage from "./pages/ProjectDetailPage";
 import MaterialsPage from "./pages/MaterialsPage";
 import ReportsPage from "./pages/ReportsPage";
+import TeamPage from "./pages/TeamPage";
 
 import NotFound from "./pages/NotFound";
 
@@ -43,6 +44,7 @@ const App = () => (
           <Route path="/dashboard/projetos/:id" element={<ProjectDetailPage />} />
           <Route path="/dashboard/materiais" element={<MaterialsPage />} />
           <Route path="/dashboard/relatorios" element={<ReportsPage />} />
+          <Route path="/dashboard/time" element={<TeamPage />} />
           
           {/* Rota 404 */}
           <Route path="*" element={<NotFound />} />

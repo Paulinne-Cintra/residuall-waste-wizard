@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { 
@@ -111,37 +110,7 @@ const SidebarDashboard = () => {
     </>
   );
 
-  return (
-    <>
-      {/* Mobile sidebar trigger */}
-      <button
-        onClick={toggleMobileSidebar}
-        className="md:hidden fixed bottom-4 right-4 z-30 bg-residuall-green text-white p-3 rounded-full shadow-lg"
-      >
-        <Menu size={24} />
-      </button>
-
-      {/* Mobile sidebar */}
-      <div
-        className={`fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden transition-opacity ${
-          mobileOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-        }`}
-        onClick={toggleMobileSidebar}
-      ></div>
-
-      <aside
-        className={`fixed left-0 top-0 bottom-0 z-50 flex flex-col bg-sidebar-DEFAULT md:relative md:z-0
-          ${mobileOpen ? "w-64" : "w-0 md:w-auto"} 
-          ${collapsed ? "md:w-16" : "md:w-64"}
-          transition-all duration-300 ease-in-out`}
-      >
-        {sidebarContent}
-      </aside>
-    </>
-  );
-};
-
-// Missing components for icons
+  // Missing components for icons
 const ChevronLeft = ({ size, className }: { size: number; className?: string }) => (
   <svg 
     xmlns="http://www.w3.org/2000/svg" 
@@ -175,5 +144,38 @@ const ChevronRight = ({ size, className }: { size: number; className?: string })
     <path d="M9 18l6-6-6-6" />
   </svg>
 );
+
+  return (
+    <>
+      {/* Mobile sidebar trigger */}
+      <button
+        onClick={toggleMobileSidebar}
+        className="md:hidden fixed bottom-4 right-4 z-30 bg-residuall-green text-white p-3 rounded-full shadow-lg"
+      >
+        <Menu size={24} />
+      </button>
+
+      {/* Mobile sidebar */}
+      <div
+        className={`fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden transition-opacity ${
+          mobileOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
+        onClick={toggleMobileSidebar}
+      ></div>
+
+      <aside
+        className={`fixed left-0 top-0 bottom-0 z-50 flex flex-col bg-sidebar-DEFAULT md:relative md:z-0
+          ${mobileOpen ? "w-64" : "w-0 md:w-auto"} 
+          ${collapsed ? "md:w-16" : "md:w-64"}
+          transition-all duration-300 ease-in-out`}
+      >
+        {sidebarContent}
+      </aside>
+    </>
+  );
+};
+
+// Missing components for icons
+
 
 export default SidebarDashboard;
