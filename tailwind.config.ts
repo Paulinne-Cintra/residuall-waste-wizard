@@ -68,6 +68,7 @@ export default {
 					gray: {
 						light: '#F8F8F8',   // Fundo da Área de Conteúdo Principal
 						DEFAULT: '#c4c2c2', // Cinza Secundário
+						dark: '#252525',    // Cinza Texto Listas/Tabelas (adicionamos como "dark" para links)
 						text: '#f4f4f4',    // Cinza Texto/Ícones Claro
 						username: '#2b2b2b', // Cinza Nome Usuário
 						tableText: '#252525', // Cinza Texto Listas/Tabelas
