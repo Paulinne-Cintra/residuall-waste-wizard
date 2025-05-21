@@ -49,14 +49,14 @@ const SidebarDashboard = () => {
   }) => (
     <Link
       to={to}
-      className={`flex items-center p-3 rounded-lg transition-colors ${
+      className={`${
         isActiveRoute(to)
-          ? "bg-residuall-green text-white"
-          : "text-gray-300 hover:bg-sidebar-accent hover:text-white"
+          ? "sidebar-menu-item-active"
+          : "sidebar-menu-item"
       }`}
       onClick={() => setMobileOpen(false)}
     >
-      <Icon size={20} className="mr-3" />
+      <Icon size={20} className="sidebar-icon" />
       {!collapsed && <span>{label}</span>}
     </Link>
   );
@@ -65,13 +65,18 @@ const SidebarDashboard = () => {
   const sidebarContent = (
     <>
       <div className="flex items-center justify-between p-4 border-b border-sidebar-border">
-        <Link to="/dashboard" className="text-xl font-bold text-white">
-          {!collapsed && "RESIDUALL"}
+        <Link to="/dashboard" className="flex items-center text-xl font-bold text-white">
+          {!collapsed && (
+            <>
+              <img src="/assets/logo-residuall-branca.png" alt="Logo Residuall" className="h-8 mr-2" />
+              <span>RESIDUALL</span>
+            </>
+          )}
           {collapsed && "R"}
         </Link>
         <button
           onClick={toggleSidebar}
-          className="hidden md:block text-gray-400 hover:text-white p-1"
+          className="hidden md:block text-residuall-gray-text hover:text-white p-1"
         >
           {collapsed ? (
             <ChevronRight size={20} />
@@ -81,7 +86,7 @@ const SidebarDashboard = () => {
         </button>
         <button
           onClick={toggleMobileSidebar}
-          className="md:hidden text-gray-400 hover:text-white p-1"
+          className="md:hidden text-residuall-gray-text hover:text-white p-1"
         >
           <X size={20} />
         </button>
@@ -103,10 +108,10 @@ const SidebarDashboard = () => {
       <div className="p-4 border-t border-sidebar-border">
         <Link
           to="/"
-          className="flex items-center p-3 rounded-lg text-gray-300 hover:bg-sidebar-accent hover:text-white transition-colors"
+          className="sidebar-menu-item"
           onClick={() => setMobileOpen(false)}
         >
-          <LogOut size={20} className="mr-3" />
+          <LogOut size={20} className="sidebar-icon" />
           {!collapsed && <span>Sair</span>}
         </Link>
       </div>
@@ -118,12 +123,12 @@ const SidebarDashboard = () => {
       {/* Mobile sidebar trigger */}
       <button
         onClick={toggleMobileSidebar}
-        className="md:hidden fixed bottom-4 right-4 z-30 bg-residuall-green text-white p-3 rounded-full shadow-lg"
+        className="md:hidden fixed bottom-4 right-4 z-30 bg-residuall-green text-white p-3 rounded-full shadow-residuall"
       >
         <Menu size={24} />
       </button>
 
-      {/* Mobile sidebar */}
+      {/* Mobile sidebar overlay */}
       <div
         className={`fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden transition-opacity ${
           mobileOpen ? "opacity-100" : "opacity-0 pointer-events-none"
@@ -131,8 +136,9 @@ const SidebarDashboard = () => {
         onClick={toggleMobileSidebar}
       ></div>
 
+      {/* Sidebar */}
       <aside
-        className={`fixed left-0 top-0 bottom-0 z-50 flex flex-col bg-sidebar-DEFAULT md:relative md:z-0
+        className={`fixed left-0 top-0 bottom-0 z-50 flex flex-col bg-residuall-green md:relative md:z-0
           ${mobileOpen ? "w-64" : "w-0 md:w-auto"} 
           ${collapsed ? "md:w-16" : "md:w-64"}
           transition-all duration-300 ease-in-out`}

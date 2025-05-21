@@ -53,39 +53,55 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
-				// Cores personalizadas da Residuall
+				// Cores personalizadas da Residuall (Atualizadas para as cores oficiais)
 				residuall: {
 					green: {
-						DEFAULT: '#1E533B', // verde escuro para CTAs principais
-						light: '#2D7A59',
-						dark: '#0F3A26',
+						DEFAULT: '#1f2f29', // Verde Escuro Principal
+						secondary: '#2a4a3d', // Verde Secundário
+						card: '#434b3c',    // Verde Cards Projeto
+						gradient: '#6e7848', // Verde Destaque Gradiente
+						tag: '#46583a',     // Verde Fundo Tag "Administrador"
 					},
 					brown: {
-						DEFAULT: '#D17B31', // laranja/marrom para CTAs secundários 
-						light: '#E89A5C',
-						dark: '#A45F24',
+						DEFAULT: '#ff8c42', // Laranja/Marrom
 					},
 					gray: {
-						light: '#F1F1F1', // fundo claro
-						DEFAULT: '#8E9196', // cinza neutro
-						dark: '#1A1F2C', // quase preto para textos
-					}
+						light: '#F8F8F8',   // Fundo da Área de Conteúdo Principal
+						DEFAULT: '#c4c2c2', // Cinza Secundário
+						text: '#f4f4f4',    // Cinza Texto/Ícones Claro
+						username: '#2b2b2b', // Cinza Nome Usuário
+						tableText: '#252525', // Cinza Texto Listas/Tabelas
+						chartLight: '#8a8a8a', // Tom de Cinza Claro para Gráficos
+						chartDark: '#3b3b3b', // Tom de Cinza Escuro para Gráficos
+					},
+					white: '#ffffff',      // Branco
 				},
 				sidebar: {
-					DEFAULT: 'hsl(var(--sidebar-background))',
-					foreground: 'hsl(var(--sidebar-foreground))',
-					primary: 'hsl(var(--sidebar-primary))',
-					'primary-foreground': 'hsl(var(--sidebar-primary-foreground))',
-					accent: 'hsl(var(--sidebar-accent))',
-					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
-					border: 'hsl(var(--sidebar-border))',
-					ring: 'hsl(var(--sidebar-ring))'
+					DEFAULT: '#1f2f29', // Verde Escuro Principal
+					foreground: '#f4f4f4', // Cinza Texto/Ícones Claro
+					primary: '#2a4a3d', // Verde Secundário
+					'primary-foreground': '#ffffff', // Branco
+					accent: '#2a4a3d', // Verde Secundário
+					'accent-foreground': '#ffffff', // Branco
+					border: '#2a4a3d', // Verde Secundário
+					ring: '#6e7848', // Verde Destaque Gradiente
 				}
+			},
+			backgroundImage: {
+				'sidebar-active': 'radial-gradient(circle at 0%, #2a4a3d 0%, #2a4a3d 50%, #6e7848 100%)',
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
 				sm: 'calc(var(--radius) - 4px)'
+			},
+			boxShadow: {
+				'residuall': '0px 4px 6px rgba(0, 0, 0, 0.1)',
+				'residuall-hover': '0px 6px 8px rgba(0, 0, 0, 0.15)',
+			},
+			fontFamily: {
+				sans: ['Open Sans', 'Lato', 'sans-serif'],
+				montserrat: ['Montserrat', 'sans-serif'],
 			},
 			keyframes: {
 				'accordion-down': {

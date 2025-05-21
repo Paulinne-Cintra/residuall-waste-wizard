@@ -35,7 +35,7 @@ const Chart = ({
   title,
   height = 300,
   width = '100%',
-  colors = ['#1E533B', '#2D7A59', '#D17B31', '#E89A5C', '#8E9196']
+  colors = ['#1f2f29', '#2a4a3d', '#434b3c', '#6e7848', '#ff8c42', '#8a8a8a', '#3b3b3b']
 }: ChartProps) => {
   const renderChart = () => {
     switch (type) {
@@ -43,11 +43,30 @@ const Chart = ({
         return (
           <ResponsiveContainer width={width} height={height}>
             <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
+              <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+              <XAxis 
+                dataKey="name" 
+                tick={{ fill: '#252525' }} 
+                axisLine={{ stroke: '#c4c2c2' }}
+              />
+              <YAxis 
+                tick={{ fill: '#252525' }} 
+                axisLine={{ stroke: '#c4c2c2' }}
+              />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: 'white', 
+                  borderRadius: '8px', 
+                  boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
+                  border: '1px solid #f0f0f0'
+                }}
+              />
+              <Legend 
+                wrapperStyle={{ 
+                  paddingTop: '10px',
+                  fontSize: '12px'
+                }}
+              />
               {/* Renderiza barras para cada chave diferente de "name" */}
               {Object.keys(data[0] || {})
                 .filter(key => key !== 'name')
@@ -81,7 +100,14 @@ const Chart = ({
                   <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
                 ))}
               </Pie>
-              <Tooltip />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: 'white', 
+                  borderRadius: '8px', 
+                  boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
+                  border: '1px solid #f0f0f0'
+                }}
+              />
             </PieChart>
           </ResponsiveContainer>
         );
@@ -93,11 +119,30 @@ const Chart = ({
               data={data}
               margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
             >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
+              <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+              <XAxis 
+                dataKey="name" 
+                tick={{ fill: '#252525' }} 
+                axisLine={{ stroke: '#c4c2c2' }}
+              />
+              <YAxis 
+                tick={{ fill: '#252525' }} 
+                axisLine={{ stroke: '#c4c2c2' }}
+              />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: 'white', 
+                  borderRadius: '8px', 
+                  boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
+                  border: '1px solid #f0f0f0'
+                }}
+              />
+              <Legend 
+                wrapperStyle={{ 
+                  paddingTop: '10px',
+                  fontSize: '12px'
+                }}
+              />
               {/* Renderiza linhas para cada chave diferente de "name" */}
               {Object.keys(data[0] || {})
                 .filter(key => key !== 'name')
@@ -121,7 +166,7 @@ const Chart = ({
 
   return (
     <div className="chart-container">
-      {title && <h3 className="text-lg font-medium mb-4">{title}</h3>}
+      {title && <h3 className="text-lg font-montserrat font-medium mb-4">{title}</h3>}
       {renderChart()}
     </div>
   );
