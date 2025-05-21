@@ -3,7 +3,11 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, Bell, User } from 'lucide-react';
 
-const DashboardHeader = () => {
+interface DashboardHeaderProps {
+  pageTitle?: string;
+}
+
+const DashboardHeader = ({ pageTitle }: DashboardHeaderProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -29,8 +33,15 @@ const DashboardHeader = () => {
 
   return (
     <header className="bg-residuall-white border-b border-gray-200 py-3 px-4 md:px-6 flex items-center justify-between">
+      {/* Page Title */}
+      {pageTitle && (
+        <div className="mr-4 hidden sm:block">
+          <h1 className="text-xl font-semibold text-residuall-gray-tableText">{pageTitle}</h1>
+        </div>
+      )}
+
       {/* Busca */}
-      <form onSubmit={handleSearchSubmit} className="relative max-w-md w-full">
+      <form onSubmit={handleSearchSubmit} className="relative flex-1 max-w-md mx-auto">
         <div className="relative">
           <input
             type="text"

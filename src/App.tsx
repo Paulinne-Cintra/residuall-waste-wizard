@@ -19,6 +19,7 @@ import ProjectDetailPage from "./pages/ProjectDetailPage";
 import MaterialsPage from "./pages/MaterialsPage";
 import ReportsPage from "./pages/ReportsPage";
 import TeamPage from "./pages/TeamPage";
+import ProfilePage from "./pages/ProfilePage";
 
 import NotFound from "./pages/NotFound";
 
@@ -45,6 +46,7 @@ const App = () => (
           <Route path="/dashboard/materiais" element={<MaterialsPage />} />
           <Route path="/dashboard/relatorios" element={<ReportsPage />} />
           <Route path="/dashboard/time" element={<TeamPage />} />
+          <Route path="/dashboard/perfil" element={<ProfilePage />} />
           
           {/* Rota 404 */}
           <Route path="*" element={<NotFound />} />

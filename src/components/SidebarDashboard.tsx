@@ -13,8 +13,6 @@ import {
   File, 
   LogOut, 
   HelpCircle, 
-  ChevronDown,
-  ChevronUp,
   Menu,
   X,
   ChevronLeft,
@@ -46,20 +44,23 @@ const SidebarDashboard = () => {
     to: string; 
     icon: React.ElementType; 
     label: string 
-  }) => (
-    <Link
-      to={to}
-      className={`${
-        isActiveRoute(to)
-          ? "sidebar-menu-item-active"
-          : "sidebar-menu-item"
-      }`}
-      onClick={() => setMobileOpen(false)}
-    >
-      <Icon size={20} className="sidebar-icon" />
-      {!collapsed && <span>{label}</span>}
-    </Link>
-  );
+  }) => {
+    const active = isActiveRoute(to);
+    return (
+      <Link
+        to={to}
+        className={`${
+          active
+            ? "sidebar-menu-item-active"
+            : "sidebar-menu-item"
+        }`}
+        onClick={() => setMobileOpen(false)}
+      >
+        <Icon size={20} className="sidebar-icon" />
+        {!collapsed && <span>{label}</span>}
+      </Link>
+    );
+  };
 
   // Sidebar content for both mobile and desktop
   const sidebarContent = (
