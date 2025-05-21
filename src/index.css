@@ -1,5 +1,4 @@
 
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -148,6 +147,6 @@
   }
 
   .header-search {
-    @apply px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-residuall-green-secondary focus:border-transparent bg-white w-full max-w-md;
+    @apply px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-residuall-green-secondary focus:border-transparent bg-white w-full max-w-md placeholder:text-residuall-gray;
   }
 }

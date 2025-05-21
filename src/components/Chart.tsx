@@ -35,7 +35,7 @@ const Chart = ({
   title,
   height = 300,
   width = '100%',
-  colors = ['#1f2f29', '#2a4a3d', '#434b3c', '#6e7848', '#ff8c42', '#8a8a8a', '#3b3b3b']
+  colors = ['#2a4a3d', '#6e7848', '#434b3c', '#ff8c42', '#8a8a8a', '#3b3b3b']
 }: ChartProps) => {
   const renderChart = () => {
     switch (type) {
@@ -166,7 +166,7 @@ const Chart = ({
 
   return (
     <div className="chart-container">
-      {title && <h3 className="text-lg font-montserrat font-medium mb-4">{title}</h3>}
+      {title && <h3 className="text-lg font-montserrat font-medium mb-4 text-residuall-gray-tableText">{title}</h3>}
       {renderChart()}
     </div>
   );

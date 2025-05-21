@@ -27,7 +27,7 @@ const SidebarDashboard = () => {
   const location = useLocation();
 
   const isActiveRoute = (path: string) => {
-    return location.pathname.includes(path);
+    return location.pathname === path;
   };
 
   const toggleSidebar = () => {
@@ -72,7 +72,7 @@ const SidebarDashboard = () => {
               <span>RESIDUALL</span>
             </>
           )}
-          {collapsed && "R"}
+          {collapsed && <span>R</span>}
         </Link>
         <button
           onClick={toggleSidebar}

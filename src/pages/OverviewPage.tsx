@@ -6,8 +6,6 @@ import {
   TrendingUp, 
   CheckCircle, 
   AlertTriangle, 
-  BellIcon, 
-  UserRound,
   ArrowDown,
   BrickWall,
   Layers,
@@ -16,6 +14,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import SidebarDashboard from '../components/SidebarDashboard';
+import DashboardHeader from '../components/DashboardHeader';
 import Chart from '../components/Chart';
 
 const OverviewPage = () => {
@@ -42,18 +41,7 @@ const OverviewPage = () => {
       <SidebarDashboard />
       
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Cabeçalho */}
-        <header className="bg-white p-4 shadow-sm flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-800">Visão Geral</h1>
-          <div className="flex items-center space-x-4">
-            <button className="text-gray-600 hover:text-gray-800">
-              <BellIcon size={24} />
-            </button>
-            <button className="flex items-center text-gray-600 hover:text-gray-800">
-              <UserRound size={24} />
-            </button>
-          </div>
-        </header>
+        <DashboardHeader />
         
         <main className="flex-1 overflow-y-auto p-6">
           {/* Cartões de Materiais */}
@@ -127,16 +115,16 @@ const OverviewPage = () => {
             {/* Projetos Ativos */}
             <Card className="lg:col-span-2 rounded-lg shadow-sm border border-gray-100">
               <CardContent className="p-6">
-                <h2 className="text-lg font-bold text-gray-800 mb-4">Projetos Ativos</h2>
+                <h2 className="text-lg font-bold text-residuall-gray-tableText mb-4">Projetos Ativos</h2>
                 
                 <div className="space-y-4">
                   <div className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
                     <div className="flex justify-between items-start">
                       <div>
-                        <h4 className="font-medium text-gray-800">Edifício Aurora</h4>
+                        <h4 className="font-medium text-residuall-gray-tableText">Edifício Aurora</h4>
                         <p className="text-sm text-gray-500">São Paulo, SP</p>
                       </div>
-                      <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
+                      <span className="px-2 py-1 text-xs font-medium rounded-full bg-residuall-green-secondary text-white">
                         Em andamento
                       </span>
                     </div>
@@ -147,7 +135,7 @@ const OverviewPage = () => {
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div
-                          className="bg-[#7FB77E] h-2 rounded-full"
+                          className="bg-residuall-green-secondary h-2 rounded-full"
                           style={{ width: '75%' }}
                         ></div>
                       </div>
@@ -157,10 +145,10 @@ const OverviewPage = () => {
                   <div className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
                     <div className="flex justify-between items-start">
                       <div>
-                        <h4 className="font-medium text-gray-800">Residencial Parque Verde</h4>
+                        <h4 className="font-medium text-residuall-gray-tableText">Residencial Parque Verde</h4>
                         <p className="text-sm text-gray-500">Curitiba, PR</p>
                       </div>
-                      <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
+                      <span className="px-2 py-1 text-xs font-medium rounded-full bg-residuall-brown text-white">
                         Iniciando
                       </span>
                     </div>
@@ -171,7 +159,7 @@ const OverviewPage = () => {
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div
-                          className="bg-[#7FB77E] h-2 rounded-full"
+                          className="bg-residuall-green-secondary h-2 rounded-full"
                           style={{ width: '25%' }}
                         ></div>
                       </div>
@@ -181,7 +169,7 @@ const OverviewPage = () => {
                 
                 <Link 
                   to="/dashboard/projetos" 
-                  className="text-[#7FB77E] text-sm font-medium mt-4 inline-block hover:underline"
+                  className="text-residuall-green-secondary text-sm font-medium mt-4 inline-block hover:underline"
                 >
                   Ver todos os projetos
                 </Link>
@@ -191,21 +179,21 @@ const OverviewPage = () => {
             {/* Recomendações */}
             <Card className="rounded-lg shadow-sm border border-gray-100">
               <CardContent className="p-6">
-                <h2 className="text-lg font-bold text-gray-800 mb-4">Recomendações</h2>
+                <h2 className="text-lg font-bold text-residuall-gray-tableText mb-4">Recomendações</h2>
                 
                 <div className="space-y-3">
                   <div className="flex items-start p-3 border border-gray-200 rounded-lg">
                     <CheckCircle size={18} className="text-green-500 mr-3 mt-0.5 shrink-0" />
                     <div>
-                      <p className="text-sm text-gray-800">Reutilize o concreto excedente da fundação.</p>
+                      <p className="text-sm text-residuall-gray-tableText">Reutilize o concreto excedente da fundação.</p>
                       <p className="text-xs text-gray-500 mt-1">Edifício Aurora</p>
                     </div>
                   </div>
                   
                   <div className="flex items-start p-3 border border-gray-200 rounded-lg">
-                    <AlertTriangle size={18} className="text-[#E37A31] mr-3 mt-0.5 shrink-0" />
+                    <AlertTriangle size={18} className="text-residuall-brown mr-3 mt-0.5 shrink-0" />
                     <div>
-                      <p className="text-sm text-gray-800">Alto desperdício de cerâmica detectado.</p>
+                      <p className="text-sm text-residuall-gray-tableText">Alto desperdício de cerâmica detectado.</p>
                       <p className="text-xs text-gray-500 mt-1">Residencial Parque Verde</p>
                     </div>
                   </div>
@@ -213,7 +201,7 @@ const OverviewPage = () => {
                   <div className="flex items-start p-3 border border-gray-200 rounded-lg">
                     <CheckCircle size={18} className="text-green-500 mr-3 mt-0.5 shrink-0" />
                     <div>
-                      <p className="text-sm text-gray-800">Madeira dos tapumes pode ser reutilizada.</p>
+                      <p className="text-sm text-residuall-gray-tableText">Madeira dos tapumes pode ser reutilizada.</p>
                       <p className="text-xs text-gray-500 mt-1">Torre Corporativa Horizonte</p>
                     </div>
                   </div>
@@ -221,7 +209,7 @@ const OverviewPage = () => {
                 
                 <Link 
                   to="/dashboard/recomendacoes" 
-                  className="text-[#7FB77E] text-sm font-medium mt-4 inline-block hover:underline"
+                  className="text-residuall-green-secondary text-sm font-medium mt-4 inline-block hover:underline"
                 >
                   Ver todas as recomendações
                 </Link>
@@ -233,21 +221,21 @@ const OverviewPage = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             <Card className="rounded-lg shadow-sm border border-gray-100">
               <CardContent className="p-6">
-                <h2 className="text-lg font-bold text-gray-800 mb-4">
+                <h2 className="text-lg font-bold text-residuall-gray-tableText mb-4">
                   Materiais Mais Desperdiçados
                 </h2>
                 <Chart 
                   type="pie" 
                   data={wasteByMaterialData} 
                   height={250}
-                  colors={['#7FB77E', '#E37A31', '#FFB347', '#9BBFE0', '#E6E6E6']} 
+                  colors={['#2a4a3d', '#6e7848', '#434b3c', '#ff8c42', '#8a8a8a', '#3b3b3b']} 
                 />
               </CardContent>
             </Card>
             
             <Card className="rounded-lg shadow-sm border border-gray-100">
               <CardContent className="p-6">
-                <h2 className="text-lg font-bold text-gray-800 mb-4">
+                <h2 className="text-lg font-bold text-residuall-gray-tableText mb-4">
                   Histórico de Desperdício
                 </h2>
                 <Chart 
@@ -265,7 +253,7 @@ const OverviewPage = () => {
             <Button 
               asChild
               variant="default" 
-              className="bg-[#7FB77E] hover:bg-[#6ca36d] text-white px-8 py-6 rounded-md text-base flex items-center"
+              className="bg-residuall-green text-white px-8 py-6 rounded-md text-base flex items-center hover:bg-residuall-green/90"
             >
               <Link to="/dashboard/relatorios">
                 Ver detalhes dos relatórios

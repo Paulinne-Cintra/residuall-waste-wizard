@@ -131,7 +131,7 @@ const ReportsPage = () => {
                 <Download size={18} />
                 Exportar
               </Button>
-              <Button className="flex items-center gap-2 bg-residuall-green text-white hover:bg-residuall-green/90">
+              <Button className="flex items-center gap-2 bg-residuall-brown text-white hover:bg-residuall-brown/90">
                 <Share2 size={18} />
                 Compartilhar
               </Button>
@@ -232,7 +232,7 @@ const ReportsPage = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">
+                <CardTitle className="text-lg text-residuall-gray-tableText">
                   Economia Gerada ao Longo do Tempo
                 </CardTitle>
               </CardHeader>
@@ -243,7 +243,7 @@ const ReportsPage = () => {
             
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">
+                <CardTitle className="text-lg text-residuall-gray-tableText">
                   Economia por Projeto
                 </CardTitle>
               </CardHeader>
@@ -256,7 +256,7 @@ const ReportsPage = () => {
           {/* Lista de Relatórios */}
           <Card className="mb-6">
             <CardHeader className="flex flex-row items-center justify-between pb-2 pt-6 px-6">
-              <CardTitle className="text-lg">
+              <CardTitle className="text-lg text-residuall-gray-tableText">
                 Lista de Relatórios
               </CardTitle>
               <Button className="flex items-center gap-2 bg-residuall-green text-white hover:bg-residuall-green/90">
