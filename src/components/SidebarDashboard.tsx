@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { 
@@ -15,7 +16,9 @@ import {
   ChevronDown,
   ChevronUp,
   Menu,
-  X
+  X,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 
 const SidebarDashboard = () => {
@@ -110,41 +113,6 @@ const SidebarDashboard = () => {
     </>
   );
 
-  // Missing components for icons
-const ChevronLeft = ({ size, className }: { size: number; className?: string }) => (
-  <svg 
-    xmlns="http://www.w3.org/2000/svg" 
-    width={size} 
-    height={size} 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
-    strokeWidth="2" 
-    strokeLinecap="round" 
-    strokeLinejoin="round" 
-    className={className}
-  >
-    <path d="M15 18l-6-6 6-6" />
-  </svg>
-);
-
-const ChevronRight = ({ size, className }: { size: number; className?: string }) => (
-  <svg 
-    xmlns="http://www.w3.org/2000/svg" 
-    width={size} 
-    height={size} 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
-    strokeWidth="2" 
-    strokeLinecap="round" 
-    strokeLinejoin="round" 
-    className={className}
-  >
-    <path d="M9 18l6-6-6-6" />
-  </svg>
-);
-
   return (
     <>
       {/* Mobile sidebar trigger */}
@@ -174,8 +142,5 @@ const ChevronRight = ({ size, className }: { size: number; className?: string })
     </>
   );
 };
-
-// Missing components for icons
-
 
 export default SidebarDashboard;
