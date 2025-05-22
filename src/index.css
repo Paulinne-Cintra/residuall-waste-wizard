@@ -43,6 +43,7 @@
     --sidebar-accent-foreground: 0 0% 96%;
     --sidebar-border: 144 26% 23%;
     --sidebar-ring: 79 24% 38%;
+    --sidebar-active: radial-gradient(circle at 0%, #2a4a3d 0%, #2a4a3d 50%, #6e7848 100%);
   }
 }
 
@@ -139,7 +140,7 @@
   }
 
   .sidebar-menu-item-active {
-    @apply flex items-center p-3 rounded-lg bg-sidebar-active text-white;
+    @apply flex items-center p-3 rounded-lg bg-[radial-gradient(circle_at_0%,_#2a4a3d_0%,_#2a4a3d_50%,_#6e7848_100%)] text-white;
   }
 
   .sidebar-icon {
