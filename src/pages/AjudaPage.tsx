@@ -1,10 +1,15 @@
-
 import React from 'react';
 import DashboardHeader from '../components/DashboardHeader';
 import SidebarDashboard from '../components/SidebarDashboard';
 import { Button } from '@/components/ui/button';
 import { toast } from "@/components/ui/use-toast";
 import { MessageCircle, FileText, Phone, Mail, HelpCircle } from 'lucide-react';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 
 const AjudaPage = () => {
   const handleFaqClick = () => {
@@ -25,7 +30,6 @@ const AjudaPage = () => {
     });
   };
 
-  // Dados de exemplo para as FAQs
   const faqs = [
     {
       id: 1,
@@ -49,7 +53,7 @@ const AjudaPage = () => {
       <SidebarDashboard />
       <div className="flex-1 flex flex-col">
         <DashboardHeader title="Ajuda e Suporte" />
-        
+
         <main className="container mx-auto py-6 px-4">
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-residuall-gray-dark mb-2">Centro de Ajuda</h1>
@@ -116,14 +120,18 @@ const AjudaPage = () => {
 
           <div className="bg-white p-6 rounded-lg shadow-md mb-8">
             <h2 className="text-xl font-semibold text-residuall-gray-dark mb-4">Perguntas Frequentes</h2>
-            <div className="space-y-4">
-              {faqs.map(faq => (
-                <div key={faq.id} className="border-b border-gray-100 pb-4">
-                  <h3 className="text-residuall-gray-dark font-medium mb-2">{faq.question}</h3>
-                  <p className="text-residuall-gray">{faq.answer}</p>
-                </div>
+            <Accordion type="multiple" className="w-full">
+              {faqs.map((faq) => (
+                <AccordionItem key={faq.id} value={`faq-${faq.id}`}>
+                  <AccordionTrigger className="text-residuall-gray-dark font-medium">
+                    {faq.question}
+                  </AccordionTrigger>
+                  <AccordionContent className="text-residuall-gray">
+                    {faq.answer}
+                  </AccordionContent>
+                </AccordionItem>
               ))}
-            </div>
+            </Accordion>
             <div className="mt-6 text-center">
               <Button 
                 variant="outline" 
