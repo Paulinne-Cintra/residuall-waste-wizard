@@ -1,4 +1,5 @@
 
+import logoResiduall from '../assets/images/logo-residuall-branca.png';
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { 
@@ -70,7 +71,7 @@ const SidebarDashboard = () => {
           {!collapsed && (
             <>
               <img 
-               src="/assets/logo-residuall-branca.png"
+               src={logoResiduall}
                alt="Logo Residuall"
                className="h-8 mr-2"
                style={{ maxHeight: '32px', width: 'auto' }}

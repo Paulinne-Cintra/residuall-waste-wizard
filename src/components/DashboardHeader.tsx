@@ -4,12 +4,10 @@ import { Link } from 'react-router-dom';
 import { Search, Bell, User } from 'lucide-react';
 
 interface DashboardHeaderProps {
-  title?: string;
-  pageTitle?: string; // Keeping the old prop for backward compatibility
+  pageTitle?: string;
 }
 
-const DashboardHeader = ({ title, pageTitle }: DashboardHeaderProps) => {
-  const displayTitle = title || pageTitle;
+const DashboardHeader = ({ pageTitle }: DashboardHeaderProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -36,9 +34,9 @@ const DashboardHeader = ({ title, pageTitle }: DashboardHeaderProps) => {
   return (
     <header className="bg-white border-b border-gray-200 py-3 px-4 md:px-6 flex items-center justify-between">
       {/* Page Title */}
-      {displayTitle && (
+      {pageTitle && (
         <div className="mr-4 hidden sm:block">
-          <h1 className="text-xl font-semibold text-residuall-gray-tableText">{displayTitle}</h1>
+          <h1 className="text-xl font-semibold text-residuall-gray-tableText">{pageTitle}</h1>
         </div>
       )}
 
