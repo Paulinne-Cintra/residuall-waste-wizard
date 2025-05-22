@@ -22,6 +22,7 @@ import TeamPage from "./pages/TeamPage";
 import ProfilePage from "./pages/ProfilePage";
 import RecommendationsPage from "./pages/RecommendationsPage";
 import SettingsPage from "./pages/SettingsPage";
+import ArquivadosPage from './pages/ArquivadosPage';
 
 import NotFound from "./pages/NotFound";
 
