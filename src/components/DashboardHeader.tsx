@@ -1,15 +1,14 @@
 
-import { useState, ReactNode } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, Bell, User } from 'lucide-react';
 
 interface DashboardHeaderProps {
   title?: string;
   pageTitle?: string; // Keeping the old prop for backward compatibility
-  children?: ReactNode;
 }
 
-const DashboardHeader = ({ title, pageTitle, children }: DashboardHeaderProps) => {
+const DashboardHeader = ({ title, pageTitle }: DashboardHeaderProps) => {
   const displayTitle = title || pageTitle;
   const [searchQuery, setSearchQuery] = useState('');
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
@@ -36,20 +35,12 @@ const DashboardHeader = ({ title, pageTitle, children }: DashboardHeaderProps) =
 
   return (
     <header className="bg-white border-b border-gray-200 py-3 px-4 md:px-6 flex items-center justify-between">
-      {/* Page Title and Actions */}
-      <div className="flex items-center">
-        {displayTitle && (
-          <div className="mr-4">
-            <h1 className="text-xl font-semibold text-residuall-gray-tableText">{displayTitle}</h1>
-          </div>
-        )}
-        
-        {children && (
-          <div className="hidden md:block">
-            {children}
-          </div>
-        )}
-      </div>
+      {/* Page Title */}
+      {displayTitle && (
+        <div className="mr-4 hidden sm:block">
+          <h1 className="text-xl font-semibold text-residuall-gray-tableText">{displayTitle}</h1>
+        </div>
+      )}
 
       {/* Busca */}
       <form onSubmit={handleSearchSubmit} className="relative flex-1 max-w-md mx-auto">

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import SidebarDashboard from './SidebarDashboard';
@@ -14,4 +15,3 @@ const DashboardLayout: React.FC = () => {
 };
 
 export default DashboardLayout;
-
