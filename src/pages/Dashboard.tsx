@@ -2,7 +2,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Briefcase, TrendingUp, TrendingDown, CheckCircle, AlertTriangle } from 'lucide-react';
-import SidebarDashboard from '../components/SidebarDashboard';
 import DashboardHeader from '../components/DashboardHeader';
 import Chart from '../components/Chart';
 
@@ -35,7 +34,6 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-residuall-gray-light flex">
-      <SidebarDashboard />
       
       <div className="flex-1 flex flex-col overflow-hidden">
         <DashboardHeader />
