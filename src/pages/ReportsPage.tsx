@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
@@ -19,6 +18,7 @@ import Chart from '../components/Chart';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/use-toast";
 
 interface Report {
   id: string;
@@ -99,6 +99,42 @@ const ReportsPage = () => {
   // Estado para os filtros
   const [filteredReports, setFilteredReports] = useState<Report[]>(reportsData);
 
+  const handleExportClick = () => {
+    toast({
+      title: "Sucesso!",
+      description: "Relatório exportado com sucesso!",
+      variant: "default",
+      className: "bg-green-50 border-green-200 text-green-800",
+    });
+  };
+
+  const handleShareClick = () => {
+    toast({
+      title: "Compartilhado!",
+      description: "Relatório compartilhado!",
+      variant: "default",
+      className: "bg-blue-50 border-blue-200 text-blue-800",
+    });
+  };
+
+  const handleNewReportClick = () => {
+    toast({
+      title: "Em desenvolvimento",
+      description: "Funcionalidade de novo relatório em desenvolvimento!",
+      variant: "default",
+      className: "bg-yellow-50 border-yellow-200 text-yellow-800",
+    });
+  };
+
+  const handleViewReportClick = () => {
+    toast({
+      title: "Visualizando",
+      description: "Visualizando detalhes do relatório!",
+      variant: "default",
+      className: "bg-blue-50 border-blue-200 text-blue-800",
+    });
+  };
+
   // Função para obter a cor do status
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -127,11 +163,18 @@ const ReportsPage = () => {
             </div>
             
             <div className="mt-4 md:mt-0 flex space-x-2">
-              <Button variant="outline" className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                className="flex items-center gap-2"
+                onClick={handleExportClick}
+              >
                 <Download size={18} />
                 Exportar
               </Button>
-              <Button className="flex items-center gap-2 bg-residuall-brown text-white hover:bg-residuall-brown/90">
+              <Button 
+                className="flex items-center gap-2 bg-residuall-brown text-white hover:bg-residuall-brown/90"
+                onClick={handleShareClick}
+              >
                 <Share2 size={18} />
                 Compartilhar
               </Button>
@@ -259,7 +302,10 @@ const ReportsPage = () => {
               <CardTitle className="text-lg text-residuall-gray-tableText">
                 Lista de Relatórios
               </CardTitle>
-              <Button className="flex items-center gap-2 bg-residuall-green text-white hover:bg-residuall-green/90">
+              <Button 
+                className="flex items-center gap-2 bg-residuall-green text-white hover:bg-residuall-green/90"
+                onClick={handleNewReportClick}
+              >
                 <Plus size={16} />
                 Novo Relatório
               </Button>
@@ -302,12 +348,12 @@ const ReportsPage = () => {
                         {report.location}
                       </TableCell>
                       <TableCell className="text-right">
-                        <Link
-                          to={`/dashboard/relatorios/${report.id}`}
+                        <button
+                          onClick={handleViewReportClick}
                           className="text-residuall-green-secondary hover:text-residuall-green"
                         >
                           <Eye size={18} />
-                        </Link>
+                        </button>
                       </TableCell>
                     </TableRow>
                   ))}

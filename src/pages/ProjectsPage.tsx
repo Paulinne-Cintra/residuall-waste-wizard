@@ -1,9 +1,10 @@
-
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Filter, Calendar, CheckCircle, Clock, AlertCircle } from 'lucide-react';
 import SidebarDashboard from '../components/SidebarDashboard';
 import DashboardHeader from '../components/DashboardHeader';
+import { Button } from '@/components/ui/button';
+import { toast } from '@/components/ui/use-toast';
 
 // Interface para os projetos
 interface Project {
@@ -70,6 +71,33 @@ const ProjectsPage = () => {
 
   const [filteredProjects, setFilteredProjects] = useState<Project[]>(projectsData);
   const [statusFilter, setStatusFilter] = useState<string>('');
+
+  const handleAddProjectClick = () => {
+    toast({
+      title: "Em desenvolvimento",
+      description: "Funcionalidade de adicionar projeto em desenvolvimento!",
+      variant: "default",
+      className: "bg-yellow-50 border-yellow-200 text-yellow-800",
+    });
+  };
+
+  const handleViewDetailsClick = () => {
+    toast({
+      title: "Acessando projeto",
+      description: "Acessando detalhes do projeto!",
+      variant: "default",
+      className: "bg-blue-50 border-blue-200 text-blue-800",
+    });
+  };
+
+  const handleFilterClick = () => {
+    toast({
+      title: "Em breve",
+      description: "Funcionalidade de filtro em breve!",
+      variant: "default",
+      className: "bg-purple-50 border-purple-200 text-purple-800",
+    });
+  };
 
   // Filtragem de projetos por status
   const filterByStatus = (status: string) => {
@@ -150,7 +178,15 @@ const ProjectsPage = () => {
       <SidebarDashboard />
       
       <div className="flex-1 flex flex-col overflow-hidden">
-        <DashboardHeader />
+        <DashboardHeader title="Meus Projetos">
+          <Button
+            className="bg-residuall-green hover:bg-residuall-green-light text-white"
+            onClick={handleAddProjectClick}
+          >
+            <Plus size={16} className="mr-2" />
+            Adicionar Projeto
+          </Button>
+        </DashboardHeader>
         
         <main className="flex-1 overflow-y-auto p-4 md:p-6">
           {/* Cabeçalho da página */}
@@ -163,6 +199,10 @@ const ProjectsPage = () => {
             <Link
               to="/dashboard/projetos/novo"
               className="mt-4 md:mt-0 inline-flex items-center bg-residuall-green hover:bg-residuall-green-light text-white font-medium py-2 px-4 rounded-lg transition-colors"
+              onClick={(e) => {
+                e.preventDefault();
+                handleAddProjectClick();
+              }}
             >
               <Plus size={18} className="mr-2" />
               Novo Projeto
@@ -173,49 +213,19 @@ const ProjectsPage = () => {
           <div className="bg-white rounded-lg shadow-md p-4 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <div className="relative">
-                <button className="inline-flex items-center bg-white border border-gray-300 text-residuall-gray-dark px-4 py-2 rounded-lg">
+                <button 
+                  className="inline-flex items-center bg-white border border-gray-300 text-residuall-gray-dark px-4 py-2 rounded-lg"
+                  onClick={handleFilterClick}
+                >
                   <Filter size={16} className="mr-2" />
                   <span>Status</span>
                 </button>
-                
-                {/* Dropdown para o filtro de status (poderia ser implementado com um estado) */}
-                <div className="absolute left-0 top-full mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10 hidden">
-                  <div className="py-1">
-                    <button
-                      className="block w-full text-left px-4 py-2 text-sm text-residuall-gray-dark hover:bg-gray-100"
-                      onClick={() => filterByStatus('')}
-                    >
-                      Todos
-                    </button>
-                    <button
-                      className="block w-full text-left px-4 py-2 text-sm text-residuall-gray-dark hover:bg-gray-100"
-                      onClick={() => filterByStatus('Em andamento')}
-                    >
-                      Em andamento
-                    </button>
-                    <button
-                      className="block w-full text-left px-4 py-2 text-sm text-residuall-gray-dark hover:bg-gray-100"
-                      onClick={() => filterByStatus('Finalizado')}
-                    >
-                      Finalizado
-                    </button>
-                    <button
-                      className="block w-full text-left px-4 py-2 text-sm text-residuall-gray-dark hover:bg-gray-100"
-                      onClick={() => filterByStatus('Iniciando')}
-                    >
-                      Iniciando
-                    </button>
-                    <button
-                      className="block w-full text-left px-4 py-2 text-sm text-residuall-gray-dark hover:bg-gray-100"
-                      onClick={() => filterByStatus('Pausado')}
-                    >
-                      Pausado
-                    </button>
-                  </div>
-                </div>
               </div>
               
-              <button className="inline-flex items-center bg-white border border-gray-300 text-residuall-gray-dark px-4 py-2 rounded-lg">
+              <button 
+                className="inline-flex items-center bg-white border border-gray-300 text-residuall-gray-dark px-4 py-2 rounded-lg"
+                onClick={handleFilterClick}
+              >
                 <Calendar size={16} className="mr-2" />
                 <span>Data</span>
               </button>
@@ -255,12 +265,12 @@ const ProjectsPage = () => {
                   <div className="flex justify-between items-center">
                     <ReuseRateCircle rate={project.reuseRate} />
                     
-                    <Link
-                      to={`/dashboard/projetos/${project.id}`}
+                    <button
+                      onClick={handleViewDetailsClick}
                       className="text-sm font-medium text-white bg-residuall-brown hover:bg-residuall-brown-light py-2 px-4 rounded-lg transition-colors"
                     >
                       Ver detalhes
-                    </Link>
+                    </button>
                   </div>
                 </div>
               </div>

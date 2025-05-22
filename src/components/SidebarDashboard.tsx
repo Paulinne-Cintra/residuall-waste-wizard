@@ -67,18 +67,19 @@ const SidebarDashboard = () => {
     <>
       <div className="flex items-center justify-between p-4 border-b border-sidebar-border">
         <Link to="/dashboard" className="flex items-center text-xl font-bold text-white">
-          {!collapsed && (
+          {!collapsed ? (
             <>
-              <img  
-                src="/logo-residuall-branca.png"  
-                alt="Logo Residuall"
-                className="h-8 mr-2"
-                style={{ maxHeight: '32px', width: 'auto' }}
-              /> {/* <--- A tag <img> deve ser fechada aqui e apenas uma vez. */}
-              <span>RESIDUALL</span>
+              <img  
+                src="/logo-residuall-branca.png"  
+                alt="Logo Residuall"
+                className="h-8 mr-2"
+                style={{ maxHeight: '32px', width: 'auto' }}
+              />
+              <span>RESIDUALL</span>
             </>
+          ) : (
+            <span>R</span>
           )}
-          {collapsed && <span>R</span>}
         </Link>
         <button
           onClick={toggleSidebar}
