@@ -1,8 +1,6 @@
 
 import { useState } from 'react';
 import { Plus, Filter, BarChart, CheckCircle, AlertTriangle } from 'lucide-react';
-import SidebarDashboard from '../components/SidebarDashboard';
-import DashboardHeader from '../components/DashboardHeader';
 import Chart from '../components/Chart';
 
 // Interface para os materiais
@@ -133,12 +131,7 @@ const MaterialsPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-residuall-gray-light flex">
-      <SidebarDashboard />
-      
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <DashboardHeader />
-        
+           
         <main className="flex-1 overflow-y-auto p-4 md:p-6">
           {/* Cabeçalho da página */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
