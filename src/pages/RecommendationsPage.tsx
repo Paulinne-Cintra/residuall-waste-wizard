@@ -1,9 +1,8 @@
-
 import { useState } from "react";
 import { CheckCircle, AlertTriangle, ChevronRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import DashboardHeader from "@/components/DashboardHeader";
-import SidebarDashboard from "@/components/SidebarDashboard";
+// REMOVIDO: import DashboardHeader from "@/components/DashboardHeader";
+// REMOVIDO: import SidebarDashboard from "@/components/SidebarDashboard";
 import { Button } from "@/components/ui/button";
 
 interface Recommendation {
@@ -62,91 +61,85 @@ const RecommendationsPage = () => {
     : recommendations.filter(rec => rec.status === activeFilter);
 
   return (
-    <div className="flex min-h-screen bg-residuall-gray-light">
-      <SidebarDashboard />
-      
-      <div className="flex-1">
-        <DashboardHeader pageTitle="Recomendações" />
-        
-        <main className="p-6">
-          {/* Filter buttons */}
-          <div className="mb-6 flex gap-4">
-            <Button 
-              variant={activeFilter === "Todas" ? "default" : "outline"}
-              onClick={() => setActiveFilter("Todas")}
-              className={activeFilter === "Todas" ? "bg-residuall-green text-white" : "text-residuall-gray-tableText"}
-            >
-              Todas
-            </Button>
-            <Button 
-              variant={activeFilter === "Pendente" ? "default" : "outline"}
-              onClick={() => setActiveFilter("Pendente")}
-              className={activeFilter === "Pendente" ? "bg-residuall-green text-white" : "text-residuall-gray-tableText"}
-            >
-              Pendentes
-            </Button>
-            <Button 
-              variant={activeFilter === "Resolvida" ? "default" : "outline"}
-              onClick={() => setActiveFilter("Resolvida")}
-              className={activeFilter === "Resolvida" ? "bg-residuall-green text-white" : "text-residuall-gray-tableText"}
-            >
-              Resolvidas
-            </Button>
-          </div>
-
-          {/* Recommendations cards */}
-          <div className="grid gap-4">
-            {filteredRecommendations.map((recommendation) => (
-              <Card key={recommendation.id} className="shadow-residuall hover:shadow-residuall-hover transition-all">
-                <CardContent className="p-5">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start gap-4">
-                      <div className={`mt-1 flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-                        recommendation.type === "success" 
-                          ? "bg-residuall-green-secondary text-white" 
-                          : "bg-residuall-brown text-white"
-                      }`}>
-                        {recommendation.type === "success" ? (
-                          <CheckCircle size={18} />
-                        ) : (
-                          <AlertTriangle size={18} />
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="text-base font-medium text-residuall-gray-tableText">{recommendation.text}</h3>
-                        <div className="mt-2 flex items-center text-sm gap-3">
-                          <span className="text-residuall-gray">{recommendation.date}</span>
-                          <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                            recommendation.status === "Pendente" 
-                              ? "bg-yellow-100 text-yellow-800" 
-                              : "bg-green-100 text-green-800"
-                          }`}>
-                            {recommendation.status}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <Button 
-                      className="bg-residuall-brown hover:bg-residuall-brown/90 text-white px-4 py-2 h-9 rounded-lg"
-                    >
-                      <span className="mr-1">Ver Detalhes</span>
-                      <ChevronRight size={16} />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-          
-          {filteredRecommendations.length === 0 && (
-            <div className="text-center py-8">
-              <p className="text-residuall-gray">Nenhuma recomendação encontrada para o filtro selecionado.</p>
-            </div>
-          )}
-        </main>
+    // Removida a div pai que continha SidebarDashboard e DashboardHeader,
+    // pois o DashboardLayout já provê essa estrutura.
+    <main className="p-6">
+      {/* Filter buttons */}
+      <div className="mb-6 flex gap-4">
+        <Button 
+          variant={activeFilter === "Todas" ? "default" : "outline"}
+          onClick={() => setActiveFilter("Todas")}
+          className={activeFilter === "Todas" ? "bg-residuall-green text-white" : "text-residuall-gray-tableText"}
+        >
+          Todas
+        </Button>
+        <Button 
+          variant={activeFilter === "Pendente" ? "default" : "outline"}
+          onClick={() => setActiveFilter("Pendente")}
+          className={activeFilter === "Pendente" ? "bg-residuall-green text-white" : "text-residuall-gray-tableText"}
+        >
+          Pendentes
+        </Button>
+        <Button 
+          variant={activeFilter === "Resolvida" ? "default" : "outline"}
+          onClick={() => setActiveFilter("Resolvida")}
+          className={activeFilter === "Resolvida" ? "bg-residuall-green text-white" : "text-residuall-gray-tableText"}
+        >
+          Resolvidas
+        </Button>
       </div>
-    </div>
+
+      {/* Recommendations cards */}
+      <div className="grid gap-4">
+        {filteredRecommendations.map((recommendation) => (
+          <Card key={recommendation.id} className="shadow-residuall hover:shadow-residuall-hover transition-all">
+            <CardContent className="p-5">
+              <div className="flex items-start justify-between">
+                <div className="flex items-start gap-4">
+                  <div className={`mt-1 flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+                    recommendation.type === "success" 
+                      ? "bg-residuall-green-secondary text-white" 
+                      : "bg-residuall-brown text-white"
+                  }`}>
+                    {recommendation.type === "success" ? (
+                      <CheckCircle size={18} />
+                    ) : (
+                      <AlertTriangle size={18} />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-base font-medium text-residuall-gray-tableText">{recommendation.text}</h3>
+                    <div className="mt-2 flex items-center text-sm gap-3">
+                      <span className="text-residuall-gray">{recommendation.date}</span>
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                        recommendation.status === "Pendente" 
+                          ? "bg-yellow-100 text-yellow-800" 
+                          : "bg-green-100 text-green-800"
+                      }`}>
+                        {recommendation.status}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                
+                <Button 
+                  className="bg-residuall-brown hover:bg-residuall-brown/90 text-white px-4 py-2 h-9 rounded-lg"
+                >
+                  <span className="mr-1">Ver Detalhes</span>
+                  <ChevronRight size={16} />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+      
+      {filteredRecommendations.length === 0 && (
+        <div className="text-center py-8">
+          <p className="text-residuall-gray">Nenhuma recomendação encontrada para o filtro selecionado.</p>
+        </div>
+      )}
+    </main>
   );
 };
 
