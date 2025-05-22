@@ -24,6 +24,7 @@ import RecommendationsPage from "./pages/RecommendationsPage";
 import SettingsPage from "./pages/SettingsPage";
 import ArquivadosPage from './pages/ArquivadosPage';
 import AjudaPage from './pages/AjudaPage';
+import DashboardLayout from "./components/DashboardLayout";
 
 import NotFound from "./pages/NotFound";
 
@@ -43,18 +44,20 @@ const App = () => (
           <Route path="/login" element={<LoginPage />} />
           <Route path="/cadastro" element={<RegisterPage />} />
           
-          {/* Rotas do dashboard (protegidas) */}
-          <Route path="/dashboard" element={<OverviewPage />} />
-          <Route path="/dashboard/projetos" element={<ProjectsPage />} />
-          <Route path="/dashboard/projetos/:id" element={<ProjectDetailPage />} />
-          <Route path="/dashboard/materiais" element={<MaterialsPage />} />
-          <Route path="/dashboard/relatorios" element={<ReportsPage />} />
-          <Route path="/dashboard/time" element={<TeamPage />} />
-          <Route path="/dashboard/perfil" element={<ProfilePage />} />
-          <Route path="/dashboard/recomendacoes" element={<RecommendationsPage />} />
-          <Route path="/dashboard/configuracoes" element={<SettingsPage />} />
-          <Route path="arquivados" element={<ArquivadosPage />} />
-          <Route path="ajuda" element={<AjudaPage />} />
+          {/* Rotas do dashboard (aninhadas) */}
+          <Route path="/dashboard" element={<DashboardLayout />}>
+            <Route index element={<OverviewPage />} />
+            <Route path="projetos" element={<ProjectsPage />} />
+            <Route path="projetos/:id" element={<ProjectDetailPage />} />
+            <Route path="materiais" element={<MaterialsPage />} />
+            <Route path="relatorios" element={<ReportsPage />} />
+            <Route path="time" element={<TeamPage />} />
+            <Route path="perfil" element={<ProfilePage />} />
+            <Route path="recomendacoes" element={<RecommendationsPage />} />
+            <Route path="configuracoes" element={<SettingsPage />} />
+            <Route path="arquivados" element={<ArquivadosPage />} />
+            <Route path="ajuda" element={<AjudaPage />} />
+          </Route>
           
           {/* Rota 404 */}
           <Route path="*" element={<NotFound />} />
