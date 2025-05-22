@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -19,7 +18,8 @@ const SettingsPage = () => {
     toast({
       title: "Alterações salvas",
       description: "Suas configurações foram atualizadas com sucesso.",
-      variant: "success",
+      // Utilizando a variante "default" em vez de "success" já que só temos default e destructive disponíveis
+      variant: "default",
     });
   };
 
