@@ -69,14 +69,13 @@ const SidebarDashboard = () => {
         <Link to="/dashboard" className="flex items-center text-xl font-bold text-white">
           {!collapsed && (
             <>
-              <img  
-                src="/logo-residuall-branca.png" 
-                alt="Logo Residuall"
-                className="h-8 mr-2"
-                style={{ maxHeight: '32px', width: 'auto' }}
-                /> }}
-              />
-              <span>RESIDUALL</span>
+              <img  
+                src="/logo-residuall-branca.png"  
+                alt="Logo Residuall"
+                className="h-8 mr-2"
+                style={{ maxHeight: '32px', width: 'auto' }}
+              /> {/* <--- A tag <img> deve ser fechada aqui e apenas uma vez. */}
+              <span>RESIDUALL</span>
             </>
           )}
           {collapsed && <span>R</span>}
