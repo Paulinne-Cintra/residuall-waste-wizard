@@ -1,24 +1,28 @@
-
+// pages/ProjectDetailPage.tsx
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { 
-  Edit, 
-  CheckCircle, 
-  Clock, 
-  AlertTriangle, 
-  MapPin, 
-  Calendar, 
-  User, 
-  Users, 
-  FileText, 
-  Download, 
+import {
+  Edit,
+  CheckCircle,
+  Clock,
+  AlertTriangle,
+  MapPin,
+  Calendar,
+  User,
+  Users,
+  FileText,
+  Download,
   Upload
 } from 'lucide-react';
 import Chart from '../components/Chart';
 
+// Removidas as importações de SidebarDashboard e DashboardHeader, se estivessem aqui
+// import SidebarDashboard from "@/components/SidebarDashboard";
+// import DashboardHeader from "@/components/DashboardHeader";
+
 const ProjectDetailPage = () => {
   const { id } = useParams<{ id: string }>();
-  
+
   // Simulação de dados do projeto
   const projectData = {
     id: id,
@@ -70,12 +74,12 @@ const ProjectDetailPage = () => {
 
   // Função para marcar recomendação como concluída
   const toggleRecommendation = (id: string) => {
-    setRecommendations(recommendations.map(rec => 
+    setRecommendations(recommendations.map(rec =>
       rec.id === id ? { ...rec, completed: !rec.completed } : rec
     ));
   };
 
-  // Componentes para as seções da página
+  // Componentes para as seções da página (mantidos como estão, são bons)
   const ProjectHeader = () => (
     <div className="bg-white rounded-lg shadow-md p-6 mb-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
@@ -98,7 +102,7 @@ const ProjectDetailPage = () => {
             </div>
           </div>
         </div>
-        
+
         <Link
           to={`/dashboard/projetos/${id}/editar`}
           className="mt-4 md:mt-0 inline-flex items-center bg-residuall-green hover:bg-residuall-green-light text-white font-medium py-2 px-4 rounded-lg transition-colors"
@@ -107,7 +111,7 @@ const ProjectDetailPage = () => {
           Editar
         </Link>
       </div>
-      
+
       <div className="mt-6">
         <div className="flex justify-between text-sm mb-1">
           <span className="font-medium">Progresso da Obra</span>
@@ -129,7 +133,7 @@ const ProjectDetailPage = () => {
         <Users size={20} className="mr-2" />
         Time
       </h2>
-      
+
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
         {projectData.team.map((member) => (
           <div key={member.id} className="flex flex-col items-center">
@@ -157,7 +161,7 @@ const ProjectDetailPage = () => {
           <FileText size={20} className="mr-2" />
           Documentos
         </h2>
-        
+
         <div className="flex space-x-2">
           <button className="inline-flex items-center text-sm bg-residuall-green text-white py-1 px-3 rounded-lg">
             <Upload size={14} className="mr-1" />
@@ -169,7 +173,7 @@ const ProjectDetailPage = () => {
           </button>
         </div>
       </div>
-      
+
       <div className="border rounded-lg overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
@@ -218,7 +222,7 @@ const ProjectDetailPage = () => {
         </h2>
         <Chart type="pie" data={wasteByStageData} height={250} />
       </div>
-      
+
       <div className="bg-white rounded-lg shadow-md p-6">
         <h2 className="text-lg font-semibold text-residuall-gray-dark mb-4">
           Tipos de Materiais Reutilizados
@@ -233,15 +237,15 @@ const ProjectDetailPage = () => {
       <h2 className="text-lg font-semibold text-residuall-gray-dark mb-4">
         Recomendações
       </h2>
-      
+
       <div className="space-y-4">
         {recommendations.map((rec) => (
           <div key={rec.id} className="flex items-start p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
             <button
               onClick={() => toggleRecommendation(rec.id)}
               className={`shrink-0 p-1 rounded-full mr-3 ${
-                rec.completed 
-                  ? 'bg-green-100 text-green-500' 
+                rec.completed
+                  ? 'bg-green-100 text-green-500'
                   : 'bg-residuall-brown bg-opacity-10 text-residuall-brown'
               }`}
             >
@@ -264,20 +268,19 @@ const ProjectDetailPage = () => {
   );
 
   return (
-         
-        <main className="flex-1 overflow-y-auto p-4 md:p-6">
-          <ProjectHeader />
-          
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            <TeamSection />
-            <DocumentsSection />
-          </div>
-          
-          <ChartsSection />
-          <RecommendationsSection />
-        </main>
+    // A página agora retorna diretamente o conteúdo da área principal,
+    // que será envolvida pelo DashboardLayout (ou similar) no App.tsx
+    <main className="flex-1 overflow-y-auto p-4 md:p-6">
+      <ProjectHeader />
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <TeamSection />
+        <DocumentsSection />
       </div>
-    </div>
+
+      <ChartsSection />
+      <RecommendationsSection />
+    </main>
   );
 };
 
