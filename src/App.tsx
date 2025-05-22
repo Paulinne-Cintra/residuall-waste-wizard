@@ -23,6 +23,7 @@ import ProfilePage from "./pages/ProfilePage";
 import RecommendationsPage from "./pages/RecommendationsPage";
 import SettingsPage from "./pages/SettingsPage";
 import ArquivadosPage from './pages/ArquivadosPage';
+import AjudaPage from './pages/AjudaPage';
 
 import NotFound from "./pages/NotFound";
 
@@ -52,8 +53,8 @@ const App = () => (
           <Route path="/dashboard/perfil" element={<ProfilePage />} />
           <Route path="/dashboard/recomendacoes" element={<RecommendationsPage />} />
           <Route path="/dashboard/configuracoes" element={<SettingsPage />} />
-          <Route path="/dashboard/arquivados" element={<NotFound />} />
-          <Route path="/dashboard/ajuda" element={<NotFound />} />
+          <Route path="arquivados" element={<ArquivadosPage />} />
+          <Route path="ajuda" element={<AjudaPage />} />
           
           {/* Rota 404 */}
           <Route path="*" element={<NotFound />} />
