@@ -5,16 +5,29 @@ import { motion } from 'framer-motion';
 interface AnimatedCardWrapperProps {
   children: ReactNode;
   delay?: number; // Atraso para a animação deste item específico
+  // Adicionar props para controlar o comportamento da animação, se necessário
+  animateOnView?: boolean; // Nova prop para ativar a animação ao entrar na view
 }
 
-const AnimatedCardWrapper: React.FC<AnimatedCardWrapperProps> = ({ children, delay = 0 }) => {
+const AnimatedCardWrapper: React.FC<AnimatedCardWrapperProps> = ({ children, delay = 0, animateOnView = true }) => {
+  // Define as variantes para a animação de entrada
+  const variants = {
+    hidden: { opacity: 0, y: 50 },
+    visible: { opacity: 1, y: 0 },
+  };
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 50 }} // Estado inicial: invisível e 50px abaixo
-      animate={{ opacity: 1, y: 0 }}   // Estado final: visível e na posição original
-      transition={{ duration: 0.6, delay: delay, ease: "easeOut" }} // Duração, atraso e tipo de easing
-      // whileInView={{ opacity: 1, y: 0 }} // Descomente esta linha se quiser que a animação dispare ao scroll
-      // viewport={{ once: true, amount: 0.5 }} // Configuração do viewport para whileInView
+      variants={variants} // Usa as variantes
+      initial="hidden"    // Começa no estado 'hidden'
+      animate="visible"   // Anima para o estado 'visible'
+      transition={{ duration: 0.6, delay: delay, ease: "easeOut" }}
+
+      // Se animateOnView for true, a animação será acionada quando estiver na viewport
+      {...(animateOnView && {
+        whileInView: "visible", // Anima para 'visible' quando na viewport
+        viewport: { once: true, amount: 0.5 }, // Apenas uma vez e quando 50% visível
+      })}
     >
       {children}
     </motion.div>
