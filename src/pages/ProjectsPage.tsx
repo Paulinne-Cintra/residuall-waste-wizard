@@ -8,8 +8,9 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 
-import AnimatedCardWrapper from '@/components/AnimatedCardWrapper'; // Componente que já usamos
-import { motion } from 'framer-motion'; // NOVO: Importe 'motion' do Framer Motion diretamente aqui
+import AnimatedCardWrapper from '@/components/AnimatedCardWrapper';
+import AnimatedNumber from '@/components/AnimatedNumber'; // NOVO: Importe o AnimatedNumber
+import { motion } from 'framer-motion';
 
 interface Project {
   id: string;
@@ -149,12 +150,13 @@ const ProjectsPage = () => {
       {/* Cards de Métricas (Reuso) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         {reuseMetricsData.map((metric, index) => (
-          <AnimatedCardWrapper key={index} delay={0.05 * (index + 1)}>
+          <AnimatedCardWrapper key={index} delay={0.05 * (index + 1)} animateOnView={true}> {/* Garante animação ao entrar na view */}
             <Card className="flex flex-col items-center justify-center p-4">
               <CardHeader className="p-0 pb-2 flex-col items-center">
                 <CardDescription className="text-center">{metric.name}</CardDescription>
                 <CardTitle className="text-2xl font-bold text-residuall-gray-tableText mt-2">
-                  {metric.value} {metric.unit}
+                  {/* AQUI ESTÁ A MUDANÇA: Usando AnimatedNumber */}
+                  <AnimatedNumber value={metric.value} suffix={` ${metric.unit}`} decimals={1} />
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-0 text-center text-sm text-residuall-gray">
@@ -173,7 +175,7 @@ const ProjectsPage = () => {
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredProjects.map((project, index) => (
-              <AnimatedCardWrapper key={project.id} delay={0.1 + (index * 0.1)}>
+              <AnimatedCardWrapper key={project.id} delay={0.1 + (index * 0.1)} animateOnView={true}> {/* Garante animação ao entrar na view */}
                 <Card className="shadow-sm hover:shadow-md transition-shadow duration-200">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-lg text-residuall-gray-tableText">{project.name}</CardTitle>
@@ -187,14 +189,13 @@ const ProjectsPage = () => {
                       <span className="text-residuall-gray">{project.progress}%</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
-                      {/* AQUI ESTÁ A MUDANÇA: Usando motion.div para animar a largura */}
                       <motion.div
                         className="bg-residuall-green h-2 rounded-full"
-                        initial={{ width: "0%" }} // Começa com 0% de largura
-                        animate={{ width: `${project.progress}%` }} // Anima para o valor de progresso
+                        initial={{ width: "0%" }}
+                        animate={{ width: `${project.progress}%` }}
                         transition={{
-                          duration: 1.5, // Duração da animação da barra
-                          delay: 0.5 + (index * 0.1), // Atraso para a animação da barra (depois do card aparecer)
+                          duration: 1.5,
+                          delay: 0.5 + (index * 0.1),
                           ease: "easeOut"
                         }}
                       ></motion.div>
