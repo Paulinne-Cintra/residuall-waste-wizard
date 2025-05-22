@@ -2,12 +2,14 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Filter, Calendar, BarChart, TrendingUp, TrendingDown, Eye, Plus, ChevronDown } from 'lucide-react';
-// Importe o seu AnimatedButton modificado
 import AnimatedButton from '@/components/ui/AnimatedButton';
 import Chart from '../components/Chart';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Button } from "@/components/ui/button"; // Ainda podemos ter botões normais também
+import { Button } from "@/components/ui/button";
+
+// NOVO: Importe o AnimatedCardWrapper
+import AnimatedCardWrapper from '@/components/AnimatedCardWrapper'; // Ajuste o caminho se necessário
 
 interface Project {
   id: string;
@@ -64,7 +66,6 @@ const ProjectsPage = () => {
     },
   ];
 
-  // Dados de exemplo para gráficos (se aplicável na ProjectsPage, ajustei com base nas imagens que você compartilhou)
   const reuseMetricsData = [
     { name: 'Tijolos', value: 2.5, unit: 'toneladas', description: 'Desperdício mensal médio' },
     { name: 'Cimento', value: 3.2, unit: 'toneladas', description: 'Desperdício mensal médio' },
@@ -78,13 +79,9 @@ const ProjectsPage = () => {
     { name: 'Pausados', value: 1 },
   ];
 
-  // Estado para os filtros (manter ou ajustar conforme sua necessidade real)
   const [filteredProjects, setFilteredProjects] = useState<Project[]>(projectsData);
-
-  // NOVO ESTADO: Para controlar o carregamento do botão "Novo Projeto"
   const [isCreatingProject, setIsCreatingProject] = useState(false);
 
-  // Função para obter a cor do status
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Em andamento':
@@ -100,14 +97,11 @@ const ProjectsPage = () => {
     }
   };
 
-  // NOVA FUNÇÃO: Lida com o clique do botão "Novo Projeto"
   const handleCreateNewProject = async () => {
-    setIsCreatingProject(true); // Ativa o estado de carregamento do botão
-    // Simula uma operação assíncrona (ex: chamada de API para criar um projeto)
-    await new Promise(resolve => setTimeout(resolve, 2000)); // Espera 2 segundos
-    setIsCreatingProject(false); // Desativa o estado de carregamento
-    alert("Novo projeto criado com sucesso!"); // Mensagem de sucesso
-    // Aqui você faria a lógica real de adicionar o projeto à lista ou navegar para uma nova página
+    setIsCreatingProject(true);
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    setIsCreatingProject(false);
+    alert("Novo projeto criado com sucesso!");
   };
 
   return (
@@ -118,13 +112,11 @@ const ProjectsPage = () => {
           <h1 className="text-2xl font-bold text-residuall-gray-tableText">Projetos</h1>
           <p className="text-residuall-gray">Gerencie todos os seus projetos em um só lugar</p>
         </div>
-
         <div className="mt-4 md:mt-0 flex space-x-2">
-          {/* Substituímos o Button normal pelo AnimatedButton aqui */}
           <AnimatedButton
-            label={isCreatingProject ? "Criando..." : "Novo Projeto"} // Muda o texto do botão
-            onClick={handleCreateNewProject} // Chama a nova função de handler
-            isLoading={isCreatingProject} // Passa o estado de loading para o componente AnimatedButton
+            label={isCreatingProject ? "Criando..." : "Novo Projeto"}
+            onClick={handleCreateNewProject}
+            isLoading={isCreatingProject}
           />
         </div>
       </div>
@@ -138,14 +130,12 @@ const ProjectsPage = () => {
               <span>Status</span>
               <ChevronDown size={16} />
             </Button>
-            
             <Button variant="outline" className="flex items-center gap-2">
               <Calendar size={16} />
               <span>Data</span>
               <ChevronDown size={16} />
             </Button>
           </div>
-          
           <div>
             <input
               type="text"
@@ -155,21 +145,24 @@ const ProjectsPage = () => {
           </div>
         </CardContent>
       </Card>
-      
-      {/* Cards de Métricas (ajustado com base nas imagens que você compartilhou) */}
+
+      {/* Cards de Métricas (Reuso) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        {/* Podemos aplicar o AnimatedCardWrapper aqui também se quisermos */}
         {reuseMetricsData.map((metric, index) => (
-          <Card key={index} className="flex flex-col items-center justify-center p-4">
-            <CardHeader className="p-0 pb-2 flex-col items-center">
-              <CardDescription className="text-center">{metric.name}</CardDescription>
-              <CardTitle className="text-2xl font-bold text-residuall-gray-tableText mt-2">
-                {metric.value} {metric.unit}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-0 text-center text-sm text-residuall-gray">
-              {metric.description}
-            </CardContent>
-          </Card>
+          <AnimatedCardWrapper key={index} delay={0.05 * (index + 1)}> {/* Pequeno atraso sequencial */}
+            <Card className="flex flex-col items-center justify-center p-4">
+              <CardHeader className="p-0 pb-2 flex-col items-center">
+                <CardDescription className="text-center">{metric.name}</CardDescription>
+                <CardTitle className="text-2xl font-bold text-residuall-gray-tableText mt-2">
+                  {metric.value} {metric.unit}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0 text-center text-sm text-residuall-gray">
+                {metric.description}
+              </CardContent>
+            </Card>
+          </AnimatedCardWrapper>
         ))}
       </div>
 
@@ -180,66 +173,75 @@ const ProjectsPage = () => {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProjects.map((project) => (
-              <Card key={project.id} className="shadow-sm hover:shadow-md transition-shadow duration-200">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-lg text-residuall-gray-tableText">{project.name}</CardTitle>
-                  <CardDescription className="text-sm text-residuall-gray">{project.location}</CardDescription>
-                </CardHeader>
-                <CardContent className="pb-4">
-                  <div className="flex items-center justify-between text-sm mb-2">
-                    <span className={getStatusColor(project.status)}>
-                      {project.status}
-                    </span>
-                    <span className="text-residuall-gray">{project.progress}%</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className="bg-residuall-green h-2 rounded-full"
-                      style={{ width: `${project.progress}%` }}
-                    ></div>
-                  </div>
-                </CardContent>
-                <CardFooter className="pt-0">
-                  <Link to={`/dashboard/projetos/${project.id}`}>
-                    <Button variant="outline" className="text-residuall-green-secondary hover:bg-residuall-green-secondary/10">
-                      Ver detalhes
-                    </Button>
-                  </Link>
-                </CardFooter>
-              </Card>
+            {filteredProjects.map((project, index) => (
+              // Envolva cada Card de Projeto com AnimatedCardWrapper
+              <AnimatedCardWrapper key={project.id} delay={0.1 + (index * 0.1)}> {/* Atraso sequencial para cada card */}
+                <Card className="shadow-sm hover:shadow-md transition-shadow duration-200">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg text-residuall-gray-tableText">{project.name}</CardTitle>
+                    <CardDescription className="text-sm text-residuall-gray">{project.location}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="pb-4">
+                    <div className="flex items-center justify-between text-sm mb-2">
+                      <span className={getStatusColor(project.status)}>
+                        {project.status}
+                      </span>
+                      <span className="text-residuall-gray">{project.progress}%</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className="bg-residuall-green h-2 rounded-full"
+                        style={{ width: `${project.progress}%` }}
+                      ></div>
+                    </div>
+                  </CardContent>
+                  <CardFooter className="pt-0">
+                    <Link to={`/dashboard/projetos/${project.id}`}>
+                      <Button variant="outline" className="text-residuall-green-secondary hover:bg-residuall-green-secondary/10">
+                        Ver detalhes
+                      </Button>
+                    </Link>
+                  </CardFooter>
+                </Card>
+              </AnimatedCardWrapper>
             ))}
           </div>
         </CardContent>
       </Card>
-      
-      {/* Seção de Recomendações (ajustado com base nas imagens que você compartilhou) */}
+
+      {/* Seção de Recomendações */}
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="text-xl text-residuall-gray-tableText">Recomendações</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="p-3 bg-residuall-green/10 rounded-md flex items-start gap-2">
-            <TrendingUp size={20} className="text-residuall-green" />
-            <p className="text-sm text-residuall-gray-tableText">
-              Reutilize o concreto excedente da fundação Edifício Aurora.
-            </p>
-          </div>
-          <div className="p-3 bg-red-100 rounded-md flex items-start gap-2">
-            <TrendingDown size={20} className="text-red-600" />
-            <p className="text-sm text-residuall-gray-tableText">
-              Alto desperdício de cerâmica detectado. Residencial Parque Verde.
-            </p>
-          </div>
-          <div className="p-3 bg-residuall-brown/10 rounded-md flex items-start gap-2">
-            <BarChart size={20} className="text-residuall-brown" />
-            <p className="text-sm text-residuall-gray-tableText">
-              Madeira dos tapumes pode ser reutilizada. Torre Corporativa Horizonte.
-            </p>
-          </div>
+          {/* Poderíamos aplicar o AnimatedCardWrapper aqui também */}
+          {recommendations.map((rec) => (
+            <div key={rec.id} className="flex items-start p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+              <button
+                onClick={() => toggleRecommendation(rec.id)}
+                className={`shrink-0 p-1 rounded-full mr-3 ${
+                  rec.completed
+                    ? 'bg-green-100 text-green-500'
+                    : 'bg-residuall-brown bg-opacity-10 text-residuall-brown'
+                }`}
+              >
+                {rec.completed ? (
+                  <CheckCircle size={18} />
+                ) : (
+                  <AlertTriangle size={18} />
+                )}
+              </button>
+              <div>
+                <p className="text-sm text-residuall-gray-dark">{rec.text}</p>
+                <p className="text-xs text-residuall-gray mt-1">
+                  {rec.completed ? 'Concluído' : 'Pendente'}
+                </p>
+              </div>
+            </div>
+          ))}
         </CardContent>
       </Card>
-
     </main>
   );
 };
