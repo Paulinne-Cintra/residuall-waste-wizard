@@ -1,8 +1,10 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* =======================
+   VARIÁVEIS GLOBAIS
+   ======================= */
 @layer base {
   :root {
     --background: 0 0% 97%;
@@ -47,12 +49,15 @@
   }
 }
 
+/* =======================
+   ESTILOS BASE
+   ======================= */
 @layer base {
   * {
     @apply border-border;
     transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out, transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
   }
-  
+
   body {
     @apply bg-residuall-gray-light text-residuall-gray-tableText font-sans;
   }
@@ -61,36 +66,38 @@
     @apply font-montserrat font-semibold;
   }
 
-  h1 {
-    @apply text-4xl;
-  }
-
-  h2 {
-    @apply text-3xl;
-  }
-
-  h3 {
-    @apply text-2xl;
-  }
+  h1 { @apply text-4xl; }
+  h2 { @apply text-3xl; }
+  h3 { @apply text-2xl; }
 }
 
+/* =======================
+   COMPONENTES REUTILIZÁVEIS
+   ======================= */
 @layer components {
+  /* Botões */
   .btn-primary {
     @apply bg-residuall-green hover:bg-residuall-green/90 text-white font-medium py-3 px-6 rounded-lg transition-colors shadow-residuall hover:shadow-residuall-hover;
   }
-  
+
   .btn-secondary {
     @apply bg-residuall-brown hover:bg-residuall-brown/90 text-white font-medium py-3 px-6 rounded-lg transition-colors shadow-residuall hover:shadow-residuall-hover;
   }
-  
+
   .btn-outline {
     @apply border-2 border-residuall-green text-residuall-green font-medium py-3 px-6 rounded-lg hover:bg-residuall-green hover:text-white transition-colors;
   }
 
+  /* Cards */
   .card-container {
     @apply bg-white rounded-lg shadow-residuall hover:shadow-residuall-hover p-5 transition-all hover:translate-y-[-5px];
   }
 
+  .dashboard-card {
+    @apply bg-white rounded-lg shadow-residuall p-6 flex flex-col hover:shadow-residuall-hover transition-all;
+  }
+
+  /* Tags de status */
   .status-tag {
     @apply px-3 py-1 text-xs font-semibold rounded-full;
   }
@@ -115,10 +122,12 @@
     @apply bg-residuall-green-tag text-white px-3 py-1 text-xs font-bold rounded-full;
   }
 
+  /* Inputs */
   .input-field {
     @apply w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-residuall-green-secondary focus:border-transparent;
   }
 
+  /* Links de navegação */
   .nav-link {
     @apply text-sm font-medium text-residuall-gray-dark hover:text-residuall-green transition-colors;
   }
@@ -127,14 +136,12 @@
     @apply text-sm font-medium text-residuall-green border-b-2 border-residuall-green;
   }
 
-  .dashboard-card {
-    @apply bg-white rounded-lg shadow-residuall p-6 flex flex-col hover:shadow-residuall-hover transition-all;
-  }
-
+  /* Seções e espaçamento */
   .section-padding {
     @apply py-12 md:py-20;
   }
 
+  /* Sidebar */
   .sidebar-menu-item {
     @apply flex items-center p-3 rounded-lg transition-colors text-residuall-green-secondary hover:bg-residuall-green-secondary/10;
   }
@@ -147,6 +154,7 @@
     @apply mr-3 flex-shrink-0;
   }
 
+  /* Campo de busca */
   .header-search {
     @apply px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-residuall-green-secondary focus:border-transparent bg-white w-full max-w-md placeholder:text-residuall-gray;
   }
