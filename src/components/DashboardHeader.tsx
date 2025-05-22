@@ -32,7 +32,7 @@ const DashboardHeader = ({ pageTitle }: DashboardHeaderProps) => {
   };
 
   return (
-    <header className="bg-residuall-white border-b border-gray-200 py-3 px-4 md:px-6 flex items-center justify-between">
+    <header className="bg-white border-b border-gray-200 py-3 px-4 md:px-6 flex items-center justify-between">
       {/* Page Title */}
       {pageTitle && (
         <div className="mr-4 hidden sm:block">

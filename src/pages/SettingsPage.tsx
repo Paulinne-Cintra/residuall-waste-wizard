@@ -7,13 +7,21 @@ import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Toggle } from "@/components/ui/toggle";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { toast } from "@/hooks/use-toast";
 import DashboardHeader from "@/components/DashboardHeader";
 import SidebarDashboard from "@/components/SidebarDashboard";
 
 const SettingsPage = () => {
   const [activeTab, setActiveTab] = useState("geral");
+  
+  const handleSaveChanges = () => {
+    toast({
+      title: "Alterações salvas",
+      description: "Suas configurações foram atualizadas com sucesso.",
+      variant: "success",
+    });
+  };
 
   return (
     <div className="flex min-h-screen bg-residuall-gray-light">
@@ -260,7 +268,10 @@ const SettingsPage = () => {
 
               {/* Botão Salvar Alterações */}
               <div className="flex justify-end mt-6">
-                <Button className="bg-residuall-brown hover:bg-residuall-brown/90 text-white">
+                <Button 
+                  className="bg-residuall-brown hover:bg-residuall-brown/90 text-white"
+                  onClick={handleSaveChanges}
+                >
                   Salvar Alterações
                 </Button>
               </div>
