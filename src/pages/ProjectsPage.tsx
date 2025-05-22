@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 
 import AnimatedCardWrapper from '@/components/AnimatedCardWrapper';
-import AnimatedNumber from '@/components/AnimatedNumber'; // NOVO: Importe o AnimatedNumber
+import AnimatedNumber from '@/components/AnimatedNumber';
 import { motion } from 'framer-motion';
 
 interface Project {
@@ -21,7 +21,8 @@ interface Project {
 }
 
 const ProjectsPage = () => {
-  // Dados de exemplo para projetos
+  // ... (dados de exemplo e funções existentes) ...
+
   const projectsData: Project[] = [
     {
       id: '1',
@@ -73,28 +74,22 @@ const ProjectsPage = () => {
     { name: 'Aço', value: 1.3, unit: 'toneladas', description: 'Desperdício mensal médio' },
   ];
 
-  const projectsOverviewData = [
-    { name: 'Em Andamento', value: 3 },
-    { name: 'Finalizados', value: 1 },
-    { name: 'Iniciando', value: 2 },
-    { name: 'Pausados', value: 1 },
-  ];
-
   const [filteredProjects, setFilteredProjects] = useState<Project[]>(projectsData);
   const [isCreatingProject, setIsCreatingProject] = useState(false);
 
+  // Ajuste nas classes CSS para as tags de status
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Em andamento':
-        return 'status-tag status-tag-ongoing';
+        return 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800';
       case 'Iniciando':
-        return 'status-tag status-tag-starting';
+        return 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800';
       case 'Finalizado':
-        return 'status-tag status-tag-completed';
+        return 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-800'; // Ou um verde mais escuro para finalizado, se preferir
       case 'Pausado':
-        return 'status-tag status-tag-paused';
+        return 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800';
       default:
-        return 'status-tag';
+        return 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-800';
     }
   };
 
@@ -106,12 +101,12 @@ const ProjectsPage = () => {
   };
 
   return (
-    <main className="flex-1 overflow-y-auto p-4 md:p-6">
+    <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50"> {/* Fundo mais suave */}
       {/* Cabeçalho da página */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8"> {/* mb-6 para mb-8 */}
         <div>
-          <h1 className="text-2xl font-bold text-residuall-gray-tableText">Projetos</h1>
-          <p className="text-residuall-gray">Gerencie todos os seus projetos em um só lugar</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-1">Projetos</h1> {/* Aumentado e cor mais escura */}
+          <p className="text-base text-gray-600">Gerencie todos os seus projetos em um só lugar</p> {/* Cor e tamanho ajustados */}
         </div>
         <div className="mt-4 md:mt-0 flex space-x-2">
           <AnimatedButton
@@ -123,15 +118,15 @@ const ProjectsPage = () => {
       </div>
 
       {/* Filtros */}
-      <Card className="mb-6">
+      <Card className="mb-6 shadow-sm border-none"> {/* Removendo borda e ajustando sombra */}
         <CardContent className="flex flex-wrap gap-4 items-center justify-between p-4">
           <div className="flex flex-wrap gap-2">
-            <Button variant="outline" className="flex items-center gap-2">
+            <Button variant="outline" className="flex items-center gap-2 text-gray-700 hover:bg-gray-100 border-gray-300"> {/* Cores de botão de filtro mais suaves */}
               <Filter size={16} />
               <span>Status</span>
               <ChevronDown size={16} />
             </Button>
-            <Button variant="outline" className="flex items-center gap-2">
+            <Button variant="outline" className="flex items-center gap-2 text-gray-700 hover:bg-gray-100 border-gray-300">
               <Calendar size={16} />
               <span>Data</span>
               <ChevronDown size={16} />
@@ -141,7 +136,7 @@ const ProjectsPage = () => {
             <input
               type="text"
               placeholder="Buscar projetos..."
-              className="input-field"
+              className="input-field border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-residuall-green focus:border-transparent transition-all duration-200" // Ajustes no campo de busca
             />
           </div>
         </CardContent>
@@ -150,16 +145,15 @@ const ProjectsPage = () => {
       {/* Cards de Métricas (Reuso) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         {reuseMetricsData.map((metric, index) => (
-          <AnimatedCardWrapper key={index} delay={0.05 * (index + 1)} animateOnView={true}> {/* Garante animação ao entrar na view */}
-            <Card className="flex flex-col items-center justify-center p-4">
+          <AnimatedCardWrapper key={index} delay={0.05 * (index + 1)} animateOnView={true}>
+            <Card className="flex flex-col items-center justify-center p-6 shadow-md border-none"> {/* Aumentando padding e sombra */}
               <CardHeader className="p-0 pb-2 flex-col items-center">
-                <CardDescription className="text-center">{metric.name}</CardDescription>
-                <CardTitle className="text-2xl font-bold text-residuall-gray-tableText mt-2">
-                  {/* AQUI ESTÁ A MUDANÇA: Usando AnimatedNumber */}
+                <CardDescription className="text-center text-sm font-medium text-gray-700">{metric.name}</CardDescription> {/* Ajuste de cor e peso */}
+                <CardTitle className="text-4xl font-extrabold text-gray-900 mt-2"> {/* Aumentado e mais bold */}
                   <AnimatedNumber value={metric.value} suffix={` ${metric.unit}`} decimals={1} />
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-0 text-center text-sm text-residuall-gray">
+              <CardContent className="p-0 text-center text-xs text-gray-500"> {/* Cor e tamanho ajustados */}
                 {metric.description}
               </CardContent>
             </Card>
@@ -168,25 +162,25 @@ const ProjectsPage = () => {
       </div>
 
       {/* Seção de Projetos Ativos (Cards de Projeto) */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle className="text-xl text-residuall-gray-tableText">Projetos Ativos</CardTitle>
+      <Card className="mb-6 shadow-sm border-none">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-2xl font-bold text-gray-900">Projetos Ativos</CardTitle> {/* Aumentado e mais bold */}
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredProjects.map((project, index) => (
-              <AnimatedCardWrapper key={project.id} delay={0.1 + (index * 0.1)} animateOnView={true}> {/* Garante animação ao entrar na view */}
-                <Card className="shadow-sm hover:shadow-md transition-shadow duration-200">
+              <AnimatedCardWrapper key={project.id} delay={0.1 + (index * 0.1)} animateOnView={true}>
+                <Card className="shadow-md hover:shadow-lg transition-shadow duration-200 border-none"> {/* Sombra mais suave e borda removida */}
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-lg text-residuall-gray-tableText">{project.name}</CardTitle>
-                    <CardDescription className="text-sm text-residuall-gray">{project.location}</CardDescription>
+                    <CardTitle className="text-lg font-semibold text-gray-800">{project.name}</CardTitle> {/* Cor e peso ajustados */}
+                    <CardDescription className="text-sm text-gray-500">{project.location}</CardDescription> {/* Cor mais suave */}
                   </CardHeader>
                   <CardContent className="pb-4">
                     <div className="flex items-center justify-between text-sm mb-2">
-                      <span className={getStatusColor(project.status)}>
+                      <span className={getStatusColor(project.status)}> {/* Usando a nova função getStatusColor */}
                         {project.status}
                       </span>
-                      <span className="text-residuall-gray">{project.progress}%</span>
+                      <span className="text-base font-semibold text-gray-700">{project.progress}%</span> {/* Tamanho e peso ajustados */}
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <motion.div
@@ -203,7 +197,7 @@ const ProjectsPage = () => {
                   </CardContent>
                   <CardFooter className="pt-0">
                     <Link to={`/dashboard/projetos/${project.id}`}>
-                      <Button variant="outline" className="text-residuall-green-secondary hover:bg-residuall-green-secondary/10">
+                      <Button variant="outline" className="text-residuall-green-secondary hover:bg-residuall-green-secondary/10 font-medium px-4 py-2"> {/* Ajuste no botão */}
                         Ver detalhes
                       </Button>
                     </Link>
@@ -216,13 +210,14 @@ const ProjectsPage = () => {
       </Card>
 
       {/* Seção de Recomendações */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle className="text-xl text-residuall-gray-tableText">Recomendações</CardTitle>
+      <Card className="mb-6 shadow-sm border-none">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-2xl font-bold text-gray-900">Recomendações</CardTitle> {/* Aumentado e mais bold */}
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Poderíamos aplicar o AnimatedCardWrapper aqui também */}
           {recommendations.map((rec) => (
-            <div key={rec.id} className="flex items-start p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+            <div key={rec.id} className="flex items-start p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-150"> {/* Hover e transição */}
               <button
                 onClick={() => toggleRecommendation(rec.id)}
                 className={`shrink-0 p-1 rounded-full mr-3 ${
@@ -238,8 +233,8 @@ const ProjectsPage = () => {
                 )}
               </button>
               <div>
-                <p className="text-sm text-residuall-gray-dark">{rec.text}</p>
-                <p className="text-xs text-residuall-gray mt-1">
+                <p className="text-sm font-medium text-gray-800">{rec.text}</p> {/* Cor e peso ajustados */}
+                <p className="text-xs text-gray-500 mt-1"> {/* Cor e tamanho ajustados */}
                   {rec.completed ? 'Concluído' : 'Pendente'}
                 </p>
               </div>
