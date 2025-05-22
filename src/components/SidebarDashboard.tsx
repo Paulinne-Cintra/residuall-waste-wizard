@@ -71,10 +71,10 @@ const SidebarDashboard = () => {
           {!collapsed && (
             <>
               <img 
-               src={logoResiduall} 
-                alt="Logo Residuall" 
-                className="h-8 mr-2" /> 
-                style={{ maxHeight: '32px', width: 'auto' }}
+               src={logoResiduall}
+               alt="Logo Residuall"
+               className="h-8 mr-2"
+               style={{ maxHeight: '32px', width: 'auto' }}
               />
               <span>RESIDUALL</span>
             </>
