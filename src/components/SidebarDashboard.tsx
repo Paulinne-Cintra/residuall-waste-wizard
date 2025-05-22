@@ -70,7 +70,7 @@ const SidebarDashboard = () => {
           {!collapsed && (
             <>
               <img 
-                src="/assets/logo-residuall-branca.png" 
+                src="/logo-residuall-branca.png" 
                 alt="Logo Residuall" 
                 className="h-8 mr-2 block" 
                 style={{ maxHeight: '32px', width: 'auto' }}
