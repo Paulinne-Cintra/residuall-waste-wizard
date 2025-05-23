@@ -8,24 +8,45 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 
+interface ArchivedItem {
+  id: string;
+  name: string;
+  type: string;
+  date: string;
+}
+
 const ArquivadosPage = () => {
   const { toast } = useToast();
   const [typeFilter, setTypeFilter] = useState('Tipo');
   const [dateFilter, setDateFilter] = useState('Data');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const handleRestore = (itemName: string) => {
+  // State para lista de itens (iniciando com dados de exemplo)
+  const [archivedItems, setArchivedItems] = useState<ArchivedItem[]>([
+    { id: '1', name: 'Projeto Alpha', type: 'Projeto', date: '15/01/2023' },
+    { id: '2', name: 'Relatório Mensal Fev', type: 'Relatório', date: '28/02/2023' },
+    { id: '3', name: 'Material X', type: 'Material', date: '10/03/2023' },
+    { id: '4', name: 'Estudo de Viabilidade', type: 'Projeto', date: '22/04/2023' },
+  ]);
+
+  const handleRestore = (item: ArchivedItem) => {
+    // Remove o item da lista
+    setArchivedItems(prevItems => prevItems.filter(i => i.id !== item.id));
+    
     toast({
       title: "Sucesso!",
-      description: `"${itemName}" restaurado com sucesso!`,
+      description: `"${item.name}" restaurado com sucesso!`,
       duration: 3000,
     });
   };
 
-  const handleDelete = (itemName: string) => {
+  const handleDelete = (item: ArchivedItem) => {
+    // Remove o item da lista
+    setArchivedItems(prevItems => prevItems.filter(i => i.id !== item.id));
+    
     toast({
       title: "Excluído!",
-      description: `"${itemName}" excluído permanentemente!`,
+      description: `"${item.name}" excluído permanentemente!`,
       duration: 3000,
       variant: "destructive",
     });
@@ -36,14 +57,6 @@ const ArquivadosPage = () => {
     setSearchQuery(value);
     console.log('Busca projetos, relatórios...:', value);
   };
-
-  // Dados de exemplo para a tabela
-  const archivedItems = [
-    { id: '1', name: 'Projeto Alpha', type: 'Projeto', date: '15/01/2023' },
-    { id: '2', name: 'Relatório Mensal Fev', type: 'Relatório', date: '28/02/2023' },
-    { id: '3', name: 'Material X', type: 'Material', date: '10/03/2023' },
-    { id: '4', name: 'Estudo de Viabilidade', type: 'Projeto', date: '22/04/2023' },
-  ];
 
   return (
     <div className="flex-1 p-6 bg-residuall-gray-light">
@@ -125,7 +138,7 @@ const ArquivadosPage = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleRestore(item.name)}
+                        onClick={() => handleRestore(item)}
                         className="flex items-center"
                       >
                         <File size={16} className="mr-1" /> Restaurar
@@ -134,7 +147,7 @@ const ArquivadosPage = () => {
                         variant="outline"
                         size="sm"
                         className="text-red-500 hover:text-red-700 flex items-center"
-                        onClick={() => handleDelete(item.name)}
+                        onClick={() => handleDelete(item)}
                       >
                         <Trash2 size={16} className="mr-1" /> Excluir
                       </Button>
@@ -145,6 +158,12 @@ const ArquivadosPage = () => {
             </TableBody>
           </Table>
         </div>
+        
+        {archivedItems.length === 0 && (
+          <div className="text-center py-8">
+            <p className="text-residuall-gray">Nenhum item arquivado encontrado.</p>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Search, UserPlus, ChevronDown, User, Edit } from 'lucide-react';
+import { Search, UserPlus, ChevronDown, User, Edit, ArrowLeft, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
@@ -80,6 +80,11 @@ const TeamPage: React.FC = () => {
     email: ''
   });
 
+  // Estados para detalhes/edição de membros
+  const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedMember, setEditedMember] = useState<TeamMember | null>(null);
+
   // Filter team members based on search query and filters
   const filteredMembers = mockTeamMembers.filter(member => {
     const matchesSearch = member.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -133,6 +138,141 @@ const TeamPage: React.FC = () => {
       duration: 3000,
     });
   };
+
+  const handleViewProfile = (member: TeamMember) => {
+    setSelectedMember(member);
+    setIsEditing(false);
+  };
+
+  const handleEditMember = (member: TeamMember) => {
+    setSelectedMember(member);
+    setEditedMember({ ...member });
+    setIsEditing(true);
+  };
+
+  const handleSaveChanges = () => {
+    if (editedMember) {
+      console.log('Salvando alterações:', editedMember);
+      toast({
+        title: "Sucesso!",
+        description: "Alterações salvas com sucesso!",
+        duration: 3000,
+      });
+      setSelectedMember(null);
+      setIsEditing(false);
+      setEditedMember(null);
+    }
+  };
+
+  const handleBack = () => {
+    setSelectedMember(null);
+    setIsEditing(false);
+    setEditedMember(null);
+  };
+
+  // Se há um membro selecionado, mostrar detalhes/edição
+  if (selectedMember) {
+    return (
+      <main className="flex-1 overflow-y-auto bg-[#F8F8F8] p-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-center mb-6">
+            <Button onClick={handleBack} variant="outline" className="mr-4">
+              <ArrowLeft size={18} className="mr-2" />
+              Voltar
+            </Button>
+            <h1 className="text-2xl font-bold text-[#333333]">
+              {isEditing ? 'Editar Membro' : 'Detalhes do Membro'}
+            </h1>
+          </div>
+
+          <Card className="bg-white shadow-sm">
+            <CardContent className="p-8">
+              <div className="flex flex-col md:flex-row gap-8">
+                {/* Avatar */}
+                <div className="flex flex-col items-center">
+                  <div className="relative mb-4">
+                    <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-gray-100">
+                      <img 
+                        src={selectedMember.avatarUrl} 
+                        alt={selectedMember.name} 
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className={`absolute bottom-2 right-2 w-6 h-6 rounded-full ${getStatusColor(selectedMember.status)} border-2 border-white`}></div>
+                  </div>
+                </div>
+
+                {/* Detalhes */}
+                <div className="flex-1 space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Nome</label>
+                    {isEditing ? (
+                      <Input
+                        value={editedMember?.name || ''}
+                        onChange={(e) => setEditedMember(prev => prev ? {...prev, name: e.target.value} : null)}
+                        className="w-full"
+                      />
+                    ) : (
+                      <p className="text-lg font-semibold text-[#333333]">{selectedMember.name}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Cargo</label>
+                    {isEditing ? (
+                      <Input
+                        value={editedMember?.role || ''}
+                        onChange={(e) => setEditedMember(prev => prev ? {...prev, role: e.target.value} : null)}
+                        className="w-full"
+                      />
+                    ) : (
+                      <p className="text-gray-600">{selectedMember.role}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    {isEditing ? (
+                      <Input
+                        value={editedMember?.email || ''}
+                        onChange={(e) => setEditedMember(prev => prev ? {...prev, email: e.target.value} : null)}
+                        className="w-full"
+                      />
+                    ) : (
+                      <p className="text-gray-600">{selectedMember.email}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                      selectedMember.status === 'active' ? 'bg-green-100 text-green-800' :
+                      selectedMember.status === 'away' ? 'bg-yellow-100 text-yellow-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {getStatusText(selectedMember.status)}
+                    </span>
+                  </div>
+
+                  {/* Botões de ação */}
+                  {isEditing && (
+                    <div className="flex gap-3 pt-4">
+                      <Button onClick={handleSaveChanges} className="bg-[#004C4C] hover:bg-[#003B3B]">
+                        Salvar Alterações
+                      </Button>
+                      <Button onClick={handleBack} variant="outline">
+                        Cancelar
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="flex-1 overflow-y-auto bg-[#F8F8F8] p-6">
@@ -269,12 +409,14 @@ const TeamPage: React.FC = () => {
                   <Button 
                     variant="outline" 
                     className="flex-1 border-[#004C4C] text-[#004C4C] hover:bg-[#004C4C] hover:text-white"
+                    onClick={() => handleViewProfile(member)}
                   >
                     <User size={16} className="mr-1" />
                     Ver Perfil
                   </Button>
                   <Button 
                     className="flex-1 bg-[#FF8C42] hover:bg-[#E07C32] text-white"
+                    onClick={() => handleEditMember(member)}
                   >
                     <Edit size={16} className="mr-1" />
                     Editar

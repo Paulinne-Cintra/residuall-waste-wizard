@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Plus, Filter, BarChart, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Plus, Filter, BarChart, CheckCircle, AlertTriangle, Eye, ArrowLeft } from 'lucide-react';
 import Chart from '../components/Chart';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -109,6 +109,9 @@ const MaterialsPage = () => {
     category: ''
   });
 
+  // Estados para visualização de detalhes
+  const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(null);
+
   // Recomendações de materiais
   const recommendations = [
     {
@@ -163,6 +166,113 @@ const MaterialsPage = () => {
       duration: 3000,
     });
   };
+
+  const handleViewDetails = (material: Material) => {
+    setSelectedMaterial(material);
+  };
+
+  const handleBack = () => {
+    setSelectedMaterial(null);
+  };
+
+  // Se há um material selecionado, mostrar detalhes
+  if (selectedMaterial) {
+    return (
+      <main className="flex-1 overflow-y-auto p-4 md:p-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-center mb-6">
+            <Button onClick={handleBack} variant="outline" className="mr-4">
+              <ArrowLeft size={18} className="mr-2" />
+              Voltar
+            </Button>
+            <h1 className="text-2xl font-bold text-residuall-gray-dark">Detalhes do Material</h1>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-md p-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Informações básicas */}
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-semibold text-residuall-gray-dark mb-4">Informações Gerais</h3>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Nome</label>
+                      <p className="text-lg font-semibold text-residuall-gray-dark">{selectedMaterial.name}</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
+                      <p className="text-gray-600">{selectedMaterial.category}</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Quantidade</label>
+                      <p className="text-gray-600">{selectedMaterial.quantity} {selectedMaterial.unit}</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                      <span className={`px-3 py-1 text-sm font-medium rounded-full ${getStatusColor(selectedMaterial.status)}`}>
+                        {selectedMaterial.status}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Estatísticas */}
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-semibold text-residuall-gray-dark mb-4">Estatísticas de Reaproveitamento</h3>
+                  <div className="bg-gray-50 rounded-lg p-6">
+                    <div className="text-center">
+                      <div className="text-3xl font-bold mb-2" style={{
+                        color: selectedMaterial.reuseRate >= 70 ? '#1E533B' : 
+                               selectedMaterial.reuseRate >= 40 ? '#D17B31' : '#EF4444'
+                      }}>
+                        {selectedMaterial.reuseRate}%
+                      </div>
+                      <p className="text-sm text-gray-600">Taxa de Reaproveitamento</p>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-3 mt-4">
+                      <div 
+                        className="h-3 rounded-full transition-all duration-300"
+                        style={{
+                          width: `${selectedMaterial.reuseRate}%`,
+                          backgroundColor: selectedMaterial.reuseRate >= 70 ? '#1E533B' : 
+                                         selectedMaterial.reuseRate >= 40 ? '#D17B31' : '#EF4444'
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Informações adicionais mockadas */}
+                <div>
+                  <h3 className="text-lg font-semibold text-residuall-gray-dark mb-4">Detalhes Adicionais</h3>
+                  <div className="space-y-3">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Projeto Principal:</span>
+                      <span className="font-medium">Edifício Aurora</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Data de Entrada:</span>
+                      <span className="font-medium">15/01/2024</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Fornecedor:</span>
+                      <span className="font-medium">Construtora ABC</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Valor Unitário:</span>
+                      <span className="font-medium">R$ 120,00</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="flex-1 overflow-y-auto p-4 md:p-6">
@@ -299,6 +409,9 @@ const MaterialsPage = () => {
                     <th className="px-6 py-3 text-left text-xs font-medium text-residuall-gray-dark uppercase tracking-wider">
                       Status
                     </th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-residuall-gray-dark uppercase tracking-wider">
+                      Ações
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -332,6 +445,17 @@ const MaterialsPage = () => {
                         <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(material.status)}`}>
                           {material.status}
                         </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleViewDetails(material)}
+                          className="inline-flex items-center"
+                        >
+                          <Eye size={16} className="mr-1" />
+                          Ver Detalhes
+                        </Button>
                       </td>
                     </tr>
                   ))}
