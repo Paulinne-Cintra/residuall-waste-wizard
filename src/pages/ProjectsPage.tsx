@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 
 import AnimatedCardWrapper from '@/components/ui/AnimatedCardWrapper';
-import AnimatedNumber from '@/components/AnimatedNumber';
+import AnimatedNumber from '@/components/ui/AnimatedNumber';
 import { motion } from 'framer-motion';
 
 interface Project {
