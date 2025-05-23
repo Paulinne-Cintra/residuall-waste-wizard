@@ -13,7 +13,7 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 
 // Páginas do dashboard
-import OverviewPage from "./pages/OverviewPage";
+import Dashboard from "./pages/Dashboard";
 import ProjectsPage from "./pages/ProjectsPage";
 import ProjectDetailPage from "./pages/ProjectDetailPage";
 import MaterialsPage from "./pages/MaterialsPage";
@@ -46,7 +46,7 @@ const App = () => (
           
           {/* Rotas do dashboard (protegidas) */}
           <Route path="/dashboard" element={<DashboardLayout />}>
-            <Route index element={<OverviewPage />} />
+            <Route index element={<Dashboard />} />
             <Route path="projetos" element={<ProjectsPage />} />
             <Route path="projetos/:id" element={<ProjectDetailPage />} />
             <Route path="materiais" element={<MaterialsPage />} />
