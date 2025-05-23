@@ -9,14 +9,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 
-const ProjectDetailPage = () => {
-  const { projectId } = useParams<{ projectId: string }>();
-  const { toast } = useToast();
-  const [isEditing, setIsEditing] = useState(false);
-
-  // Mock data for the project
-  const [projectData, setProjectData] = useState({
-    id: projectId,
+// Mock data for projects
+const mockProjects = [
+  {
+    id: '1',
     name: 'Edifício Aurora',
     location: 'São Paulo, SP',
     status: 'Em andamento',
@@ -27,7 +23,109 @@ const ProjectDetailPage = () => {
     description: 'Projeto de construção de edifício residencial de alto padrão com foco em sustentabilidade e reutilização de materiais.',
     budget: 'R$ 2.500.000',
     team: 8
-  });
+  },
+  {
+    id: '2',
+    name: 'Residencial Parque Verde',
+    location: 'Curitiba, PR',
+    status: 'Iniciando',
+    progress: 25,
+    startDate: '10/06/2023',
+    endDate: '20/02/2024',
+    responsible: 'Ana Silva',
+    description: 'Conjunto residencial ecológico com tecnologias sustentáveis e aproveitamento de água da chuva.',
+    budget: 'R$ 1.800.000',
+    team: 6
+  },
+  {
+    id: '3',
+    name: 'Torre Corporativa Horizonte',
+    location: 'Rio de Janeiro, RJ',
+    status: 'Finalizado',
+    progress: 92,
+    startDate: '01/01/2023',
+    endDate: '30/04/2023',
+    responsible: 'Roberto Costa',
+    description: 'Torre comercial de 20 andares com certificação LEED e sistema de energia renovável.',
+    budget: 'R$ 5.200.000',
+    team: 15
+  },
+  {
+    id: '4',
+    name: 'Condomínio Vista Mar',
+    location: 'Salvador, BA',
+    status: 'Em andamento',
+    progress: 68,
+    startDate: '20/03/2023',
+    endDate: '15/11/2023',
+    responsible: 'Marina Santos',
+    description: 'Condomínio residencial de luxo com vista para o mar e práticas de construção sustentável.',
+    budget: 'R$ 3.100.000',
+    team: 10
+  },
+  {
+    id: '5',
+    name: 'Centro Empresarial Inovação',
+    location: 'Belo Horizonte, MG',
+    status: 'Pausado',
+    progress: 45,
+    startDate: '15/02/2023',
+    endDate: '30/09/2023',
+    responsible: 'João Oliveira',
+    description: 'Centro empresarial moderno com espaços de coworking e tecnologia de ponta.',
+    budget: 'R$ 2.800.000',
+    team: 7
+  },
+  {
+    id: '6',
+    name: 'Residencial Montanhas',
+    location: 'Gramado, RS',
+    status: 'Iniciando',
+    progress: 30,
+    startDate: '01/07/2023',
+    endDate: '28/01/2024',
+    responsible: 'Fernanda Lima',
+    description: 'Residencial integrado à natureza com arquitetura sustentável e materiais locais.',
+    budget: 'R$ 1.950.000',
+    team: 5
+  }
+];
+
+const ProjectDetailPage = () => {
+  const { projectId } = useParams<{ projectId: string }>();
+  const { toast } = useToast();
+  const [isEditing, setIsEditing] = useState(false);
+
+  // Find project by ID
+  const project = mockProjects.find(p => p.id === projectId);
+  
+  const [projectData, setProjectData] = useState(project || null);
+
+  // If project not found, show error message
+  if (!project) {
+    return (
+      <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Card className="max-w-md w-full">
+            <CardHeader className="text-center">
+              <CardTitle className="text-xl text-red-600">Projeto não encontrado</CardTitle>
+              <CardDescription>
+                O projeto com ID "{projectId}" não foi encontrado.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="text-center">
+              <Link to="/dashboard/projetos">
+                <Button variant="outline" className="flex items-center gap-2 mx-auto">
+                  <ArrowLeft size={16} />
+                  Voltar para Projetos
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
+      </main>
+    );
+  }
 
   const handleSave = () => {
     setIsEditing(false);
@@ -39,10 +137,10 @@ const ProjectDetailPage = () => {
   };
 
   const handleInputChange = (field: string, value: string) => {
-    setProjectData(prev => ({
+    setProjectData(prev => prev ? ({
       ...prev,
       [field]: value
-    }));
+    }) : null);
   };
 
   return (
@@ -94,11 +192,11 @@ const ProjectDetailPage = () => {
               </label>
               {isEditing ? (
                 <Input
-                  value={projectData.name}
+                  value={projectData?.name || ''}
                   onChange={(e) => handleInputChange('name', e.target.value)}
                 />
               ) : (
-                <p className="text-gray-900">{projectData.name}</p>
+                <p className="text-gray-900">{projectData?.name}</p>
               )}
             </div>
             
@@ -108,13 +206,13 @@ const ProjectDetailPage = () => {
               </label>
               {isEditing ? (
                 <Input
-                  value={projectData.location}
+                  value={projectData?.location || ''}
                   onChange={(e) => handleInputChange('location', e.target.value)}
                 />
               ) : (
                 <div className="flex items-center text-gray-900">
                   <MapPin size={16} className="mr-2" />
-                  {projectData.location}
+                  {projectData?.location}
                 </div>
               )}
             </div>
@@ -125,7 +223,7 @@ const ProjectDetailPage = () => {
               </label>
               {isEditing ? (
                 <Select 
-                  value={projectData.status} 
+                  value={projectData?.status || ''} 
                   onValueChange={(value) => handleInputChange('status', value)}
                 >
                   <SelectTrigger>
@@ -140,7 +238,7 @@ const ProjectDetailPage = () => {
                 </Select>
               ) : (
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800">
-                  {projectData.status}
+                  {projectData?.status}
                 </span>
               )}
             </div>
@@ -151,13 +249,13 @@ const ProjectDetailPage = () => {
               </label>
               {isEditing ? (
                 <Input
-                  value={projectData.responsible}
+                  value={projectData?.responsible || ''}
                   onChange={(e) => handleInputChange('responsible', e.target.value)}
                 />
               ) : (
                 <div className="flex items-center text-gray-900">
                   <User size={16} className="mr-2" />
-                  {projectData.responsible}
+                  {projectData?.responsible}
                 </div>
               )}
             </div>
@@ -176,13 +274,13 @@ const ProjectDetailPage = () => {
               </label>
               {isEditing ? (
                 <Input
-                  value={projectData.startDate}
+                  value={projectData?.startDate || ''}
                   onChange={(e) => handleInputChange('startDate', e.target.value)}
                 />
               ) : (
                 <div className="flex items-center text-gray-900">
                   <Calendar size={16} className="mr-2" />
-                  {projectData.startDate}
+                  {projectData?.startDate}
                 </div>
               )}
             </div>
@@ -193,13 +291,13 @@ const ProjectDetailPage = () => {
               </label>
               {isEditing ? (
                 <Input
-                  value={projectData.endDate}
+                  value={projectData?.endDate || ''}
                   onChange={(e) => handleInputChange('endDate', e.target.value)}
                 />
               ) : (
                 <div className="flex items-center text-gray-900">
                   <Calendar size={16} className="mr-2" />
-                  {projectData.endDate}
+                  {projectData?.endDate}
                 </div>
               )}
             </div>
@@ -209,12 +307,12 @@ const ProjectDetailPage = () => {
                 Progresso
               </label>
               <div className="flex items-center justify-between text-sm mb-2">
-                <span>{projectData.progress}% concluído</span>
+                <span>{projectData?.progress}% concluído</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
                 <div 
                   className="bg-green-500 h-2 rounded-full transition-all duration-500"
-                  style={{ width: `${projectData.progress}%` }}
+                  style={{ width: `${projectData?.progress}%` }}
                 ></div>
               </div>
             </div>
@@ -225,11 +323,11 @@ const ProjectDetailPage = () => {
               </label>
               {isEditing ? (
                 <Input
-                  value={projectData.budget}
+                  value={projectData?.budget || ''}
                   onChange={(e) => handleInputChange('budget', e.target.value)}
                 />
               ) : (
-                <p className="text-gray-900">{projectData.budget}</p>
+                <p className="text-gray-900">{projectData?.budget}</p>
               )}
             </div>
           </CardContent>
@@ -244,13 +342,13 @@ const ProjectDetailPage = () => {
         <CardContent>
           {isEditing ? (
             <Textarea
-              value={projectData.description}
+              value={projectData?.description || ''}
               onChange={(e) => handleInputChange('description', e.target.value)}
               rows={4}
               placeholder="Descrição detalhada do projeto..."
             />
           ) : (
-            <p className="text-gray-700">{projectData.description}</p>
+            <p className="text-gray-700">{projectData?.description}</p>
           )}
         </CardContent>
       </Card>
@@ -263,7 +361,7 @@ const ProjectDetailPage = () => {
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between">
-              <div className="text-3xl font-bold text-blue-600">{projectData.team}</div>
+              <div className="text-3xl font-bold text-blue-600">{projectData?.team}</div>
               <div className="bg-blue-100 p-2 rounded-full">
                 <User size={24} className="text-blue-600" />
               </div>
