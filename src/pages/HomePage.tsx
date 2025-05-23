@@ -1,4 +1,3 @@
-
 import { Link } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -10,10 +9,17 @@ const HomePage = () => {
       <Header />
       
       <main className="flex-grow">
-        {/* Hero Section */}
-        <section className="hero-section">
-          <div className="container mx-auto max-w-5xl">
-            <h1 className="heading-xl mb-6 animate-fade-in">
+        {/* Hero Section - MODIFICADO */}
+        <section 
+          className="relative h-screen w-full flex items-center justify-center text-center overflow-hidden bg-cover bg-center"
+          style={{ backgroundImage: `url('/assets/hero-background.jpg')` }} // <-- ATENÇÃO: Verifique o caminho da sua imagem!
+        >
+          {/* Overlay para escurecer a imagem e melhorar a legibilidade do texto */}
+          <div className="absolute inset-0 bg-residuall-green-secondary opacity-70 z-0"></div> 
+          {/* O z-0 e z-10 garantem que o overlay fique atrás do conteúdo, mas acima da imagem */}
+
+          <div className="relative z-10 container mx-auto max-w-5xl text-white"> {/* Conteúdo principal da seção */}
+            <h1 className="text-5xl font-montserrat font-bold mb-4 animate-fade-in">
               SOLUÇÕES INOVADORAS, PARA UM FUTURO SUSTENTÁVEL
             </h1>
             <p className="text-lg md:text-xl mb-8 max-w-3xl mx-auto animate-fade-in" style={{ animationDelay: '0.2s' }}>
@@ -25,34 +31,34 @@ const HomePage = () => {
               </Link>
             </div>
             
-            {/* Benefits */}
+            {/* Benefits - Mantido como estava, mas agora com fundo transparente */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16 animate-fade-in" style={{ animationDelay: '0.6s' }}>
-              <div className="card-benefit">
-                <div className="bg-residuall-green bg-opacity-10 p-3 rounded-full mb-4">
-                  <CheckCircle size={32} className="text-residuall-green" />
+              <div className="card-benefit text-white"> {/* Adicionado text-white para os ícones e texto */}
+                <div className="bg-white bg-opacity-20 p-3 rounded-full mb-4"> {/* Ajustado o fundo do ícone */}
+                  <CheckCircle size={32} className="text-white" /> {/* Ícone branco */}
                 </div>
                 <h3 className="text-lg font-semibold mb-2">Gestão Inteligente de resíduos</h3>
-                <p className="text-sm text-residuall-gray-dark">
+                <p className="text-sm opacity-90">
                   Acompanhe e gerencie os resíduos da sua obra de forma simples e eficiente
                 </p>
               </div>
               
-              <div className="card-benefit">
-                <div className="bg-residuall-green bg-opacity-10 p-3 rounded-full mb-4">
-                  <BarChart size={32} className="text-residuall-green" />
+              <div className="card-benefit text-white">
+                <div className="bg-white bg-opacity-20 p-3 rounded-full mb-4">
+                  <BarChart size={32} className="text-white" />
                 </div>
                 <h3 className="text-lg font-semibold mb-2">Análises em tempo real</h3>
-                <p className="text-sm text-residuall-gray-dark">
+                <p className="text-sm opacity-90">
                   Visualize dados e obtenha insights para tomadas de decisão mais eficientes
                 </p>
               </div>
               
-              <div className="card-benefit">
-                <div className="bg-residuall-green bg-opacity-10 p-3 rounded-full mb-4">
-                  <Recycle size={32} className="text-residuall-green" />
+              <div className="card-benefit text-white">
+                <div className="bg-white bg-opacity-20 p-3 rounded-full mb-4">
+                  <Recycle size={32} className="text-white" />
                 </div>
                 <h3 className="text-lg font-semibold mb-2">Materiais sustentáveis</h3>
-                <p className="text-sm text-residuall-gray-dark">
+                <p className="text-sm opacity-90">
                   Identifique oportunidades de reaproveitamento e reduza custos operacionais
                 </p>
               </div>
@@ -60,7 +66,7 @@ const HomePage = () => {
           </div>
         </section>
         
-        {/* About Section */}
+        {/* About Section - permanece o mesmo */}
         <section className="section-padding bg-white">
           <div className="container mx-auto">
             <div className="max-w-5xl mx-auto">
@@ -104,7 +110,7 @@ const HomePage = () => {
           </div>
         </section>
         
-        {/* CTA Section */}
+        {/* CTA Section - permanece o mesmo */}
         <section className="bg-residuall-green py-16">
           <div className="container mx-auto px-4 text-center">
             <h2 className="text-white text-3xl font-bold mb-6">
