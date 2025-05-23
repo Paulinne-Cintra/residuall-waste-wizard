@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 
-import AnimatedCardWrapper from '@/components/AnimatedCardWrapper';
+import AnimatedCardWrapper from '@/components/ui/AnimatedCardWrapper';
 import AnimatedNumber from '@/components/ui/AnimatedNumber';
 import { motion } from 'framer-motion';
 
