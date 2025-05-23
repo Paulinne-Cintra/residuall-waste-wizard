@@ -1,5 +1,3 @@
-/* Seu arquivo CSS, por exemplo, globals.css ou index.css */
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -39,8 +37,6 @@
     --ring: 144 26% 23%;
 
     --radius: 0.5rem;
-
-    /* Removidas as variáveis --sidebar-*, pois agora usaremos as cores do tailwind.config.ts */
   }
 
   .dark {
@@ -75,6 +71,21 @@
 }
 
 /* =======================
+    KEYFRAMES PARA O GRADIENTE DINÂMICO
+    ======================= */
+@keyframes gradient-move {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* =======================
     ESTILOS BASE
     ======================= */
 @layer base {
@@ -84,7 +95,32 @@
   }
 
   body {
-    @apply bg-background text-foreground font-sans;
+    /* Gradiente animado para o modo CLARO */
+    background: linear-gradient(
+      270deg,
+      theme('colors.residuall-green.DEFAULT'), /* #1f2f29 */
+      theme('colors.residuall-green.secondary'), /* #2a4a3d */
+      theme('colors.residuall-green.card'), /* #434b3c */
+      theme('colors.residuall-green.gradient') /* #6e7848 */
+    );
+    background-size: 400% 400%; /* Permite que o gradiente se mova */
+    animation: gradient-move 20s ease infinite; /* Aplica a animação */
+
+    /* Garante que o texto principal seja legível sobre o gradiente */
+    @apply text-foreground font-sans;
+  }
+
+  /* Gradiente animado para o modo ESCURO */
+  .dark body {
+    background: linear-gradient(
+      270deg,
+      theme('colors.sidebar.dark.DEFAULT'), /* #15201c - um verde mais escuro */
+      theme('colors.residuall-green.secondary'), /* #2a4a3d - pode manter o mesmo ou ajustar */
+      theme('colors.residuall-gray.dark'), /* #252525 - um cinza bem escuro, para transição */
+      theme('colors.residuall-green.DEFAULT') /* #1f2f29 */
+    );
+    background-size: 400% 400%;
+    animation: gradient-move 25s ease infinite; /* Pode ter uma velocidade diferente */
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -146,52 +182,38 @@
      ======================= */
   /* Sidebar Container - Fundo */
   .sidebar-container {
-    /* Usa a cor padrão do `sidebar` definida no tailwind.config.ts.
-       O `dark:` prefixo no config.ts cuidará da alternância. */
     @apply bg-sidebar;
   }
 
   /* Itens do Menu (não ativos) */
   .sidebar-menu-item {
     @apply flex items-center p-3 rounded-lg transition-colors duration-200;
-    /* Texto do item não ativo */
     @apply text-sidebar-item-text;
-    /* Hover do item não ativo */
     @apply hover:bg-sidebar-item-hover-bg hover:text-sidebar-item-active-text;
   }
 
   /* Itens do Menu Ativos */
   .sidebar-menu-item-active {
     @apply flex items-center p-3 rounded-lg font-semibold transition-colors duration-200;
-    /* Fundo do item ativo - usando a imagem de background definida no tailwind.config.ts */
-    @apply bg-sidebar-active;
-    /* Texto do item ativo */
+    @apply bg-sidebar-active; /* Gradiente do light mode */
     @apply text-sidebar-item-active-text;
 
-    /* Para o dark mode, se você quiser um background sólido para o item ativo,
-       adicione uma regra específica para sobrescrever o gradiente no dark mode.
-       Ex: .dark .sidebar-menu-item-active { @apply bg-sidebar-dark-item-active-bg; }
-       Mas se o `bg-sidebar-active` já tiver um comportamento dark mode, não é preciso.
-       Vou usar a imagem de background, e no dark mode, a definição de `item-active-bg`
-       no tailwind.config.ts pode ser usada como fallback/sólido se o gradiente não mudar.
-    */
+    /* Sobrescreve o background para o dark mode com uma cor sólida do tailwind.config.ts */
     .dark & {
-        @apply bg-sidebar-dark-item-active-bg; /* Usa a cor sólida definida para o dark mode */
+        @apply bg-sidebar-dark-item-active-bg;
     }
   }
 
   /* Ícone do Sidebar */
   .sidebar-icon {
     @apply mr-3 flex-shrink-0;
-    @apply text-inherit; /* Isso faz com que o ícone herde a cor do texto do pai */
+    @apply text-inherit;
   }
 
   /* Botão de Toggle (Chevron Left/Right, X) */
   .toggle-button {
     @apply p-1;
-    /* Texto do botão (foreground do sidebar) */
     @apply text-sidebar-foreground;
-    /* Hover do botão */
     @apply hover:text-white;
   }
 
