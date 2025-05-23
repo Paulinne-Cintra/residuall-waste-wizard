@@ -1,3 +1,4 @@
+/* Seu arquivo CSS, por exemplo, globals.css ou index.css */
 
 @tailwind base;
 @tailwind components;
@@ -6,6 +7,7 @@
 /* =======================
     VARIÁVEIS GLOBAIS
     ======================= */
+/* Mantenha as variáveis HSL para as cores do shadcn/ui */
 @layer base {
   :root {
     --background: 0 0% 97%;
@@ -17,10 +19,10 @@
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 15%;
 
-    --primary: 147 20% 15%; /* Residuall Dark Green */
-    --primary-foreground: 0 0% 100%; /* White */
+    --primary: 147 20% 15%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 144 26% 23%; /* Residuall Mid Green */
+    --secondary: 144 26% 23%;
     --secondary-foreground: 0 0% 100%;
 
     --muted: 210 10% 96%;
@@ -38,23 +40,12 @@
 
     --radius: 0.5rem;
 
-    /* Variáveis do Sidebar para o TEMA CLARO */
-    --sidebar-background: 153 18% 15%; /* Verde escuro */
-    --sidebar-foreground: 0 0% 96%; /* Branco acinzentado para o texto principal do sidebar (logo, etc.) */
-    --sidebar-item-text: 144 26% 23%; /* Cor do texto para itens NÃO ativos (cor do seu `residuall-green-secondary`) */
-    --sidebar-item-hover-bg: 144 26% 23%; /* Fundo do hover (cor do seu `residuall-green-secondary`) */
-    --sidebar-item-active-bg: 2a4a3d; /* Cor do fundo ativo (do seu radial-gradient) */
-    --sidebar-item-active-text: 0 0% 100%; /* Cor do texto para itens ativos */
-    --sidebar-border: 144 26% 23%; /* Cor da borda interna */
-    --sidebar-ring: 79 24% 38%; /* Cor do ring (parece não ser usada para visual) */
+    /* Removidas as variáveis --sidebar-*, pois agora usaremos as cores do tailwind.config.ts */
   }
 
-  /* =======================
-     DEFINIÇÕES PARA O TEMA ESCURO (dark mode)
-     ======================= */
   .dark {
-    --background: 215 10% 16%; /* Fundo geral escuro */
-    --foreground: 0 0% 90%; /* Texto geral claro */
+    --background: 215 10% 16%;
+    --foreground: 0 0% 90%;
 
     --card: 215 10% 18%;
     --card-foreground: 0 0% 90%;
@@ -62,16 +53,16 @@
     --popover: 215 10% 18%;
     --popover-foreground: 0 0% 90%;
 
-    --primary: 147 20% 15%; /* Pode manter o mesmo verde escuro ou ajustá-lo */
+    --primary: 147 20% 15%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 144 26% 23%; /* Pode manter o mesmo verde médio ou ajustá-lo */
+    --secondary: 144 26% 23%;
     --secondary-foreground: 0 0% 100%;
 
     --muted: 215 10% 22%;
     --muted-foreground: 215 10% 60%;
 
-    --accent: 25 100% 63%; /* Mesma cor de accent */
+    --accent: 25 100% 63%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 85% 60%;
@@ -80,16 +71,6 @@
     --border: 215 10% 30%;
     --input: 215 10% 30%;
     --ring: 144 26% 23%;
-
-    /* Variáveis do Sidebar para o TEMA ESCURO */
-    --sidebar-background: 147 20% 12%; /* Um verde *mais* escuro para o fundo do sidebar no dark mode */
-    --sidebar-foreground: 0 0% 100%; /* Branco puro para o texto principal do sidebar no dark mode */
-    --sidebar-item-text: 0 0% 75%; /* Cinza CLARO para itens NÃO ativos no tema ESCURO (ex: `text-gray-300`) */
-    --sidebar-item-hover-bg: 144 26% 20%; /* Fundo do hover no tema ESCURO (um pouco mais escuro que o normal) */
-    --sidebar-item-active-bg: 144 26% 23%; /* Fundo do item ativo no tema ESCURO (pode ser o `secondary` ou outro) */
-    --sidebar-item-active-text: 0 0% 100%; /* Texto branco puro para itens ativos no tema ESCURO */
-    --sidebar-border: 144 26% 20%; /* Borda interna no tema ESCURO */
-    /* --sidebar-ring: 79 24% 38%; (manter ou ajustar se necessário) */
   }
 }
 
@@ -103,7 +84,6 @@
   }
 
   body {
-    /* Use as variáveis de background/foreground definidas acima */
     @apply bg-background text-foreground font-sans;
   }
 
@@ -120,7 +100,7 @@
     COMPONENTES REUTILIZÁVEIS
     ======================= */
 @layer components {
-  /* Botões - Verifique se 'residuall-green' e 'residuall-brown' estão definidos em tailwind.config.js */
+  /* Botões */
   .btn-primary {
     @apply bg-residuall-green hover:bg-residuall-green/90 text-white font-medium py-3 px-6 rounded-lg transition-colors shadow-residuall hover:shadow-residuall-hover;
   }
@@ -135,28 +115,25 @@
 
   /* Cards */
   .card-container {
-    /* Use as variáveis de card para tema claro/escuro */
     @apply bg-card rounded-lg shadow-residuall hover:shadow-residuall-hover p-5 transition-all hover:translate-y-[-5px];
   }
 
   .dashboard-card {
-    /* Use as variáveis de card para tema claro/escuro */
     @apply bg-card rounded-lg shadow-residuall p-6 flex flex-col hover:shadow-residuall-hover transition-all;
   }
 
   /* Inputs */
   .input-field {
-    /* Use as variáveis de border/input/ring para tema claro/escuro */
     @apply w-full px-4 py-3 rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent;
   }
 
   /* Links de navegação */
   .nav-link {
-    @apply text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors; /* Ajuste para usar variáveis ou cores Tailwind genéricas */
+    @apply text-sm font-medium text-residuall-gray-dark hover:text-residuall-green transition-colors;
   }
 
   .nav-link-active {
-    @apply text-sm font-medium text-blue-600 border-b-2 border-blue-600; /* Ajuste para usar variáveis ou cores Tailwind genéricas */
+    @apply text-sm font-medium text-residuall-green border-b-2 border-residuall-green;
   }
 
   /* Seções e espaçamento */
@@ -165,58 +142,61 @@
   }
 
   /* =======================
-     SIDEBAR - AJUSTES CRUCIAIS
+     SIDEBAR - AJUSTES CRUCIAIS USANDO CORES DO TAILWIND.CONFIG
      ======================= */
   /* Sidebar Container - Fundo */
   .sidebar-container {
-    @apply bg-[var(--sidebar-background)]; /* Usa a variável CSS para o background */
+    /* Usa a cor padrão do `sidebar` definida no tailwind.config.ts.
+       O `dark:` prefixo no config.ts cuidará da alternância. */
+    @apply bg-sidebar;
   }
 
   /* Itens do Menu (não ativos) */
   .sidebar-menu-item {
     @apply flex items-center p-3 rounded-lg transition-colors duration-200;
-    color: hsl(var(--sidebar-item-text)); /* Cor do texto no tema claro/escuro */
-    /* Para o hover, podemos usar uma cor do Tailwind ou uma variável, aqui estou usando uma cor do Tailwind */
-    @apply hover:bg-green-700 hover:text-white; /* Fundo e texto no hover */
+    /* Texto do item não ativo */
+    @apply text-sidebar-item-text;
+    /* Hover do item não ativo */
+    @apply hover:bg-sidebar-item-hover-bg hover:text-sidebar-item-active-text;
   }
 
   /* Itens do Menu Ativos */
   .sidebar-menu-item-active {
     @apply flex items-center p-3 rounded-lg font-semibold transition-colors duration-200;
-    color: hsl(var(--sidebar-item-active-text)); /* Cor do texto ativo no tema claro/escuro */
-    /* O gradiente é um pouco mais complexo de alternar via variáveis CSS HSL no Tailwind,
-       mas podemos definir um background sólido para o dark mode.
-       Se você realmente quer o gradiente no dark mode, precisaremos de mais variáveis.
-       Por enquanto, sugiro um sólido para simplicidade e consistência.
-    */
-    background: hsl(var(--sidebar-item-active-bg)); /* Fundo ativo no tema claro/escuro */
-  }
+    /* Fundo do item ativo - usando a imagem de background definida no tailwind.config.ts */
+    @apply bg-sidebar-active;
+    /* Texto do item ativo */
+    @apply text-sidebar-item-active-text;
 
-  /* Fallback para o gradiente no light mode, se o --sidebar-active funcionar */
-  :root .sidebar-menu-item-active {
-    background: radial-gradient(circle at 0%, #2a4a3d 0%, #2a4a3d 50%, #6e7848 100%);
-    /* Ajuste para usar sua variável --sidebar-active se preferir
-       background: var(--sidebar-active);
+    /* Para o dark mode, se você quiser um background sólido para o item ativo,
+       adicione uma regra específica para sobrescrever o gradiente no dark mode.
+       Ex: .dark .sidebar-menu-item-active { @apply bg-sidebar-dark-item-active-bg; }
+       Mas se o `bg-sidebar-active` já tiver um comportamento dark mode, não é preciso.
+       Vou usar a imagem de background, e no dark mode, a definição de `item-active-bg`
+       no tailwind.config.ts pode ser usada como fallback/sólido se o gradiente não mudar.
     */
+    .dark & {
+        @apply bg-sidebar-dark-item-active-bg; /* Usa a cor sólida definida para o dark mode */
+    }
   }
-
 
   /* Ícone do Sidebar */
   .sidebar-icon {
     @apply mr-3 flex-shrink-0;
-    color: inherit; /* Isso faz com que o ícone herde a cor do texto do pai (.sidebar-menu-item ou -active) */
+    @apply text-inherit; /* Isso faz com que o ícone herde a cor do texto do pai */
   }
 
   /* Botão de Toggle (Chevron Left/Right, X) */
   .toggle-button {
-    @apply p-1; /* Padding */
-    color: hsl(var(--sidebar-foreground)); /* Cor do texto principal do sidebar para o botão */
-    @apply hover:text-white; /* Hover para branco */
+    @apply p-1;
+    /* Texto do botão (foreground do sidebar) */
+    @apply text-sidebar-foreground;
+    /* Hover do botão */
+    @apply hover:text-white;
   }
 
   /* Campo de busca */
   .header-search {
-    /* Use as variáveis de border/input/ring/card */
-    @apply px-4 py-2 rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent bg-card w-full max-w-md placeholder:text-gray-400; /* Ajustado placeholder */
+    @apply px-4 py-2 rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent bg-card w-full max-w-md placeholder:text-residuall-gray;
   }
 }
