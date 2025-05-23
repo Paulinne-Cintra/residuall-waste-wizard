@@ -16,6 +16,7 @@ import RegisterPage from "./pages/RegisterPage";
 import Dashboard from "./pages/Dashboard";
 import ProjectsPage from "./pages/ProjectsPage";
 import ProjectDetailPage from "./pages/ProjectDetailPage";
+import ReportDetailPage from "./pages/ReportDetailPage";
 import MaterialsPage from "./pages/MaterialsPage";
 import ReportsPage from "./pages/ReportsPage";
 import TeamPage from "./pages/TeamPage";
@@ -48,9 +49,10 @@ const App = () => (
           <Route path="/dashboard" element={<DashboardLayout />}>
             <Route index element={<Dashboard />} />
             <Route path="projetos" element={<ProjectsPage />} />
-            <Route path="projetos/:id" element={<ProjectDetailPage />} />
+            <Route path="projetos/:projectId" element={<ProjectDetailPage />} />
             <Route path="materiais" element={<MaterialsPage />} />
             <Route path="relatorios" element={<ReportsPage />} />
+            <Route path="relatorios/:reportId" element={<ReportDetailPage />} />
             <Route path="time" element={<TeamPage />} />
             <Route path="perfil" element={<ProfilePage />} />
             <Route path="recomendacoes" element={<RecommendationsPage />} />

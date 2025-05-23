@@ -1,285 +1,307 @@
-// pages/ProjectDetailPage.tsx
-import { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import {
-  Edit,
-  CheckCircle,
-  Clock,
-  AlertTriangle,
-  MapPin,
-  Calendar,
-  User,
-  Users,
-  FileText,
-  Download,
-  Upload
-} from 'lucide-react';
-import Chart from '../components/Chart';
 
-// Removidas as importações de SidebarDashboard e DashboardHeader, se estivessem aqui
-// import SidebarDashboard from "@/components/SidebarDashboard";
-// import DashboardHeader from "@/components/DashboardHeader";
+import React, { useState } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import { ArrowLeft, Edit, Save, MapPin, Calendar, User, BarChart } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
 
 const ProjectDetailPage = () => {
-  const { id } = useParams<{ id: string }>();
+  const { projectId } = useParams<{ projectId: string }>();
+  const { toast } = useToast();
+  const [isEditing, setIsEditing] = useState(false);
 
-  // Simulação de dados do projeto
-  const projectData = {
-    id: id,
+  // Mock data for the project
+  const [projectData, setProjectData] = useState({
+    id: projectId,
     name: 'Edifício Aurora',
     location: 'São Paulo, SP',
-    date: '15/05/2023',
     status: 'Em andamento',
     progress: 75,
-    responsibleName: 'Carlos Pereira',
-    responsibleRole: 'Engenheiro Civil',
-    reuseRate: 72,
-    team: [
-      { id: '1', name: 'Carlos Pereira', role: 'Engenheiro Civil' },
-      { id: '2', name: 'Ana Silva', role: 'Arquiteta' },
-      { id: '3', name: 'Roberto Santos', role: 'Gerente de Obra' },
-      { id: '4', name: 'Fernanda Lima', role: 'Técnica Ambiental' },
-    ],
-    documents: [
-      { id: '1', name: 'Planta Baixa.pdf', date: '10/05/2023' },
-      { id: '2', name: 'Relatório Ambiental.pdf', date: '12/05/2023' },
-      { id: '3', name: 'Cronograma.pdf', date: '14/05/2023' },
-    ],
+    startDate: '15/05/2023',
+    endDate: '15/12/2023',
+    responsible: 'Carlos Pereira',
+    description: 'Projeto de construção de edifício residencial de alto padrão com foco em sustentabilidade e reutilização de materiais.',
+    budget: 'R$ 2.500.000',
+    team: 8
+  });
+
+  const handleSave = () => {
+    setIsEditing(false);
+    toast({
+      title: "Sucesso!",
+      description: "Projeto atualizado com sucesso!",
+      duration: 3000,
+    });
   };
 
-  // Dados de exemplo para os gráficos
-  const wasteByStageData = [
-    { name: 'Fundação', value: 15 },
-    { name: 'Estrutura', value: 25 },
-    { name: 'Alvenaria', value: 35 },
-    { name: 'Acabamento', value: 20 },
-    { name: 'Instalações', value: 5 },
-  ];
-
-  const reusedMaterialsData = [
-    { name: 'Concreto', value: 45 },
-    { name: 'Madeira', value: 70 },
-    { name: 'Metais', value: 80 },
-    { name: 'Cerâmica', value: 25 },
-    { name: 'Gesso', value: 35 },
-  ];
-
-  // Estado para as recomendações
-  const [recommendations, setRecommendations] = useState([
-    { id: '1', text: 'Reutilize o concreto excedente da fundação para pequenos elementos decorativos.', completed: true },
-    { id: '2', text: 'Alto desperdício de cerâmica detectado. Revisar processo de corte.', completed: false },
-    { id: '3', text: 'Madeira dos tapumes pode ser reutilizada para formas de concreto menores.', completed: true },
-    { id: '4', text: 'Potencial para reduzir em 15% o uso de argamassa com melhor controle de espessura.', completed: false },
-  ]);
-
-  // Função para marcar recomendação como concluída
-  const toggleRecommendation = (id: string) => {
-    setRecommendations(recommendations.map(rec =>
-      rec.id === id ? { ...rec, completed: !rec.completed } : rec
-    ));
+  const handleInputChange = (field: string, value: string) => {
+    setProjectData(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
-
-  // Componentes para as seções da página (mantidos como estão, são bons)
-  const ProjectHeader = () => (
-    <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
-        <div>
-          <h1 className="text-2xl font-bold text-residuall-gray-dark mb-2">
-            {projectData.name}
-          </h1>
-          <div className="flex flex-col sm:flex-row sm:items-center text-residuall-gray space-y-2 sm:space-y-0 sm:space-x-4">
-            <div className="flex items-center">
-              <MapPin size={16} className="mr-2" />
-              <span>{projectData.location}</span>
-            </div>
-            <div className="flex items-center">
-              <Calendar size={16} className="mr-2" />
-              <span>Iniciado em {projectData.date}</span>
-            </div>
-            <div className="flex items-center">
-              <User size={16} className="mr-2" />
-              <span>{projectData.responsibleName}</span>
-            </div>
-          </div>
-        </div>
-
-        <Link
-          to={`/dashboard/projetos/${id}/editar`}
-          className="mt-4 md:mt-0 inline-flex items-center bg-residuall-green hover:bg-residuall-green-light text-white font-medium py-2 px-4 rounded-lg transition-colors"
-        >
-          <Edit size={16} className="mr-2" />
-          Editar
-        </Link>
-      </div>
-
-      <div className="mt-6">
-        <div className="flex justify-between text-sm mb-1">
-          <span className="font-medium">Progresso da Obra</span>
-          <span className="font-medium">{projectData.progress}%</span>
-        </div>
-        <div className="w-full bg-gray-200 rounded-full h-2">
-          <div
-            className="bg-residuall-green h-2 rounded-full transition-all duration-500"
-            style={{ width: `${projectData.progress}%` }}
-          ></div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const TeamSection = () => (
-    <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-      <h2 className="text-lg font-semibold text-residuall-gray-dark mb-4 flex items-center">
-        <Users size={20} className="mr-2" />
-        Time
-      </h2>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-        {projectData.team.map((member) => (
-          <div key={member.id} className="flex flex-col items-center">
-            <div className="w-16 h-16 bg-residuall-green bg-opacity-10 rounded-full flex items-center justify-center mb-2">
-              <span className="text-lg font-bold text-residuall-green">
-                {member.name.split(' ').map(n => n[0]).join('')}
-              </span>
-            </div>
-            <h3 className="font-medium text-residuall-gray-dark text-center">
-              {member.name}
-            </h3>
-            <p className="text-sm text-residuall-gray text-center">
-              {member.role}
-            </p>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-
-  const DocumentsSection = () => (
-    <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-residuall-gray-dark flex items-center">
-          <FileText size={20} className="mr-2" />
-          Documentos
-        </h2>
-
-        <div className="flex space-x-2">
-          <button className="inline-flex items-center text-sm bg-residuall-green text-white py-1 px-3 rounded-lg">
-            <Upload size={14} className="mr-1" />
-            Importar
-          </button>
-          <button className="inline-flex items-center text-sm bg-residuall-gray-dark text-white py-1 px-3 rounded-lg">
-            <Download size={14} className="mr-1" />
-            Exportar
-          </button>
-        </div>
-      </div>
-
-      <div className="border rounded-lg overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-residuall-gray-dark uppercase tracking-wider">
-                Nome
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-residuall-gray-dark uppercase tracking-wider">
-                Data
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-residuall-gray-dark uppercase tracking-wider">
-                Ações
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {projectData.documents.map((doc) => (
-              <tr key={doc.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center">
-                    <FileText size={16} className="text-residuall-gray mr-2" />
-                    <span className="text-sm text-residuall-gray-dark">{doc.name}</span>
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-residuall-gray">
-                  {doc.date}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                  <button className="text-residuall-green hover:text-residuall-green-light mr-3">
-                    <Download size={16} />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-
-  const ChartsSection = () => (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-lg font-semibold text-residuall-gray-dark mb-4">
-          Desperdício por Etapa
-        </h2>
-        <Chart type="pie" data={wasteByStageData} height={250} />
-      </div>
-
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-lg font-semibold text-residuall-gray-dark mb-4">
-          Tipos de Materiais Reutilizados
-        </h2>
-        <Chart type="pie" data={reusedMaterialsData} height={250} />
-      </div>
-    </div>
-  );
-
-  const RecommendationsSection = () => (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <h2 className="text-lg font-semibold text-residuall-gray-dark mb-4">
-        Recomendações
-      </h2>
-
-      <div className="space-y-4">
-        {recommendations.map((rec) => (
-          <div key={rec.id} className="flex items-start p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
-            <button
-              onClick={() => toggleRecommendation(rec.id)}
-              className={`shrink-0 p-1 rounded-full mr-3 ${
-                rec.completed
-                  ? 'bg-green-100 text-green-500'
-                  : 'bg-residuall-brown bg-opacity-10 text-residuall-brown'
-              }`}
-            >
-              {rec.completed ? (
-                <CheckCircle size={18} />
-              ) : (
-                <AlertTriangle size={18} />
-              )}
-            </button>
-            <div>
-              <p className="text-sm text-residuall-gray-dark">{rec.text}</p>
-              <p className="text-xs text-residuall-gray mt-1">
-                {rec.completed ? 'Concluído' : 'Pendente'}
-              </p>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
 
   return (
-    // A página agora retorna diretamente o conteúdo da área principal,
-    // que será envolvida pelo DashboardLayout (ou similar) no App.tsx
-    <main className="flex-1 overflow-y-auto p-4 md:p-6">
-      <ProjectHeader />
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <TeamSection />
-        <DocumentsSection />
+    <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center space-x-4">
+          <Link to="/dashboard/projetos">
+            <Button variant="outline" size="sm" className="flex items-center gap-2">
+              <ArrowLeft size={16} />
+              Voltar para Projetos
+            </Button>
+          </Link>
+          <h1 className="text-2xl font-bold text-gray-900">
+            {isEditing ? 'Editar Projeto' : 'Detalhes do Projeto'}
+          </h1>
+        </div>
+        <div className="flex space-x-2">
+          {isEditing ? (
+            <>
+              <Button variant="outline" onClick={() => setIsEditing(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={handleSave} className="flex items-center gap-2">
+                <Save size={16} />
+                Salvar Alterações
+              </Button>
+            </>
+          ) : (
+            <Button onClick={() => setIsEditing(true)} className="flex items-center gap-2">
+              <Edit size={16} />
+              Editar Projeto
+            </Button>
+          )}
+        </div>
       </div>
 
-      <ChartsSection />
-      <RecommendationsSection />
+      {/* Project Info Cards */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        {/* Basic Information */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Informações Básicas</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Nome do Projeto
+              </label>
+              {isEditing ? (
+                <Input
+                  value={projectData.name}
+                  onChange={(e) => handleInputChange('name', e.target.value)}
+                />
+              ) : (
+                <p className="text-gray-900">{projectData.name}</p>
+              )}
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Localização
+              </label>
+              {isEditing ? (
+                <Input
+                  value={projectData.location}
+                  onChange={(e) => handleInputChange('location', e.target.value)}
+                />
+              ) : (
+                <div className="flex items-center text-gray-900">
+                  <MapPin size={16} className="mr-2" />
+                  {projectData.location}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Status
+              </label>
+              {isEditing ? (
+                <Select 
+                  value={projectData.status} 
+                  onValueChange={(value) => handleInputChange('status', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Em andamento">Em andamento</SelectItem>
+                    <SelectItem value="Iniciando">Iniciando</SelectItem>
+                    <SelectItem value="Finalizado">Finalizado</SelectItem>
+                    <SelectItem value="Pausado">Pausado</SelectItem>
+                  </SelectContent>
+                </Select>
+              ) : (
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+                  {projectData.status}
+                </span>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Responsável
+              </label>
+              {isEditing ? (
+                <Input
+                  value={projectData.responsible}
+                  onChange={(e) => handleInputChange('responsible', e.target.value)}
+                />
+              ) : (
+                <div className="flex items-center text-gray-900">
+                  <User size={16} className="mr-2" />
+                  {projectData.responsible}
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Timeline and Progress */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Cronograma e Progresso</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Data de Início
+              </label>
+              {isEditing ? (
+                <Input
+                  value={projectData.startDate}
+                  onChange={(e) => handleInputChange('startDate', e.target.value)}
+                />
+              ) : (
+                <div className="flex items-center text-gray-900">
+                  <Calendar size={16} className="mr-2" />
+                  {projectData.startDate}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Data de Conclusão Prevista
+              </label>
+              {isEditing ? (
+                <Input
+                  value={projectData.endDate}
+                  onChange={(e) => handleInputChange('endDate', e.target.value)}
+                />
+              ) : (
+                <div className="flex items-center text-gray-900">
+                  <Calendar size={16} className="mr-2" />
+                  {projectData.endDate}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Progresso
+              </label>
+              <div className="flex items-center justify-between text-sm mb-2">
+                <span>{projectData.progress}% concluído</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div 
+                  className="bg-green-500 h-2 rounded-full transition-all duration-500"
+                  style={{ width: `${projectData.progress}%` }}
+                ></div>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Orçamento
+              </label>
+              {isEditing ? (
+                <Input
+                  value={projectData.budget}
+                  onChange={(e) => handleInputChange('budget', e.target.value)}
+                />
+              ) : (
+                <p className="text-gray-900">{projectData.budget}</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Description */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>Descrição do Projeto</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {isEditing ? (
+            <Textarea
+              value={projectData.description}
+              onChange={(e) => handleInputChange('description', e.target.value)}
+              rows={4}
+              placeholder="Descrição detalhada do projeto..."
+            />
+          ) : (
+            <p className="text-gray-700">{projectData.description}</p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Metrics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription>Equipe</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div className="text-3xl font-bold text-blue-600">{projectData.team}</div>
+              <div className="bg-blue-100 p-2 rounded-full">
+                <User size={24} className="text-blue-600" />
+              </div>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">membros ativos</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription>Taxa de Reaproveitamento</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div className="text-3xl font-bold text-green-600">72%</div>
+              <div className="bg-green-100 p-2 rounded-full">
+                <BarChart size={24} className="text-green-600" />
+              </div>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">materiais reutilizados</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription>Economia Gerada</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div className="text-3xl font-bold text-emerald-600">R$ 125k</div>
+              <div className="bg-emerald-100 p-2 rounded-full">
+                <BarChart size={24} className="text-emerald-600" />
+              </div>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">em materiais</p>
+          </CardContent>
+        </Card>
+      </div>
     </main>
   );
 };
