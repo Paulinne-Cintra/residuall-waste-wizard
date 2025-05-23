@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { 
@@ -49,6 +48,8 @@ const SidebarDashboard = () => {
     return (
       <Link
         to={to}
+        // As classes 'sidebar-menu-item' e 'sidebar-menu-item-active' já foram definidas no CSS global
+        // e conterão as lógicas de dark mode.
         className={`${
           active
             ? "sidebar-menu-item-active"
@@ -56,7 +57,8 @@ const SidebarDashboard = () => {
         }`}
         onClick={() => setMobileOpen(false)}
       >
-        <Icon size={20} className="sidebar-icon" />
+        {/* A classe sidebar-icon também deve ser definida no CSS global para herdar a cor do pai */}
+        <Icon size={20} className="sidebar-icon" /> 
         {!collapsed && <span>{label}</span>}
       </Link>
     );
@@ -66,23 +68,33 @@ const SidebarDashboard = () => {
   const sidebarContent = (
     <>
       <div className="flex items-center justify-between p-4 border-b border-sidebar-border">
-        <Link to="/dashboard" className="flex items-center text-xl font-bold text-white">
+        <Link to="/dashboard" className="flex items-center text-xl font-bold"> {/* Remover text-white daqui */}
           {!collapsed && (
             <>
+              {/*
+                Se a logo branca tiver um fundo transparente e o tema escuro
+                mudar o fundo do sidebar para um tom ainda mais escuro, ela deve
+                continuar visível. Se a logo tiver elementos escuros (que sumam no dark mode),
+                você precisaria de uma lógica para trocar a imagem aqui:
+                src={theme === 'escuro' ? '/logo-escura.png' : '/logo-residuall-branca.png'}
+                Mas como já está branca e o fundo é escaduado, provavelmente não precisa.
+              */}
               <img 
                 src="/logo-residuall-branca.png" 
                 alt="Logo Residuall" 
                 className="h-8 mr-2 block" 
                 style={{ maxHeight: '32px', width: 'auto' }}
               />
-              <span>RESIDUALL</span>
+              {/* O texto "RESIDUALL" agora será controlado pelo CSS pai */}
+              <span className="text-white dark:text-white">RESIDUALL</span> 
             </>
           )}
-          {collapsed && <span>R</span>}
+          {collapsed && <span className="text-white dark:text-white">R</span>} {/* Manter 'R' branco também */}
         </Link>
         <button
           onClick={toggleSidebar}
-          className="hidden md:block text-residuall-gray-text hover:text-white p-1"
+          // Usar uma classe customizada para o botão de toggle para melhor controle
+          className="hidden md:block toggle-button p-1"
         >
           {collapsed ? (
             <ChevronRight size={20} />
@@ -92,7 +104,7 @@ const SidebarDashboard = () => {
         </button>
         <button
           onClick={toggleMobileSidebar}
-          className="md:hidden text-residuall-gray-text hover:text-white p-1"
+          className="md:hidden toggle-button p-1"
         >
           <X size={20} />
         </button>
@@ -129,7 +141,8 @@ const SidebarDashboard = () => {
       {/* Mobile sidebar trigger */}
       <button
         onClick={toggleMobileSidebar}
-        className="md:hidden fixed bottom-4 right-4 z-30 bg-residuall-green text-white p-3 rounded-full shadow-residuall"
+        // Usar cores específicas para este botão, já que ele é um Floating Action Button (FAB)
+        className="md:hidden fixed bottom-4 right-4 z-30 bg-residuall-green text-white p-3 rounded-full shadow-lg"
       >
         <Menu size={24} />
       </button>
@@ -144,7 +157,8 @@ const SidebarDashboard = () => {
 
       {/* Sidebar */}
       <aside
-        className={`fixed left-0 top-0 bottom-0 z-50 flex flex-col bg-residuall-green md:relative md:z-0
+        className={`fixed left-0 top-0 bottom-0 z-50 flex flex-col md:relative md:z-0
+          sidebar-container /* Aplica o fundo dinâmico do sidebar */
           ${mobileOpen ? "w-64" : "w-0 md:w-auto"} 
           ${collapsed ? "md:w-16" : "md:w-64"}
           transition-all duration-300 ease-in-out`}
