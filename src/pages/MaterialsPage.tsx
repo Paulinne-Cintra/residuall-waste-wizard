@@ -1,6 +1,13 @@
+
 import { useState } from 'react';
 import { Plus, Filter, BarChart, CheckCircle, AlertTriangle } from 'lucide-react';
 import Chart from '../components/Chart';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 // Interface para os materiais
 interface Material {
@@ -14,6 +21,8 @@ interface Material {
 }
 
 const MaterialsPage = () => {
+  const { toast } = useToast();
+  
   // Dados de exemplo para os materiais
   const materialsData: Material[] = [
     {
@@ -89,7 +98,16 @@ const MaterialsPage = () => {
 
   // Estado para os filtros
   const [filteredMaterials, setFilteredMaterials] = useState<Material[]>(materialsData);
-  const [categoryFilter, setCategoryFilter] = useState<string>('');
+  const [categoryFilter, setCategoryFilter] = useState('Categoria');
+  const [projectFilter, setProjectFilter] = useState('Projeto');
+  const [statusFilter, setStatusFilter] = useState('Status');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newMaterial, setNewMaterial] = useState({
+    name: '',
+    quantity: '',
+    category: ''
+  });
 
   // Recomendações de materiais
   const recommendations = [
@@ -129,6 +147,23 @@ const MaterialsPage = () => {
     }
   };
 
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    console.log('Busca materiais:', value);
+  };
+
+  const handleAddMaterial = () => {
+    console.log('Adicionando material:', newMaterial);
+    setIsModalOpen(false);
+    setNewMaterial({ name: '', quantity: '', category: '' });
+    toast({
+      title: "Sucesso!",
+      description: "Material adicionado com sucesso!",
+      duration: 3000,
+    });
+  };
+
   return (
     <main className="flex-1 overflow-y-auto p-4 md:p-6">
       {/* Cabeçalho da página */}
@@ -138,37 +173,104 @@ const MaterialsPage = () => {
           <p className="text-residuall-gray">Gerencie o uso e reaproveitamento de materiais</p>
         </div>
 
-        <button className="mt-4 md:mt-0 inline-flex items-center bg-residuall-green hover:bg-residuall-green-light text-white font-medium py-2 px-4 rounded-lg transition-colors">
-          <Plus size={18} className="mr-2" />
-          Adicionar Material
-        </button>
+        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+          <DialogTrigger asChild>
+            <Button className="mt-4 md:mt-0 inline-flex items-center bg-residuall-green hover:bg-residuall-green-light text-white font-medium py-2 px-4 rounded-lg transition-colors">
+              <Plus size={18} className="mr-2" />
+              Adicionar Material
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Adicionar Novo Material</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <Input
+                placeholder="Nome do Material"
+                value={newMaterial.name}
+                onChange={(e) => setNewMaterial({...newMaterial, name: e.target.value})}
+              />
+              <Input
+                placeholder="Quantidade"
+                value={newMaterial.quantity}
+                onChange={(e) => setNewMaterial({...newMaterial, quantity: e.target.value})}
+              />
+              <Select onValueChange={(value) => setNewMaterial({...newMaterial, category: value})}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione a categoria" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Madeiras">Madeiras</SelectItem>
+                  <SelectItem value="Alvenaria">Alvenaria</SelectItem>
+                  <SelectItem value="Estrutural">Estrutural</SelectItem>
+                  <SelectItem value="Acabamento">Acabamento</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <DialogFooter>
+              <Button onClick={handleAddMaterial}>Adicionar Material</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Filtros */}
       <div className="bg-white rounded-lg shadow-md p-4 mb-6 flex flex-wrap gap-4 items-center justify-between">
         <div className="flex flex-wrap gap-2">
-          <div className="relative">
-            <button className="inline-flex items-center bg-white border border-gray-300 text-residuall-gray-dark px-4 py-2 rounded-lg">
-              <Filter size={16} className="mr-2" />
-              <span>Categoria</span>
-            </button>
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="inline-flex items-center bg-white border border-gray-300 text-residuall-gray-dark px-4 py-2 rounded-lg">
+                <Filter size={16} className="mr-2" />
+                <span>{categoryFilter}</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => setCategoryFilter('Todas')}>Todas</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setCategoryFilter('Madeiras')}>Madeiras</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setCategoryFilter('Alvenaria')}>Alvenaria</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setCategoryFilter('Estrutural')}>Estrutural</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setCategoryFilter('Acabamento')}>Acabamento</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
-          <button className="inline-flex items-center bg-white border border-gray-300 text-residuall-gray-dark px-4 py-2 rounded-lg">
-            <Filter size={16} className="mr-2" />
-            <span>Projeto</span>
-          </button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="inline-flex items-center bg-white border border-gray-300 text-residuall-gray-dark px-4 py-2 rounded-lg">
+                <Filter size={16} className="mr-2" />
+                <span>{projectFilter}</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => setProjectFilter('Todos')}>Todos</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setProjectFilter('Edifício Aurora')}>Edifício Aurora</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setProjectFilter('Residencial Parque Verde')}>Residencial Parque Verde</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setProjectFilter('Torre Corporativa')}>Torre Corporativa</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
-          <button className="inline-flex items-center bg-white border border-gray-300 text-residuall-gray-dark px-4 py-2 rounded-lg">
-            <Filter size={16} className="mr-2" />
-            <span>Status</span>
-          </button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="inline-flex items-center bg-white border border-gray-300 text-residuall-gray-dark px-4 py-2 rounded-lg">
+                <Filter size={16} className="mr-2" />
+                <span>{statusFilter}</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => setStatusFilter('Todos')}>Todos</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setStatusFilter('Em uso')}>Em uso</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setStatusFilter('Reutilizado')}>Reutilizado</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setStatusFilter('Descartado')}>Descartado</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setStatusFilter('Em estoque')}>Em estoque</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         <div>
-          <input
+          <Input
             type="text"
             placeholder="Buscar materiais..."
+            value={searchQuery}
+            onChange={handleSearchChange}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-residuall-green focus:border-transparent"
           />
         </div>

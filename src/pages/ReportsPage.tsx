@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
@@ -12,13 +13,14 @@ import {
   Eye,
   FileText
 } from 'lucide-react';
-// Removidas as importações de SidebarDashboard e DashboardHeader
-// import SidebarDashboard from '../components/SidebarDashboard';
-// import DashboardHeader from '../components/DashboardHeader';
 import Chart from '../components/Chart';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
 
 interface Report {
   id: string;
@@ -30,6 +32,8 @@ interface Report {
 }
 
 const ReportsPage = () => {
+  const { toast } = useToast();
+  
   // Dados de exemplo para relatórios
   const reportsData: Report[] = [
     {
@@ -98,6 +102,16 @@ const ReportsPage = () => {
 
   // Estado para os filtros
   const [filteredReports, setFilteredReports] = useState<Report[]>(reportsData);
+  const [projectFilter, setProjectFilter] = useState('Projeto');
+  const [periodFilter, setPeriodFilter] = useState('Período');
+  const [statusFilter, setStatusFilter] = useState('Status');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newReport, setNewReport] = useState({
+    title: '',
+    project: '',
+    period: ''
+  });
 
   // Função para obter a cor do status
   const getStatusColor = (status: string) => {
@@ -111,9 +125,24 @@ const ReportsPage = () => {
     }
   };
 
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    console.log('Busca relatórios:', value);
+  };
+
+  const handleCreateReport = () => {
+    console.log('Criando relatório:', newReport);
+    setIsModalOpen(false);
+    setNewReport({ title: '', project: '', period: '' });
+    toast({
+      title: "Sucesso!",
+      description: "Relatório criado com sucesso!",
+      duration: 3000,
+    });
+  };
+
   return (
-    // A página agora começa diretamente com o conteúdo da área principal.
-    // O layout (sidebar e header) é providenciado pelo DashboardLayout no App.tsx.
     <main className="flex-1 overflow-y-auto p-4 md:p-6">
       {/* Cabeçalho da página */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
@@ -138,28 +167,57 @@ const ReportsPage = () => {
       <Card className="mb-6">
         <CardContent className="flex flex-wrap gap-4 items-center justify-between p-4">
           <div className="flex flex-wrap gap-2">
-            <div className="relative">
-              <Button variant="outline" className="flex items-center gap-2">
-                <Filter size={16} />
-                <span>Projeto</span>
-              </Button>
-            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="flex items-center gap-2">
+                  <Filter size={16} />
+                  <span>{projectFilter}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => setProjectFilter('Todos')}>Todos</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setProjectFilter('Edifício Aurora')}>Edifício Aurora</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setProjectFilter('Residencial Parque Verde')}>Residencial Parque Verde</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setProjectFilter('Torre Corporativa')}>Torre Corporativa</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             
-            <Button variant="outline" className="flex items-center gap-2">
-              <Calendar size={16} />
-              <span>Período</span>
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="flex items-center gap-2">
+                  <Calendar size={16} />
+                  <span>{periodFilter}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => setPeriodFilter('Última semana')}>Última semana</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setPeriodFilter('Último mês')}>Último mês</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setPeriodFilter('Último trimestre')}>Último trimestre</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setPeriodFilter('Último ano')}>Último ano</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             
-            <Button variant="outline" className="flex items-center gap-2">
-              <Filter size={16} />
-              <span>Status</span>
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="flex items-center gap-2">
+                  <Filter size={16} />
+                  <span>{statusFilter}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => setStatusFilter('Todos')}>Todos</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setStatusFilter('Finalizado')}>Finalizado</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setStatusFilter('Pendente')}>Pendente</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
           
           <div>
-            <input
+            <Input
               type="text"
               placeholder="Buscar relatórios..."
+              value={searchQuery}
+              onChange={handleSearchChange}
               className="input-field"
             />
           </div>
@@ -255,10 +313,39 @@ const ReportsPage = () => {
           <CardTitle className="text-lg text-residuall-gray-tableText">
             Lista de Relatórios
           </CardTitle>
-          <Button className="flex items-center gap-2 bg-residuall-green text-white hover:bg-residuall-green/90">
-            <Plus size={16} />
-            Novo Relatório
-          </Button>
+          <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+            <DialogTrigger asChild>
+              <Button className="flex items-center gap-2 bg-residuall-green text-white hover:bg-residuall-green/90">
+                <Plus size={16} />
+                Novo Relatório
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Criar Novo Relatório</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <Input
+                  placeholder="Título do Relatório"
+                  value={newReport.title}
+                  onChange={(e) => setNewReport({...newReport, title: e.target.value})}
+                />
+                <Input
+                  placeholder="Projeto Associado"
+                  value={newReport.project}
+                  onChange={(e) => setNewReport({...newReport, project: e.target.value})}
+                />
+                <Input
+                  placeholder="Período"
+                  value={newReport.period}
+                  onChange={(e) => setNewReport({...newReport, period: e.target.value})}
+                />
+              </div>
+              <DialogFooter>
+                <Button onClick={handleCreateReport}>Criar Relatório</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </CardHeader>
         <CardContent>
           <Table>

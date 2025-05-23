@@ -1,10 +1,12 @@
+
 import React, { useState } from 'react';
 import { Search, UserPlus, ChevronDown, User, Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-// Removidas as importações de SidebarDashboard e DashboardHeader
-// import SidebarDashboard from '@/components/SidebarDashboard';
-// import DashboardHeader from '@/components/DashboardHeader';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
 
 type TeamMember = {
   id: number;
@@ -67,17 +69,24 @@ const mockTeamMembers: TeamMember[] = [
 ];
 
 const TeamPage: React.FC = () => {
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
-  const [roleFilter, setRoleFilter] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
+  const [roleFilter, setRoleFilter] = useState('Todos os Cargos');
+  const [statusFilter, setStatusFilter] = useState('Todos os Status');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newMember, setNewMember] = useState({
+    name: '',
+    role: '',
+    email: ''
+  });
 
   // Filter team members based on search query and filters
   const filteredMembers = mockTeamMembers.filter(member => {
     const matchesSearch = member.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           member.email.toLowerCase().includes(searchQuery.toLowerCase());
     
-    const matchesRole = roleFilter === '' || member.role.includes(roleFilter);
-    const matchesStatus = statusFilter === '' || member.status === statusFilter;
+    const matchesRole = roleFilter === 'Todos os Cargos' || member.role.includes(roleFilter);
+    const matchesStatus = statusFilter === 'Todos os Status' || member.status === statusFilter;
     
     return matchesSearch && matchesRole && matchesStatus;
   });
@@ -108,9 +117,24 @@ const TeamPage: React.FC = () => {
     }
   };
 
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    console.log('Busca por nome:', value);
+  };
+
+  const handleAddMember = () => {
+    console.log('Adicionando membro:', newMember);
+    setIsModalOpen(false);
+    setNewMember({ name: '', role: '', email: '' });
+    toast({
+      title: "Sucesso!",
+      description: "Membro adicionado com sucesso!",
+      duration: 3000,
+    });
+  };
+
   return (
-    // A página agora começa diretamente com o conteúdo da área principal.
-    // O layout (sidebar e header) é providenciado pelo DashboardLayout no App.tsx.
     <main className="flex-1 overflow-y-auto bg-[#F8F8F8] p-6">
       <div className="max-w-7xl mx-auto">
         <h1 className="text-2xl font-bold text-[#333333] mb-6">Time</h1>
@@ -118,23 +142,51 @@ const TeamPage: React.FC = () => {
         {/* Actions and Filters Bar */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
           {/* Add Member Button */}
-          <Button 
-            className="bg-[#004C4C] hover:bg-[#003B3B] text-white flex items-center gap-2"
-          >
-            <UserPlus size={18} />
-            <span>+ Adicionar Membro</span>
-          </Button>
+          <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-[#004C4C] hover:bg-[#003B3B] text-white flex items-center gap-2">
+                <UserPlus size={18} />
+                <span>+ Adicionar Membro</span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Adicionar Novo Membro</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <Input
+                  placeholder="Nome do Membro"
+                  value={newMember.name}
+                  onChange={(e) => setNewMember({...newMember, name: e.target.value})}
+                />
+                <Input
+                  placeholder="Cargo"
+                  value={newMember.role}
+                  onChange={(e) => setNewMember({...newMember, role: e.target.value})}
+                />
+                <Input
+                  placeholder="Email"
+                  type="email"
+                  value={newMember.email}
+                  onChange={(e) => setNewMember({...newMember, email: e.target.value})}
+                />
+              </div>
+              <DialogFooter>
+                <Button onClick={handleAddMember}>Adicionar Membro</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
           
           {/* Search and Filters */}
           <div className="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
             {/* Search */}
             <div className="relative w-full md:w-64">
-              <input
+              <Input
                 type="text"
                 placeholder="Buscar por nome..."
-                className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#004C4C] focus:border-transparent"
+                className="pl-10 pr-4 py-2"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={handleSearchChange}
               />
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <Search size={18} className="text-gray-400" />
@@ -144,39 +196,37 @@ const TeamPage: React.FC = () => {
             {/* Filters */}
             <div className="flex gap-3 w-full md:w-auto">
               {/* Role Filter */}
-              <div className="relative w-full md:w-auto">
-                <select
-                  className="appearance-none w-full bg-white border border-gray-300 px-4 py-2 pr-8 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#004C4C]"
-                  value={roleFilter}
-                  onChange={(e) => setRoleFilter(e.target.value)}
-                >
-                  <option value="">Todos os Cargos</option>
-                  <option value="Engenheiro">Engenheiro</option>
-                  <option value="Analista">Analista</option>
-                  <option value="Gerente">Gerente</option>
-                  <option value="Arquiteto">Arquiteto</option>
-                </select>
-                <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                  <ChevronDown size={16} className="text-gray-500" />
-                </div>
-              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="w-full md:w-auto justify-between">
+                    {roleFilter}
+                    <ChevronDown size={16} className="ml-2" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={() => setRoleFilter('Todos os Cargos')}>Todos os Cargos</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setRoleFilter('Engenheiro')}>Engenheiro</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setRoleFilter('Analista')}>Analista</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setRoleFilter('Gerente')}>Gerente</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setRoleFilter('Arquiteto')}>Arquiteto</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               
               {/* Status Filter */}
-              <div className="relative w-full md:w-auto">
-                <select
-                  className="appearance-none w-full bg-white border border-gray-300 px-4 py-2 pr-8 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#004C4C]"
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                >
-                  <option value="">Todos os Status</option>
-                  <option value="active">Ativo</option>
-                  <option value="away">Ausente</option>
-                  <option value="inactive">Inativo</option>
-                </select>
-                <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                  <ChevronDown size={16} className="text-gray-500" />
-                </div>
-              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="w-full md:w-auto justify-between">
+                    {statusFilter}
+                    <ChevronDown size={16} className="ml-2" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={() => setStatusFilter('Todos os Status')}>Todos os Status</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setStatusFilter('active')}>Ativo</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setStatusFilter('away')}>Ausente</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setStatusFilter('inactive')}>Inativo</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </div>
