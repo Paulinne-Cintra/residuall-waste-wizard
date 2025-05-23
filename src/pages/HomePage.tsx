@@ -9,16 +9,26 @@ const HomePage = () => {
       <Header />
       
       <main className="flex-grow">
-        {/* Hero Section - MODIFICADO */}
-        <section 
-          className="relative h-screen w-full flex items-center justify-center text-center overflow-hidden bg-cover bg-center"
-          style={{ backgroundImage: `url('/assets/hero-background.jpg')` }} // <-- ATENÇÃO: Verifique o caminho da sua imagem!
-        >
-          {/* Overlay para escurecer a imagem e melhorar a legibilidade do texto */}
-          <div className="absolute inset-0 bg-residuall-green-secondary opacity-70 z-0"></div> 
-          {/* O z-0 e z-10 garantem que o overlay fique atrás do conteúdo, mas acima da imagem */}
+        {/* Hero Section - AGORA COM VÍDEO DE FUNDO */}
+        <section className="relative h-screen w-full flex items-center justify-center text-center overflow-hidden">
+          {/* Elemento de vídeo de fundo */}
+          <video 
+            autoPlay 
+            loop 
+            muted 
+            playsInline // Importante para autoplay em mobile
+            className="absolute inset-0 w-full h-full object-cover z-0"
+            src="/assets/hero-video.mp4" // <-- ATENÇÃO: VOCÊ PRECISA FORNECER ESTE VÍDEO!
+          >
+            Seu navegador não suporta a tag de vídeo.
+          </video>
+          
+          {/* Overlay para escurecer o vídeo e melhorar a legibilidade do texto */}
+          {/* Você pode ajustar a cor (bg-residuall-green-secondary) e a opacidade (opacity-70) */}
+          <div className="absolute inset-0 bg-residuall-green-secondary opacity-70 z-1"></div>
 
-          <div className="relative z-10 container mx-auto max-w-5xl text-white"> {/* Conteúdo principal da seção */}
+          {/* Conteúdo da seção Hero */}
+          <div className="relative z-10 container mx-auto max-w-5xl text-white"> 
             <h1 className="text-5xl font-montserrat font-bold mb-4 animate-fade-in">
               SOLUÇÕES INOVADORAS, PARA UM FUTURO SUSTENTÁVEL
             </h1>
@@ -31,11 +41,11 @@ const HomePage = () => {
               </Link>
             </div>
             
-            {/* Benefits - Mantido como estava, mas agora com fundo transparente */}
+            {/* Benefits - Mantido com fundo transparente para o vídeo aparecer */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16 animate-fade-in" style={{ animationDelay: '0.6s' }}>
-              <div className="card-benefit text-white"> {/* Adicionado text-white para os ícones e texto */}
-                <div className="bg-white bg-opacity-20 p-3 rounded-full mb-4"> {/* Ajustado o fundo do ícone */}
-                  <CheckCircle size={32} className="text-white" /> {/* Ícone branco */}
+              <div className="card-benefit text-white">
+                <div className="bg-white bg-opacity-20 p-3 rounded-full mb-4">
+                  <CheckCircle size={32} className="text-white" />
                 </div>
                 <h3 className="text-lg font-semibold mb-2">Gestão Inteligente de resíduos</h3>
                 <p className="text-sm opacity-90">
