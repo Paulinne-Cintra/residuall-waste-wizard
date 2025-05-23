@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -158,7 +157,6 @@ const SettingsPage = () => {
                   
                   <div>
                     <p className="text-sm text-gray-600 mb-3">Selecione o tema de exibição do sistema:</p>
-                    
                     <ToggleGroup type="single" value={theme} onValueChange={(value) => value && setTheme(value)}>
                       <ToggleGroupItem value="claro" className="data-[state=on]:bg-blue-500 data-[state=on]:text-white">
                         Claro
@@ -186,7 +184,11 @@ const SettingsPage = () => {
                       <Checkbox 
                         id="email-notifications" 
                         checked={emailNotifications}
-                        onCheckedChange={setEmailNotifications}
+                        onCheckedChange={(checked) => { // CORREÇÃO APLICADA AQUI
+                          if (typeof checked === 'boolean') {
+                            setEmailNotifications(checked);
+                          }
+                        }}
                       />
                       <Label htmlFor="email-notifications" className="text-gray-700">
                         Notificações por E-mail
@@ -197,7 +199,11 @@ const SettingsPage = () => {
                       <Checkbox 
                         id="system-alerts" 
                         checked={systemAlerts}
-                        onCheckedChange={setSystemAlerts}
+                        onCheckedChange={(checked) => { // CORREÇÃO APLICADA AQUI
+                          if (typeof checked === 'boolean') {
+                            setSystemAlerts(checked);
+                          }
+                        }}
                       />
                       <Label htmlFor="system-alerts" className="text-gray-700">
                         Alertas de Sistema
@@ -208,7 +214,11 @@ const SettingsPage = () => {
                       <Checkbox 
                         id="project-updates" 
                         checked={projectUpdates}
-                        onCheckedChange={setProjectUpdates}
+                        onCheckedChange={(checked) => { // CORREÇÃO APLICADA AQUI
+                          if (typeof checked === 'boolean') {
+                            setProjectUpdates(checked);
+                          }
+                        }}
                       />
                       <Label htmlFor="project-updates" className="text-gray-700">
                         Atualizações de Projeto
@@ -219,7 +229,11 @@ const SettingsPage = () => {
                       <Checkbox 
                         id="recommendation-alerts" 
                         checked={recommendationAlerts}
-                        onCheckedChange={setRecommendationAlerts}
+                        onCheckedChange={(checked) => { // CORREÇÃO APLICADA AQUI
+                          if (typeof checked === 'boolean') {
+                            setRecommendationAlerts(checked);
+                          }
+                        }}
                       />
                       <Label htmlFor="recommendation-alerts" className="text-gray-700">
                         Novas Recomendações
@@ -230,7 +244,11 @@ const SettingsPage = () => {
                       <Checkbox 
                         id="weekly-summary" 
                         checked={weeklySummary}
-                        onCheckedChange={setWeeklySummary}
+                        onCheckedChange={(checked) => { // CORREÇÃO APLICADA AQUI
+                          if (typeof checked === 'boolean') {
+                            setWeeklySummary(checked);
+                          }
+                        }}
                       />
                       <Label htmlFor="weekly-summary" className="text-gray-700">
                         Resumo Semanal
@@ -252,7 +270,11 @@ const SettingsPage = () => {
                       </div>
                       <Switch 
                         checked={browserNotifications}
-                        onCheckedChange={setBrowserNotifications}
+                        onCheckedChange={(checked) => { // CORREÇÃO APLICADA AQUI
+                          if (typeof checked === 'boolean') {
+                            setBrowserNotifications(checked);
+                          }
+                        }}
                       />
                     </div>
                     
@@ -263,7 +285,11 @@ const SettingsPage = () => {
                       </div>
                       <Switch 
                         checked={smsNotifications}
-                        onCheckedChange={setSmsNotifications}
+                        onCheckedChange={(checked) => { // CORREÇÃO APLICADA AQUI
+                          if (typeof checked === 'boolean') {
+                            setSmsNotifications(checked);
+                          }
+                        }}
                       />
                     </div>
                   </div>
@@ -285,7 +311,11 @@ const SettingsPage = () => {
                       </div>
                       <Switch 
                         checked={twoFactorAuth}
-                        onCheckedChange={setTwoFactorAuth}
+                        onCheckedChange={(checked) => { // CORREÇÃO APLICADA AQUI
+                          if (typeof checked === 'boolean') {
+                            setTwoFactorAuth(checked);
+                          }
+                        }}
                       />
                     </div>
                     
