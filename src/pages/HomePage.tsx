@@ -9,26 +9,24 @@ const HomePage = () => {
       <Header />
       
       <main className="flex-grow">
-        {/* Hero Section - AGORA COM VÍDEO DE FUNDO */}
-        <section className="relative h-screen w-full flex items-center justify-center text-center overflow-hidden">
-          {/* Elemento de vídeo de fundo */}
-          <video 
-            autoPlay 
-            loop 
-            muted 
-            playsInline // Importante para autoplay em mobile
-            className="absolute inset-0 w-full h-full object-cover z-0"
-            src="/assets/hero-video.mp4" // <-- ATENÇÃO: VOCÊ PRECISA FORNECER ESTE VÍDEO!
-          >
-            Seu navegador não suporta a tag de vídeo.
-          </video>
-          
-          {/* Overlay para escurecer o vídeo e melhorar a legibilidade do texto */}
-          {/* Você pode ajustar a cor (bg-residuall-green-secondary) e a opacidade (opacity-70) */}
-          <div className="absolute inset-0 bg-residuall-green-secondary opacity-70 z-1"></div>
-
+        {/* Hero Section - AGORA COM GRADIENTE ANIMADO */}
+        <section 
+          className="relative h-screen w-full flex items-center justify-center text-center overflow-hidden text-white"
+          style={{
+            // Definindo o gradiente de fundo diretamente aqui
+            background: `linear-gradient(
+              270deg, /* Direção do gradiente */
+              theme('colors.residuall-green.DEFAULT'), /* Cor 1: #1f2f29 */
+              theme('colors.residuall-green.secondary'), /* Cor 2: #2a4a3d */
+              theme('colors.residuall-green.card'), /* Cor 3: #434b3c */
+              theme('colors.residuall-green.gradient') /* Cor 4: #6e7848 */
+            )`,
+            backgroundSize: '400% 400%', // Torna o gradiente maior para que ele possa se mover
+            animation: 'gradient-move 25s ease infinite', // Aplica a animação
+          }}
+        >
           {/* Conteúdo da seção Hero */}
-          <div className="relative z-10 container mx-auto max-w-5xl text-white"> 
+          <div className="relative z-10 container mx-auto max-w-5xl p-8"> {/* Adicionei p-8 para espaçamento interno */}
             <h1 className="text-5xl font-montserrat font-bold mb-4 animate-fade-in">
               SOLUÇÕES INOVADORAS, PARA UM FUTURO SUSTENTÁVEL
             </h1>
@@ -41,10 +39,10 @@ const HomePage = () => {
               </Link>
             </div>
             
-            {/* Benefits - Mantido com fundo transparente para o vídeo aparecer */}
+            {/* Benefits - Adaptado para o novo fundo */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16 animate-fade-in" style={{ animationDelay: '0.6s' }}>
-              <div className="card-benefit text-white">
-                <div className="bg-white bg-opacity-20 p-3 rounded-full mb-4">
+              <div className="card-benefit text-white"> {/* Mantido text-white */}
+                <div className="bg-white bg-opacity-20 p-3 rounded-full mb-4"> {/* Fundo de ícone semi-transparente */}
                   <CheckCircle size={32} className="text-white" />
                 </div>
                 <h3 className="text-lg font-semibold mb-2">Gestão Inteligente de resíduos</h3>
