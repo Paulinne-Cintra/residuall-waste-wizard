@@ -4,8 +4,8 @@
 @tailwind utilities;
 
 /* =======================
-   VARIÁVEIS GLOBAIS
-   ======================= */
+    VARIÁVEIS GLOBAIS
+    ======================= */
 @layer base {
   :root {
     --background: 0 0% 97%;
@@ -17,10 +17,10 @@
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 15%;
 
-    --primary: 147 20% 15%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 147 20% 15%; /* Residuall Dark Green */
+    --primary-foreground: 0 0% 100%; /* White */
 
-    --secondary: 144 26% 23%;
+    --secondary: 144 26% 23%; /* Residuall Mid Green */
     --secondary-foreground: 0 0% 100%;
 
     --muted: 210 10% 96%;
@@ -38,21 +38,64 @@
 
     --radius: 0.5rem;
 
-    --sidebar-background: 153 18% 15%;
-    --sidebar-foreground: 0 0% 96%;
-    --sidebar-primary: 144 26% 23%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 144 26% 23%;
-    --sidebar-accent-foreground: 0 0% 96%;
-    --sidebar-border: 144 26% 23%;
-    --sidebar-ring: 79 24% 38%;
-    --sidebar-active: radial-gradient(circle at 0%, #2a4a3d 0%, #2a4a3d 50%, #6e7848 100%);
+    /* Variáveis do Sidebar para o TEMA CLARO */
+    --sidebar-background: 153 18% 15%; /* Verde escuro */
+    --sidebar-foreground: 0 0% 96%; /* Branco acinzentado para o texto principal do sidebar (logo, etc.) */
+    --sidebar-item-text: 144 26% 23%; /* Cor do texto para itens NÃO ativos (cor do seu `residuall-green-secondary`) */
+    --sidebar-item-hover-bg: 144 26% 23%; /* Fundo do hover (cor do seu `residuall-green-secondary`) */
+    --sidebar-item-active-bg: 2a4a3d; /* Cor do fundo ativo (do seu radial-gradient) */
+    --sidebar-item-active-text: 0 0% 100%; /* Cor do texto para itens ativos */
+    --sidebar-border: 144 26% 23%; /* Cor da borda interna */
+    --sidebar-ring: 79 24% 38%; /* Cor do ring (parece não ser usada para visual) */
+  }
+
+  /* =======================
+     DEFINIÇÕES PARA O TEMA ESCURO (dark mode)
+     ======================= */
+  .dark {
+    --background: 215 10% 16%; /* Fundo geral escuro */
+    --foreground: 0 0% 90%; /* Texto geral claro */
+
+    --card: 215 10% 18%;
+    --card-foreground: 0 0% 90%;
+
+    --popover: 215 10% 18%;
+    --popover-foreground: 0 0% 90%;
+
+    --primary: 147 20% 15%; /* Pode manter o mesmo verde escuro ou ajustá-lo */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 144 26% 23%; /* Pode manter o mesmo verde médio ou ajustá-lo */
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 215 10% 22%;
+    --muted-foreground: 215 10% 60%;
+
+    --accent: 25 100% 63%; /* Mesma cor de accent */
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 85% 60%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 215 10% 30%;
+    --input: 215 10% 30%;
+    --ring: 144 26% 23%;
+
+    /* Variáveis do Sidebar para o TEMA ESCURO */
+    --sidebar-background: 147 20% 12%; /* Um verde *mais* escuro para o fundo do sidebar no dark mode */
+    --sidebar-foreground: 0 0% 100%; /* Branco puro para o texto principal do sidebar no dark mode */
+    --sidebar-item-text: 0 0% 75%; /* Cinza CLARO para itens NÃO ativos no tema ESCURO (ex: `text-gray-300`) */
+    --sidebar-item-hover-bg: 144 26% 20%; /* Fundo do hover no tema ESCURO (um pouco mais escuro que o normal) */
+    --sidebar-item-active-bg: 144 26% 23%; /* Fundo do item ativo no tema ESCURO (pode ser o `secondary` ou outro) */
+    --sidebar-item-active-text: 0 0% 100%; /* Texto branco puro para itens ativos no tema ESCURO */
+    --sidebar-border: 144 26% 20%; /* Borda interna no tema ESCURO */
+    /* --sidebar-ring: 79 24% 38%; (manter ou ajustar se necessário) */
   }
 }
 
 /* =======================
-   ESTILOS BASE
-   ======================= */
+    ESTILOS BASE
+    ======================= */
 @layer base {
   * {
     @apply border-border;
@@ -60,7 +103,8 @@
   }
 
   body {
-    @apply bg-residuall-gray-light text-residuall-gray-tableText font-sans;
+    /* Use as variáveis de background/foreground definidas acima */
+    @apply bg-background text-foreground font-sans;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -73,10 +117,10 @@
 }
 
 /* =======================
-   COMPONENTES REUTILIZÁVEIS
-   ======================= */
+    COMPONENTES REUTILIZÁVEIS
+    ======================= */
 @layer components {
-  /* Botões */
+  /* Botões - Verifique se 'residuall-green' e 'residuall-brown' estão definidos em tailwind.config.js */
   .btn-primary {
     @apply bg-residuall-green hover:bg-residuall-green/90 text-white font-medium py-3 px-6 rounded-lg transition-colors shadow-residuall hover:shadow-residuall-hover;
   }
@@ -91,25 +135,28 @@
 
   /* Cards */
   .card-container {
-    @apply bg-white rounded-lg shadow-residuall hover:shadow-residuall-hover p-5 transition-all hover:translate-y-[-5px];
+    /* Use as variáveis de card para tema claro/escuro */
+    @apply bg-card rounded-lg shadow-residuall hover:shadow-residuall-hover p-5 transition-all hover:translate-y-[-5px];
   }
 
   .dashboard-card {
-    @apply bg-white rounded-lg shadow-residuall p-6 flex flex-col hover:shadow-residuall-hover transition-all;
+    /* Use as variáveis de card para tema claro/escuro */
+    @apply bg-card rounded-lg shadow-residuall p-6 flex flex-col hover:shadow-residuall-hover transition-all;
   }
 
   /* Inputs */
   .input-field {
-    @apply w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-residuall-green-secondary focus:border-transparent;
+    /* Use as variáveis de border/input/ring para tema claro/escuro */
+    @apply w-full px-4 py-3 rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent;
   }
 
   /* Links de navegação */
   .nav-link {
-    @apply text-sm font-medium text-residuall-gray-dark hover:text-residuall-green transition-colors;
+    @apply text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors; /* Ajuste para usar variáveis ou cores Tailwind genéricas */
   }
 
   .nav-link-active {
-    @apply text-sm font-medium text-residuall-green border-b-2 border-residuall-green;
+    @apply text-sm font-medium text-blue-600 border-b-2 border-blue-600; /* Ajuste para usar variáveis ou cores Tailwind genéricas */
   }
 
   /* Seções e espaçamento */
@@ -117,21 +164,59 @@
     @apply py-12 md:py-20;
   }
 
-  /* Sidebar */
+  /* =======================
+     SIDEBAR - AJUSTES CRUCIAIS
+     ======================= */
+  /* Sidebar Container - Fundo */
+  .sidebar-container {
+    @apply bg-[var(--sidebar-background)]; /* Usa a variável CSS para o background */
+  }
+
+  /* Itens do Menu (não ativos) */
   .sidebar-menu-item {
-    @apply flex items-center p-3 rounded-lg transition-colors text-residuall-green-secondary hover:bg-residuall-green-secondary/10;
+    @apply flex items-center p-3 rounded-lg transition-colors duration-200;
+    color: hsl(var(--sidebar-item-text)); /* Cor do texto no tema claro/escuro */
+    /* Para o hover, podemos usar uma cor do Tailwind ou uma variável, aqui estou usando uma cor do Tailwind */
+    @apply hover:bg-green-700 hover:text-white; /* Fundo e texto no hover */
   }
 
+  /* Itens do Menu Ativos */
   .sidebar-menu-item-active {
-    @apply flex items-center p-3 rounded-lg bg-[radial-gradient(circle_at_0%,_#2a4a3d_0%,_#2a4a3d_50%,_#6e7848_100%)] text-white;
+    @apply flex items-center p-3 rounded-lg font-semibold transition-colors duration-200;
+    color: hsl(var(--sidebar-item-active-text)); /* Cor do texto ativo no tema claro/escuro */
+    /* O gradiente é um pouco mais complexo de alternar via variáveis CSS HSL no Tailwind,
+       mas podemos definir um background sólido para o dark mode.
+       Se você realmente quer o gradiente no dark mode, precisaremos de mais variáveis.
+       Por enquanto, sugiro um sólido para simplicidade e consistência.
+    */
+    background: hsl(var(--sidebar-item-active-bg)); /* Fundo ativo no tema claro/escuro */
   }
 
+  /* Fallback para o gradiente no light mode, se o --sidebar-active funcionar */
+  :root .sidebar-menu-item-active {
+    background: radial-gradient(circle at 0%, #2a4a3d 0%, #2a4a3d 50%, #6e7848 100%);
+    /* Ajuste para usar sua variável --sidebar-active se preferir
+       background: var(--sidebar-active);
+    */
+  }
+
+
+  /* Ícone do Sidebar */
   .sidebar-icon {
     @apply mr-3 flex-shrink-0;
+    color: inherit; /* Isso faz com que o ícone herde a cor do texto do pai (.sidebar-menu-item ou -active) */
+  }
+
+  /* Botão de Toggle (Chevron Left/Right, X) */
+  .toggle-button {
+    @apply p-1; /* Padding */
+    color: hsl(var(--sidebar-foreground)); /* Cor do texto principal do sidebar para o botão */
+    @apply hover:text-white; /* Hover para branco */
   }
 
   /* Campo de busca */
   .header-search {
-    @apply px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-residuall-green-secondary focus:border-transparent bg-white w-full max-w-md placeholder:text-residuall-gray;
+    /* Use as variáveis de border/input/ring/card */
+    @apply px-4 py-2 rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent bg-card w-full max-w-md placeholder:text-gray-400; /* Ajustado placeholder */
   }
 }
