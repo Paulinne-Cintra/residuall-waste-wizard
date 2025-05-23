@@ -1,16 +1,16 @@
-
+// pages/ProjectsPage.tsx
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Filter, Calendar, BarChart, TrendingUp, TrendingDown, Eye, Plus, ChevronDown, CheckCircle, AlertTriangle } from 'lucide-react';
+// Importe os novos ícones aqui
+import { Filter, Calendar, BarChart, TrendingUp, TrendingDown, Eye, Plus, ChevronDown, Building2, Droplet, Anchor, CheckCircle, AlertTriangle } from 'lucide-react'; // Adicionados Building2, Droplet, Anchor
 import AnimatedButton from '@/components/ui/AnimatedButton';
 import Chart from '../components/Chart';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
 
-import AnimatedCardWrapper from '@/components/ui/AnimatedCardWrapper';
-import AnimatedNumber from '@/components/ui/AnimatedNumber';
+import AnimatedCardWrapper from '@/components/AnimatedCardWrapper';
+import AnimatedNumber from '@/components/AnimatedNumber';
 import { motion } from 'framer-motion';
 
 interface Project {
@@ -21,15 +21,8 @@ interface Project {
   progress: number;
 }
 
-interface Recommendation {
-  id: string;
-  text: string;
-  completed: boolean;
-}
-
 const ProjectsPage = () => {
-  const { toast } = useToast();
-
+  // ... (dados de exemplo e funções existentes) ...
   const projectsData: Project[] = [
     {
       id: '1',
@@ -76,20 +69,13 @@ const ProjectsPage = () => {
   ];
 
   const reuseMetricsData = [
-    { name: 'Tijolos', value: 2.5, unit: 'toneladas', description: 'Desperdício mensal médio' },
-    { name: 'Cimento', value: 3.2, unit: 'toneladas', description: 'Desperdício mensal médio' },
-    { name: 'Aço', value: 1.3, unit: 'toneladas', description: 'Desperdício mensal médio' },
-  ];
-
-  const recommendations: Recommendation[] = [
-    { id: '1', text: 'Revisar plano de materiais do Projeto Alpha', completed: false },
-    { id: '2', text: 'Atualizar cronograma do Projeto Beta', completed: true },
-    { id: '3', text: 'Solicitar aprovação da fase 2 do Projeto Gamma', completed: false },
+    { name: 'Tijolos', value: 2.5, unit: 'toneladas', description: 'Desperdício mensal médio', icon: Building2 }, // Adicionado ícone
+    { name: 'Cimento', value: 3.2, unit: 'toneladas', description: 'Desperdício mensal médio', icon: Droplet },   // Adicionado ícone
+    { name: 'Aço', value: 1.3, unit: 'toneladas', description: 'Desperdício mensal médio', icon: Anchor },      // Adicionado ícone
   ];
 
   const [filteredProjects, setFilteredProjects] = useState<Project[]>(projectsData);
   const [isCreatingProject, setIsCreatingProject] = useState(false);
-  const [recommendationsList, setRecommendationsList] = useState<Recommendation[]>(recommendations);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -110,32 +96,19 @@ const ProjectsPage = () => {
     setIsCreatingProject(true);
     await new Promise(resolve => setTimeout(resolve, 2000));
     setIsCreatingProject(false);
-    toast({
-      title: "Sucesso!",
-      description: "Novo projeto criado com sucesso!",
-      duration: 3000,
-    });
+    alert("Novo projeto criado com sucesso!");
   };
 
-  const handleViewProjectDetails = (projectName: string) => {
-    toast({
-      title: "Detalhes do Projeto",
-      description: `Acessando detalhes do projeto "${projectName}"!`,
-      duration: 3000,
-    });
-  };
-
-  const handleFilterClick = (filterType: string) => {
-    toast({
-      title: "Filtro",
-      description: `Funcionalidade de filtro "${filterType}" em breve!`,
-      duration: 3000,
-    });
-  };
+  // Dados de exemplo para recomendações (garantir que existe ou adicionar)
+  const [recommendations, setRecommendations] = useState([
+    { id: '1', text: 'Analisar desperdício de concreto no projeto Edifício Aurora.', completed: false },
+    { id: '2', text: 'Verificar inventário de materiais recicláveis para o próximo projeto.', completed: true },
+    { id: '3', text: 'Treinar equipe sobre novas práticas de reuso.', completed: false },
+  ]);
 
   const toggleRecommendation = (id: string) => {
-    setRecommendationsList(prev => 
-      prev.map(rec => 
+    setRecommendations(prev =>
+      prev.map(rec =>
         rec.id === id ? { ...rec, completed: !rec.completed } : rec
       )
     );
@@ -162,20 +135,12 @@ const ProjectsPage = () => {
       <Card className="mb-6 shadow-sm border-none">
         <CardContent className="flex flex-wrap gap-4 items-center justify-between p-4">
           <div className="flex flex-wrap gap-2">
-            <Button 
-              variant="outline" 
-              className="flex items-center gap-2 text-gray-700 hover:bg-gray-100 border-gray-300"
-              onClick={() => handleFilterClick('Status')}
-            >
+            <Button variant="outline" className="flex items-center gap-2 text-gray-700 hover:bg-gray-100 border-gray-300">
               <Filter size={16} />
               <span>Status</span>
               <ChevronDown size={16} />
             </Button>
-            <Button 
-              variant="outline" 
-              className="flex items-center gap-2 text-gray-700 hover:bg-gray-100 border-gray-300"
-              onClick={() => handleFilterClick('Data')}
-            >
+            <Button variant="outline" className="flex items-center gap-2 text-gray-700 hover:bg-gray-100 border-gray-300">
               <Calendar size={16} />
               <span>Data</span>
               <ChevronDown size={16} />
@@ -193,24 +158,30 @@ const ProjectsPage = () => {
 
       {/* Cards de Métricas (Reuso) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        {reuseMetricsData.map((metric, index) => (
-          <AnimatedCardWrapper key={index} delay={0.05 * (index + 1)} animateOnView={true}>
-            <Card className="flex flex-col items-center justify-center p-6 shadow-md border-none">
-              <CardHeader className="p-0 pb-2 flex-col items-center">
-                <CardDescription className="text-center text-sm font-medium text-gray-700">{metric.name}</CardDescription>
-                <CardTitle className="text-4xl font-extrabold text-gray-900 mt-2">
-                  <AnimatedNumber value={metric.value} suffix={` ${metric.unit}`} decimals={1} />
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0 text-center text-xs text-gray-500">
-                {metric.description}
-              </CardContent>
-            </Card>
-          </AnimatedCardWrapper>
-        ))}
+        {reuseMetricsData.map((metric, index) => {
+          const IconComponent = metric.icon; // Obtenha o componente do ícone
+          return (
+            <AnimatedCardWrapper key={index} delay={0.05 * (index + 1)} animateOnView={true}>
+              <Card className="flex flex-col items-center justify-center p-6 shadow-md border-none">
+                <CardHeader className="p-0 pb-2 flex-col items-center">
+                  <CardDescription className="text-center text-sm font-medium text-gray-700 flex items-center gap-2"> {/* Adicionado flex e gap */}
+                    {IconComponent && <IconComponent size={16} className="text-residuall-green-secondary" />} {/* Renderiza o ícone */}
+                    {metric.name}
+                  </CardDescription>
+                  <CardTitle className="text-4xl font-extrabold text-gray-900 mt-2">
+                    <AnimatedNumber value={metric.value} suffix={` ${metric.unit}`} decimals={1} />
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-0 text-center text-xs text-gray-500">
+                  {metric.description}
+                </CardContent>
+              </Card>
+            </AnimatedCardWrapper>
+          );
+        })}
       </div>
 
-      {/* Seção de Projetos Ativos */}
+      {/* Seção de Projetos Ativos (Cards de Projeto) */}
       <Card className="mb-6 shadow-sm border-none">
         <CardHeader className="pb-4">
           <CardTitle className="text-2xl font-bold text-gray-900">Projetos Ativos</CardTitle>
@@ -245,13 +216,11 @@ const ProjectsPage = () => {
                     </div>
                   </CardContent>
                   <CardFooter className="pt-0">
-                    <Button 
-                      variant="outline" 
-                      className="text-residuall-green-secondary hover:bg-residuall-green-secondary/10 font-medium px-4 py-2"
-                      onClick={() => handleViewProjectDetails(project.name)}
-                    >
-                      Ver detalhes
-                    </Button>
+                    <Link to={`/dashboard/projetos/${project.id}`}>
+                      <Button variant="outline" className="text-residuall-green-secondary hover:bg-residuall-green-secondary/10 font-medium px-4 py-2">
+                        Ver detalhes
+                      </Button>
+                    </Link>
                   </CardFooter>
                 </Card>
               </AnimatedCardWrapper>
@@ -266,7 +235,7 @@ const ProjectsPage = () => {
           <CardTitle className="text-2xl font-bold text-gray-900">Recomendações</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {recommendationsList.map((rec) => (
+          {recommendations.map((rec) => (
             <div key={rec.id} className="flex items-start p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-150">
               <button
                 onClick={() => toggleRecommendation(rec.id)}
