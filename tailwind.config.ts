@@ -53,39 +53,37 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
-				// Cores personalizadas da Residuall (Atualizadas para as cores oficiais)
-				residuall: {
-					green: {
-						DEFAULT: '#1f2f29', // Verde Escuro Principal
-						secondary: '#2a4a3d', // Verde Secundário
-						card: '#434b3c',    // Verde Cards Projeto
-						gradient: '#6e7848', // Verde Destaque Gradiente
-						tag: '#46583a',     // Verde Fundo Tag "Administrador"
-					},
-					brown: {
-						DEFAULT: '#ff8c42', // Laranja/Marrom
-					},
-					gray: {
-						light: '#F8F8F8',   // Fundo da Área de Conteúdo Principal
-						DEFAULT: '#c4c2c2', // Cinza Secundário
-						dark: '#252525',    // Cinza Texto Listas/Tabelas (adicionamos como "dark" para links)
-						text: '#f4f4f4',    // Cinza Texto/Ícones Claro
-						username: '#2b2b2b', // Cinza Nome Usuário
-						tableText: '#252525', // Cinza Texto Listas/Tabelas
-						chartLight: '#8a8a8a', // Tom de Cinza Claro para Gráficos
-						chartDark: '#3b3b3b', // Tom de Cinza Escuro para Gráficos
-					},
-					white: '#ffffff',      // Branco
+				// Cores personalizadas da Residuall (Corrigidas)
+				'residuall-green': {
+					DEFAULT: '#1f2f29',
+					secondary: '#2a4a3d',
+					card: '#434b3c',
+					gradient: '#6e7848',
+					tag: '#46583a',
 				},
+				'residuall-brown': {
+					DEFAULT: '#ff8c42',
+				},
+				'residuall-gray': {
+					light: '#F8F8F8',
+					DEFAULT: '#c4c2c2',
+					dark: '#252525',
+					text: '#f4f4f4',
+					username: '#2b2b2b',
+					tableText: '#252525',
+					chartLight: '#8a8a8a',
+					chartDark: '#3b3b3b',
+				},
+				'residuall-white': '#ffffff',
 				sidebar: {
-					DEFAULT: '#1f2f29', // Verde Escuro Principal
-					foreground: '#f4f4f4', // Cinza Texto/Ícones Claro
-					primary: '#2a4a3d', // Verde Secundário
-					'primary-foreground': '#ffffff', // Branco
-					accent: '#2a4a3d', // Verde Secundário
-					'accent-foreground': '#ffffff', // Branco
-					border: '#2a4a3d', // Verde Secundário
-					ring: '#6e7848', // Verde Destaque Gradiente
+					DEFAULT: '#1f2f29',
+					foreground: '#f4f4f4',
+					primary: '#2a4a3d',
+					'primary-foreground': '#ffffff',
+					accent: '#2a4a3d',
+					'accent-foreground': '#ffffff',
+					border: '#2a4a3d',
+					ring: '#6e7848',
 				}
 			},
 			backgroundImage: {

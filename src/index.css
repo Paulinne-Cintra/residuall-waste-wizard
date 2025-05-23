@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -95,31 +96,6 @@
 
   .dashboard-card {
     @apply bg-white rounded-lg shadow-residuall p-6 flex flex-col hover:shadow-residuall-hover transition-all;
-  }
-
-  /* Tags de status */
-  .status-tag {
-    @apply px-3 py-1 text-xs font-semibold rounded-full;
-  }
-
-  .status-tag-ongoing {
-    @apply bg-residuall-green-secondary text-white;
-  }
-
-  .status-tag-starting {
-    @apply bg-residuall-brown text-white;
-  }
-
-  .status-tag-completed {
-    @apply bg-green-500 text-white;
-  }
-
-  .status-tag-stored {
-    @apply bg-residuall-brown text-white;
-  }
-
-  .admin-tag {
-    @apply bg-residuall-green-tag text-white px-3 py-1 text-xs font-bold rounded-full;
   }
 
   /* Inputs */
