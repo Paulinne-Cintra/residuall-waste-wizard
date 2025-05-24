@@ -19,12 +19,48 @@
     
     <!-- Google Fonts -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <style>
+  .logo-container {
+    display: flex;
+    justify-content: center;
+    padding-top: 20px;
+    opacity: 0;
+    animation: fadeIn 2s ease forwards;
+  }
+
+  @keyframes fadeIn {
+    to {
+      opacity: 1;
+    }
+  }
+
+  body {
+    background-color: #111; /* fundo escuro para destacar o logo branco */
+  }
+</style>
+
   </head>
 
-  <body>
+   <body>
+    <div class="logo-container">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" fill="white" width="120">
+        <path d="M 292,655 Z" />
+        <path d="M 726,544 Z" />
+        <path d="M 324,526 Z" />
+        <path d="M 644,500 Z" />
+        <path d="M 623,486 Z" />
+        <path d="M 619,484 Z" />
+        <path d="M 409,470 L 408,471 Z" />
+        <path d="M 598,462 L 599,462 Z" />
+        <!-- pode adicionar os outros paths do SVG aqui -->
+      </svg>
+    </div>
+
     <div id="root"></div>
-    <!-- IMPORTANT: DO NOT REMOVE THIS SCRIPT TAG OR THIS VERY COMMENT! -->
+
+    <!-- IMPORTANTE: scripts do Lovable -->
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
+
 </html>
