@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
@@ -44,7 +43,7 @@ const LoginPage = () => {
   return (
     // Fundo gradiente com o padrão geométrico
     <div className="min-h-screen flex flex-col relative overflow-hidden
-                    bg-gradient-to-br from-brand-green-dark to-brand-orange-burnt">
+                    bg-gradient-to-br from-residuall-green-default to-residuall-orange-burnt">
       {/* Camada para o padrão geométrico sutil */}
       <div className="absolute inset-0 geometric-bg z-0"></div>
 
@@ -52,27 +51,27 @@ const LoginPage = () => {
       
       {/* Conteúdo principal centralizado, acima do padrão geométrico */}
       <main className="flex-grow flex items-center justify-center py-12 relative z-10 px-4">
-        <div className="w-full max-w-md bg-neutral-white rounded-3xl shadow-sm overflow-hidden">
+        <div className="w-full max-w-md bg-residuall-white rounded-3xl shadow-sm overflow-hidden">
           <div className="p-8">
             {/* Títulos estilo Otake */}
-            <p className="text-center text-sm font-semibold text-brand-orange-burnt mb-2">
+            <p className="text-center text-sm font-semibold text-residuall-orange-burnt mb-2">
                 RESIDUALL Login
             </p>
-            <h1 className="text-4xl font-bold text-neutral-gray-dark text-center mb-6">
+            <h1 className="text-4xl font-bold text-residuall-gray-dark text-center mb-6">
                 Bem-vindo(a)!
             </h1>
             
             <form onSubmit={handleSubmit}>
               <div className="mb-6">
-                <label htmlFor="email" className="block text-sm font-medium text-neutral-gray-dark mb-2">
+                <label htmlFor="email" className="block text-sm font-medium text-residuall-gray-dark mb-2">
                   E-mail
                 </label>
                 <input
                   id="email"
                   type="email"
                   // Removido 'input-field' e adicionadas classes Tailwind diretas
-                  className={`w-full p-3 border border-neutral-gray-light rounded-md 
-                              focus:outline-none focus:ring-1 focus:ring-brand-green-dark 
+                  className={`w-full p-3 border border-residuall-gray-default rounded-md 
+                              focus:outline-none focus:ring-1 focus:ring-residuall-green-default 
                               ${errors.email ? 'border-red-500' : ''}`}
                   placeholder="seu@email.com"
                   value={email}
@@ -84,7 +83,7 @@ const LoginPage = () => {
               </div>
               
               <div className="mb-6">
-                <label htmlFor="password" className="block text-sm font-medium text-neutral-gray-dark mb-2">
+                <label htmlFor="password" className="block text-sm font-medium text-residuall-gray-dark mb-2">
                   Senha
                 </label>
                 <div className="relative">
@@ -92,8 +91,8 @@ const LoginPage = () => {
                     id="password"
                     type={showPassword ? "text" : "password"}
                     // Removido 'input-field' e adicionadas classes Tailwind diretas
-                    className={`w-full p-3 pr-10 border border-neutral-gray-light rounded-md 
-                                focus:outline-none focus:ring-1 focus:ring-brand-green-dark 
+                    className={`w-full p-3 pr-10 border border-residuall-gray-default rounded-md 
+                                focus:outline-none focus:ring-1 focus:ring-residuall-green-default 
                                 ${errors.password ? 'border-red-500' : ''}`}
                     placeholder="••••••••"
                     value={password}
@@ -101,7 +100,7 @@ const LoginPage = () => {
                   />
                   <button
                     type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-neutral-gray-dark"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-residuall-gray-dark"
                     onClick={toggleShowPassword}
                   >
                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -112,13 +111,13 @@ const LoginPage = () => {
                 )}
               </div>
               
-              <div className="flex items-center justify-between mb-6 text-neutral-gray-dark">
+              <div className="flex items-center justify-between mb-6 text-residuall-gray-dark">
                 <div className="flex items-center">
                   <input
                     id="remember-me"
                     type="checkbox"
                     // Ajuste a cor do checkbox para sua paleta
-                    className="h-4 w-4 text-brand-green-dark border-neutral-gray-light rounded focus:ring-brand-green-dark"
+                    className="h-4 w-4 text-residuall-green-default border-residuall-gray-default rounded focus:ring-residuall-green-default"
                     checked={rememberMe}
                     onChange={() => setRememberMe(!rememberMe)}
                   />
@@ -128,7 +127,7 @@ const LoginPage = () => {
                 </div>
                 
                 <div className="text-sm">
-                  <a href="#" className="text-neutral-gray-dark hover:text-brand-orange-burnt transition-colors">
+                  <a href="#" className="text-residuall-gray-dark hover:text-residuall-orange-burnt transition-colors">
                     Esqueceu a senha?
                   </a>
                 </div>
@@ -137,15 +136,15 @@ const LoginPage = () => {
               <button
                 type="submit"
                 // Ajuste a cor do botão principal
-                className="w-full bg-brand-green-dark hover:bg-neutral-gray-dark text-white font-medium py-3 px-4 rounded-lg transition-colors"
+                className="w-full bg-residuall-green-default hover:bg-residuall-gray-dark text-white font-medium py-3 px-4 rounded-lg transition-colors"
               >
                 Acessar
               </button>
             </form>
             
             <div className="text-center mt-6">
-              <span className="text-neutral-gray-dark">Não tem uma conta?</span>{" "}
-              <Link to="/cadastro" className="text-brand-orange-burnt hover:text-brand-green-dark font-semibold transition-colors">
+              <span className="text-residuall-gray-dark">Não tem uma conta?</span>{" "}
+              <Link to="/cadastro" className="text-residuall-orange-burnt hover:text-residuall-green-default font-semibold transition-colors">
                 Cadastrar-se
               </Link>
             </div>
