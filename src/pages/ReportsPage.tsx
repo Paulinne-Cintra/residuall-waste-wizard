@@ -1,18 +1,6 @@
-
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  Filter, 
-  Calendar, 
-  BarChart, 
-  TrendingUp, 
-  TrendingDown,
-  Download, 
-  Share2,
-  Plus,
-  Eye,
-  FileText
-} from 'lucide-react';
+import { Filter, Calendar, BarChart, TrendingUp, TrendingDown, Download, Share2, Plus, Eye, FileText } from 'lucide-react';
 import Chart from '../components/Chart';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -21,7 +9,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-
 interface Report {
   id: string;
   project: string;
@@ -30,75 +17,89 @@ interface Report {
   status: 'Finalizado' | 'Pendente';
   location: string;
 }
-
 const ReportsPage = () => {
-  const { toast } = useToast();
-  
+  const {
+    toast
+  } = useToast();
+
   // Dados de exemplo para relatórios
-  const reportsData: Report[] = [
-    {
-      id: '1',
-      project: 'Edifício Aurora',
-      date: '15/05/2023',
-      responsible: 'Carlos Pereira',
-      status: 'Finalizado',
-      location: 'São Paulo, SP',
-    },
-    {
-      id: '2',
-      project: 'Residencial Parque Verde',
-      date: '10/05/2023',
-      responsible: 'Ana Silva',
-      status: 'Pendente',
-      location: 'Curitiba, PR',
-    },
-    {
-      id: '3',
-      project: 'Torre Corporativa Horizonte',
-      date: '01/05/2023',
-      responsible: 'Roberto Santos',
-      status: 'Finalizado',
-      location: 'Rio de Janeiro, RJ',
-    },
-    {
-      id: '4',
-      project: 'Condomínio Vista Mar',
-      date: '28/04/2023',
-      responsible: 'Fernanda Lima',
-      status: 'Finalizado',
-      location: 'Salvador, BA',
-    },
-    {
-      id: '5',
-      project: 'Centro Empresarial Inovação',
-      date: '20/04/2023',
-      responsible: 'Lucas Oliveira',
-      status: 'Pendente',
-      location: 'Belo Horizonte, MG',
-    },
-  ];
+  const reportsData: Report[] = [{
+    id: '1',
+    project: 'Edifício Aurora',
+    date: '15/05/2023',
+    responsible: 'Carlos Pereira',
+    status: 'Finalizado',
+    location: 'São Paulo, SP'
+  }, {
+    id: '2',
+    project: 'Residencial Parque Verde',
+    date: '10/05/2023',
+    responsible: 'Ana Silva',
+    status: 'Pendente',
+    location: 'Curitiba, PR'
+  }, {
+    id: '3',
+    project: 'Torre Corporativa Horizonte',
+    date: '01/05/2023',
+    responsible: 'Roberto Santos',
+    status: 'Finalizado',
+    location: 'Rio de Janeiro, RJ'
+  }, {
+    id: '4',
+    project: 'Condomínio Vista Mar',
+    date: '28/04/2023',
+    responsible: 'Fernanda Lima',
+    status: 'Finalizado',
+    location: 'Salvador, BA'
+  }, {
+    id: '5',
+    project: 'Centro Empresarial Inovação',
+    date: '20/04/2023',
+    responsible: 'Lucas Oliveira',
+    status: 'Pendente',
+    location: 'Belo Horizonte, MG'
+  }];
 
   // Dados para gráficos
-  const reuseRateData = [
-    { name: 'Reutilizado', value: 65 },
-    { name: 'Desperdício', value: 35 },
-  ];
-
-  const economyData = [
-    { name: 'Jan', economia: 15000 },
-    { name: 'Fev', economia: 22000 },
-    { name: 'Mar', economia: 18000 },
-    { name: 'Abr', economia: 25000 },
-    { name: 'Mai', economia: 32000 },
-  ];
-
-  const projectsEconomyData = [
-    { name: 'Edifício Aurora', economia: 12500 },
-    { name: 'Residencial Parque Verde', economia: 8200 },
-    { name: 'Torre Corporativa', economia: 15300 },
-    { name: 'Condomínio Vista Mar', economia: 7500 },
-    { name: 'Centro Empresarial', economia: 9800 },
-  ];
+  const reuseRateData = [{
+    name: 'Reutilizado',
+    value: 65
+  }, {
+    name: 'Desperdício',
+    value: 35
+  }];
+  const economyData = [{
+    name: 'Jan',
+    economia: 15000
+  }, {
+    name: 'Fev',
+    economia: 22000
+  }, {
+    name: 'Mar',
+    economia: 18000
+  }, {
+    name: 'Abr',
+    economia: 25000
+  }, {
+    name: 'Mai',
+    economia: 32000
+  }];
+  const projectsEconomyData = [{
+    name: 'Edifício Aurora',
+    economia: 12500
+  }, {
+    name: 'Residencial Parque Verde',
+    economia: 8200
+  }, {
+    name: 'Torre Corporativa',
+    economia: 15300
+  }, {
+    name: 'Condomínio Vista Mar',
+    economia: 7500
+  }, {
+    name: 'Centro Empresarial',
+    economia: 9800
+  }];
 
   // Estado para os filtros
   const [filteredReports, setFilteredReports] = useState<Report[]>(reportsData);
@@ -124,26 +125,26 @@ const ReportsPage = () => {
         return 'status-tag';
     }
   };
-
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchQuery(value);
     console.log('Busca relatórios:', value);
   };
-
   const handleCreateReport = () => {
     console.log('Criando relatório:', newReport);
     setIsModalOpen(false);
-    setNewReport({ title: '', project: '', period: '' });
+    setNewReport({
+      title: '',
+      project: '',
+      period: ''
+    });
     toast({
       title: "Sucesso!",
       description: "Relatório criado com sucesso!",
-      duration: 3000,
+      duration: 3000
     });
   };
-
-  return (
-    <main className="flex-1 overflow-y-auto p-4 md:p-6">
+  return <main className="flex-1 overflow-y-auto p-4 md:p-6">
       {/* Cabeçalho da página */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
         <div>
@@ -152,7 +153,7 @@ const ReportsPage = () => {
         </div>
         
         <div className="mt-4 md:mt-0 flex space-x-2">
-          <Button variant="outline" className="flex items-center gap-2">
+          <Button variant="outline" className="flex items-center gap-2 text-base">
             <Download size={18} />
             Exportar
           </Button>
@@ -174,7 +175,7 @@ const ReportsPage = () => {
                   <span>{projectFilter}</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent>
+              <DropdownMenuContent className="rounded-md">
                 <DropdownMenuItem onClick={() => setProjectFilter('Todos')}>Todos</DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setProjectFilter('Edifício Aurora')}>Edifício Aurora</DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setProjectFilter('Residencial Parque Verde')}>Residencial Parque Verde</DropdownMenuItem>
@@ -213,13 +214,7 @@ const ReportsPage = () => {
           </div>
           
           <div>
-            <Input
-              type="text"
-              placeholder="Buscar relatórios..."
-              value={searchQuery}
-              onChange={handleSearchChange}
-              className="input-field"
-            />
+            <Input type="text" placeholder="Buscar relatórios..." value={searchQuery} onChange={handleSearchChange} className="input-field" />
           </div>
         </CardContent>
       </Card>
@@ -239,7 +234,9 @@ const ReportsPage = () => {
             </div>
             <div className="mt-4">
               <div className="w-full bg-gray-200 rounded-full h-2">
-                <div className="bg-residuall-green h-2 rounded-full" style={{ width: '65%' }}></div>
+                <div className="bg-residuall-green h-2 rounded-full" style={{
+                width: '65%'
+              }}></div>
               </div>
             </div>
           </CardContent>
@@ -325,21 +322,18 @@ const ReportsPage = () => {
                 <DialogTitle>Criar Novo Relatório</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
-                <Input
-                  placeholder="Título do Relatório"
-                  value={newReport.title}
-                  onChange={(e) => setNewReport({...newReport, title: e.target.value})}
-                />
-                <Input
-                  placeholder="Projeto Associado"
-                  value={newReport.project}
-                  onChange={(e) => setNewReport({...newReport, project: e.target.value})}
-                />
-                <Input
-                  placeholder="Período"
-                  value={newReport.period}
-                  onChange={(e) => setNewReport({...newReport, period: e.target.value})}
-                />
+                <Input placeholder="Título do Relatório" value={newReport.title} onChange={e => setNewReport({
+                ...newReport,
+                title: e.target.value
+              })} />
+                <Input placeholder="Projeto Associado" value={newReport.project} onChange={e => setNewReport({
+                ...newReport,
+                project: e.target.value
+              })} />
+                <Input placeholder="Período" value={newReport.period} onChange={e => setNewReport({
+                ...newReport,
+                period: e.target.value
+              })} />
               </div>
               <DialogFooter>
                 <Button onClick={handleCreateReport}>Criar Relatório</Button>
@@ -360,8 +354,7 @@ const ReportsPage = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredReports.map((report) => (
-                <TableRow key={report.id} className="hover:bg-gray-50">
+              {filteredReports.map(report => <TableRow key={report.id} className="hover:bg-gray-50">
                   <TableCell>
                     <div className="flex items-center">
                       <FileText size={16} className="text-residuall-gray mr-2" />
@@ -385,21 +378,15 @@ const ReportsPage = () => {
                     {report.location}
                   </TableCell>
                   <TableCell className="text-right">
-                    <Link
-                      to={`/dashboard/relatorios/${report.id}`}
-                      className="text-residuall-green-secondary hover:text-residuall-green"
-                    >
+                    <Link to={`/dashboard/relatorios/${report.id}`} className="text-residuall-green-secondary hover:text-residuall-green">
                       <Eye size={18} />
                     </Link>
                   </TableCell>
-                </TableRow>
-              ))}
+                </TableRow>)}
             </TableBody>
           </Table>
         </CardContent>
       </Card>
-    </main>
-  );
+    </main>;
 };
-
 export default ReportsPage;
