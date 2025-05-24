@@ -111,9 +111,11 @@ const LoginPage = () => {
                 </div>
               </div>
               
-              <button type="submit"
-              // Ajuste a cor do botão principal
-              className="w-full bg-residuall-green-default hover:bg-residuall-gray-dark font-medium py-3 px-4 rounded-lg transition-colors text-orange-700 bg-neutral-400 hover:bg-neutral-300">
+              <button
+                type="submit"
+                // Garanta que text-white esteja aqui para que o texto seja branco
+                className="w-full bg-residuall-green-default hover:bg-residuall-gray-dark text-white font-medium py-3 px-4 rounded-lg transition-colors"
+              >
                 Acessar
               </button>
             </form>
