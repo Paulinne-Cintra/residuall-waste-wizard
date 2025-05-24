@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import { CheckCircle, BarChart, Recycle, Users, MessageSquareText } from 'lucide-react'; // Adicionei Users e MessageSquareText para futuras seções
+import { CheckCircle, BarChart, Recycle } from 'lucide-react'; // Removi Users e MessageSquareText, pois as seções associadas foram removidas
 
 const HomePage = () => {
   return (
@@ -37,7 +37,8 @@ const HomePage = () => {
                   icon: <BarChart size={32} className="text-white" />,
                   title: 'Relatórios e Insights Personalizados',
                   text: 'Visualize indicadores de desempenho e receba alertas inteligentes para tomada de decisão.'
-                },
+                }
+                ,
                 {
                   icon: <Recycle size={32} className="text-white" />,
                   title: 'Foco em Sustentabilidade e Economia',
@@ -82,7 +83,7 @@ const HomePage = () => {
                 <div className="flex justify-center">
                   {/* Placeholder de imagem com bordas mais arredondadas e sombra mais proeminente */}
                   {/* Sugiro substituir este SVG por uma imagem real de alta qualidade */}
-                  <div className="rounded-xl overflow-hidden shadow-xl h-72 w-full bg-residuall-gray flex items-center justify-center"> {/* Ajustei h, rounded e shadow */}
+                  <div className="rounded-xl overflow-hidden shadow-xl h-72 w-full flex items-center justify-center bg-residuall-gray flex-shrink-0"> {/* Ajustei h, rounded, shadow e adicionei flex-shrink-0 */}
                     <svg
                       className="w-36 h-36 text-residuall-gray-dark" // Ajustei tamanho e cor do SVG
                       fill="none"
@@ -102,54 +103,6 @@ const HomePage = () => {
             </div>
           </div>
         </section>
-
-        {/* Nova Seção: Nossa Equipe (Exemplo de como adicionar) */}
-        {/* Inspirado na seção de "Expert Crew" do site de inspiração */}
-        <section className="py-24 bg-residuall-gray-light">
-          <div className="container mx-auto px-4 text-center">
-            <h2 className="heading-lg mb-4 text-residuall-gray-dark">Nossa Equipe</h2>
-            <p className="text-residuall-green text-center font-medium text-lg mb-12 max-w-3xl mx-auto">
-              Conheça os profissionais por trás do sucesso da Residuall.
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {/* Exemplo de card de membro da equipe */}
-              <div className="bg-white p-6 rounded-xl shadow-lg transition-transform duration-300 hover:scale-105">
-                <img
-                  src="https://via.placeholder.com/150" // Substitua por imagens reais da equipe
-                  alt="Nome do Membro"
-                  className="w-32 h-32 rounded-full mx-auto mb-4 object-cover"
-                />
-                <h3 className="text-xl font-semibold text-residuall-gray-dark mb-2">Nome do Membro</h3>
-                <p className="text-residuall-green font-medium mb-2">Cargo</p>
-                <p className="text-residuall-gray-dark text-sm">Breve descrição sobre o membro e suas qualificações.</p>
-              </div>
-              {/* Duplique o bloco acima para mais membros */}
-            </div>
-            {/* Opcional: Adicione um botão "Conheça todos" se tiver uma página de equipe dedicada */}
-          </div>
-        </section>
-
-        {/* Nova Seção: Depoimentos (Exemplo de como adicionar) */}
-        {/* Inspirado na seção de "Client Testimonials" do site de inspiração */}
-        <section className="py-24 bg-residuall-green-secondary text-white"> {/* Usei uma cor residuall- diferente para o fundo */}
-          <div className="container mx-auto px-4 text-center">
-            <h2 className="heading-lg mb-4 text-white">O Que Nossos Clientes Dizem</h2>
-            <p className="text-residuall-white text-lg mb-12 max-w-3xl mx-auto">
-              Veja como a Residuall está transformando a gestão de resíduos para nossos parceiros.
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* Exemplo de card de depoimento */}
-              <div className="bg-residuall-green p-8 rounded-xl shadow-lg text-left"> {/* Fundo com um tom de verde da sua paleta */}
-                <p className="text-residuall-white text-lg mb-4 leading-relaxed">
-                  "A plataforma da Residuall revolucionou a forma como gerenciamos os resíduos em nossas obras. É intuitiva, eficiente e nos ajudou a reduzir significativamente nossos custos e impacto ambiental."
-                </p>
-                <div className="font-semibold text-residuall-white">- Nome do Cliente, Cargo na Empresa</div>
-              </div>
-              {/* Duplique o bloco acima para mais depoimentos */}
-            </div>
-          </div>
-        </section>
-
 
         {/* Seção CTA - Mantém as cores residuall- */}
         {/* Aumentei o padding e aprimorei o hover dos botões */}
