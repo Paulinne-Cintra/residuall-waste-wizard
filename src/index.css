@@ -95,14 +95,13 @@
   }
 
   body {
-    /* Gradiente animado para o modo CLARO - NOTE: Esta animação será *geral* do body.
-       Para a página de login, o background da div principal vai sobrepor. */
+    /* Mantenha o gradiente animado padrão para o body, mas a LoginPage vai sobrepor com seu próprio */
     background: linear-gradient(
       270deg,
-      theme('colors.residuall-green.DEFAULT'), /* #1f2f29 */
-      theme('colors.residuall-green.secondary'), /* #2a4a3d */
-      theme('colors.residuall-green.card'), /* #434b3c */
-      theme('colors.residuall-green.gradient') /* #6e7848 */
+      theme('colors.residuall-green.DEFAULT'),
+      theme('colors.residuall-green.secondary'),
+      theme('colors.residuall-green.card'),
+      theme('colors.residuall-green.gradient')
     );
     background-size: 400% 400%;
     animation: gradient-move 20s ease infinite;
@@ -113,10 +112,10 @@
   .dark body {
     background: linear-gradient(
       270deg,
-      theme('colors.sidebar.dark.DEFAULT'), /* #15201c */
-      theme('colors.residuall-green.secondary'), /* #2a4a3d */
-      theme('colors.residuall-gray.dark'), /* #252525 */
-      theme('colors.residuall-green.DEFAULT') /* #1f2f29 */
+      theme('colors.sidebar.dark.DEFAULT'),
+      theme('colors.residuall-green.secondary'),
+      theme('colors.residuall-gray.dark'),
+      theme('colors.residuall-green.DEFAULT')
     );
     background-size: 400% 400%;
     animation: gradient-move 25s ease infinite;
@@ -132,16 +131,10 @@
 }
 
 /* =======================
-    COMPLEMENTOS PERSONALIZADOS (GEOMÉTRICO E HEADER)
+    COMPLEMENTOS PERSONALIZADOS (HEADER)
     ======================= */
 @layer components {
-  /* Padrão Geométrico Sutil para o fundo */
-  .geometric-bg {
-    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23FFFFFF' fill-opacity='0.05' fill-rule='evenodd'%3E%3Cpath d='M0 0h30v10H0V0zm0 40h30v10H0V40zm30-40h30v10H30V0zm0 40h30v10H30V40z'/%3E%3C/g%3E%3C/svg%3E");
-    background-size: 30px 30px; /* Ajuste para o tamanho do padrão */
-    opacity: 0.7; /* Opacidade sutil para o padrão. Ajuste este valor (0.5 a 0.9) */
-    background-attachment: fixed; /* Para que o padrão não role com o conteúdo */
-  }
+  /* REMOVENDO a classe geometric-bg daqui */
 
   /* Header Translúcido (Glassmorphism) */
   .header-glassmorphism {
@@ -150,12 +143,12 @@
     -webkit-backdrop-filter: blur(8px); /* Suporte para navegadores Webkit */
     border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Borda sutil na parte inferior */
   }
-}
 
-/* =======================
-    COMPONENTES REUTILIZÁVEIS (EXISTENTES)
-    ======================= */
-@layer components {
+  /* INPUT FIELD customizado - Mantido aqui para uso geral */
+  .input-field {
+    @apply w-full px-4 py-3 rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent;
+  }
+
   /* Botões */
   .btn-primary {
     @apply bg-residuall-green hover:bg-residuall-green/90 text-white font-medium py-3 px-6 rounded-lg transition-colors shadow-residuall hover:shadow-residuall-hover;
@@ -176,11 +169,6 @@
 
   .dashboard-card {
     @apply bg-card rounded-lg shadow-residuall p-6 flex flex-col hover:shadow-residuall-hover transition-all;
-  }
-
-  /* Inputs */
-  .input-field {
-    @apply w-full px-4 py-3 rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent;
   }
 
   /* Links de navegação */
