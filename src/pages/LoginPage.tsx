@@ -1,12 +1,14 @@
-
+// src/pages/LoginPage.tsx
 import { useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import Header from '../components/Header';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/useAuth'; // Assumindo que '@/hooks/useAuth' aponta corretamente para o seu hook
 
 const LoginPage = () => {
-  const { signIn, user, loading } = useAuth();
+  // Recebe signIn, user e loading do seu custom hook useAuth
+  const { signIn, user, loading: authLoading, authError } = useAuth(); // Renomeado 'loading' para 'authLoading' para evitar conflito com o state local de erro
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
@@ -14,6 +16,7 @@ const LoginPage = () => {
   const [errors, setErrors] = useState<{
     email?: string;
     password?: string;
+    general?: string; // Adicionado para exibir erros de autenticação do useAuth
   }>({});
 
   // Redirecionar se já estiver logado
@@ -23,6 +26,8 @@ const LoginPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrors({}); // Limpa erros anteriores
+
     const newErrors: {
       email?: string;
       password?: string;
@@ -44,10 +49,17 @@ const LoginPage = () => {
     }
 
     try {
+      // Chama a função signIn do seu hook useAuth
       await signIn(email, password);
-      // O redirecionamento será tratado automaticamente pelo contexto de auth
-    } catch (error) {
-      // Erros são tratados no hook useAuth
+      // O redirecionamento será tratado automaticamente pelo `if (user)` acima
+      // e pela lógica dentro do seu `useAuth` e `ProtectedRoute`
+    } catch (error: any) {
+      // Erros específicos de validação já são tratados antes
+      // Aqui, tratamos erros que vêm do processo de autenticação (e.g., credenciais inválidas)
+      // O useAuth já deve estar definindo um erro interno, mas para exibição direta no formulário:
+      // O ideal é que o `useAuth` retorne e/ou defina um estado de erro que você possa exibir.
+      // Se `authError` já for usado, essa parte pode ser redundante, mas serve como fallback.
+      setErrors(prev => ({ ...prev, general: error.message || 'Ocorreu um erro desconhecido.' }));
       console.error('Erro no login:', error);
     }
   };
@@ -55,6 +67,16 @@ const LoginPage = () => {
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);
   };
+
+  // Se o carregamento do useAuth for global (e.g., verificando sessão),
+  // podemos mostrar um estado de carregamento inicial aqui.
+  // No entanto, o `if (user)` já lida com o caso de logado,
+  // e o `authLoading` é para o processo de signIn.
+  // Se quiser um loading enquanto ele verifica a sessão inicial:
+  // if (authLoading && !user) {
+  //   return <p>Verificando sessão...</p>;
+  // }
+
 
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden login-animated-bg">
@@ -135,12 +157,18 @@ const LoginPage = () => {
                 </div>
               </div>
               
+              {/* Exibir erro geral vindo do useAuth ou da validação */}
+              {(errors.general || authError) && (
+                <p className="mt-1 mb-4 text-sm text-red-500 text-center">{errors.general || authError?.message || 'Erro de autenticação.'}</p>
+              )}
+
               <button 
                 type="submit"
-                disabled={loading}
+                // O botão fica desabilitado durante o processo de login ou se houver validação em andamento
+                disabled={authLoading || Object.keys(errors).length > 0} 
                 className="w-full bg-residuall-green-default hover:bg-residuall-gray-dark text-white font-medium py-3 px-4 rounded-lg transition-colors bg-orange-700 hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? 'Entrando...' : 'Acessar'}
+                {authLoading ? 'Entrando...' : 'Acessar'}
               </button>
             </form>
             
