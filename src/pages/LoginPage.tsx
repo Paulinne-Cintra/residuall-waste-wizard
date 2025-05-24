@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import Header from '../components/Header';
-// import Footer from '../components/Footer'; // REMOVEMOS o Footer
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -42,13 +41,16 @@ const LoginPage = () => {
   };
 
   return (
-    // Fundo gradiente com o padrão geométrico
+    // Fundo gradiente animado para a página de login
+    // Usamos as classes para o gradiente e a animação do body aqui.
     <div className="min-h-screen flex flex-col relative overflow-hidden
-                    bg-gradient-to-br from-residuall-green-default to-residuall-orange-burnt">
-      {/* Camada para o padrão geométrico sutil - Verifique se 'geometric-bg' está no CSS global */}
-      <div className="absolute inset-0 geometric-bg z-0"></div>
+                    bg-gradient-to-br from-residuall-green-default to-residuall-orange-burnt
+                    bg-[length:400%_400%] animate-[gradient-move_20s_ease_infinite]"> {/* Aplica as classes de animação */}
+      
+      {/* REMOVIDO: A div para o padrão geométrico estático */}
+      {/* <div className="absolute inset-0 geometric-bg z-0"></div> */}
 
-      {/* Header será translúcido, então ele vai flutuar sobre este gradiente */}
+      {/* Header translúcido */}
       <Header />
       
       {/* Conteúdo principal centralizado, acima do padrão geométrico */}
@@ -134,7 +136,6 @@ const LoginPage = () => {
               
               <button
                 type="submit"
-                // Ajuste para garantir que o texto seja visível
                 className="w-full bg-residuall-green-default hover:bg-residuall-gray-dark text-residuall-white font-medium py-3 px-4 rounded-lg transition-colors"
               >
                 Acessar
@@ -150,8 +151,6 @@ const LoginPage = () => {
           </div>
         </div>
       </main>
-      
-      {/* REMOVEMOS O FOOTER AQUI */}
     </div>
   );
 };
