@@ -95,30 +95,13 @@
   }
 
   body {
-    /* Mantenha o gradiente animado padrão para o body, mas a LoginPage vai sobrepor com seu próprio */
-    background: linear-gradient(
-      270deg,
-      theme('colors.residuall-green.DEFAULT'),
-      theme('colors.residuall-green.secondary'),
-      theme('colors.residuall-green.card'),
-      theme('colors.residuall-green.gradient')
-    );
-    background-size: 400% 400%;
-    animation: gradient-move 20s ease infinite;
-
+    /* O background do body será mais um fallback/global para outras páginas */
+    background: theme('colors.residuall-gray.dark'); /* Cor sólida para o body padrão */
     @apply text-foreground font-sans;
   }
 
   .dark body {
-    background: linear-gradient(
-      270deg,
-      theme('colors.sidebar.dark.DEFAULT'),
-      theme('colors.residuall-green.secondary'),
-      theme('colors.residuall-gray.dark'),
-      theme('colors.residuall-green.DEFAULT')
-    );
-    background-size: 400% 400%;
-    animation: gradient-move 25s ease infinite;
+    background: theme('colors.sidebar.dark.DEFAULT');
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -131,10 +114,21 @@
 }
 
 /* =======================
-    COMPLEMENTOS PERSONALIZADOS (HEADER)
+    COMPLEMENTOS PERSONALIZADOS
     ======================= */
 @layer components {
-  /* REMOVENDO a classe geometric-bg daqui */
+  /* Gradiente Animado para a Página de Login */
+  .login-animated-bg {
+    background: linear-gradient(
+      270deg,
+      theme('colors.residuall-green.DEFAULT'),
+      theme('colors.residuall-green.secondary'),
+      theme('colors.residuall-orange-burnt'), /* Um toque mais de laranja para o dinamismo */
+      theme('colors.residuall-green.DEFAULT')
+    );
+    background-size: 400% 400%; /* Essencial para a animação de movimento */
+    animation: gradient-move 20s ease infinite; /* Aplica a animação */
+  }
 
   /* Header Translúcido (Glassmorphism) */
   .header-glassmorphism {
@@ -144,7 +138,7 @@
     border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Borda sutil na parte inferior */
   }
 
-  /* INPUT FIELD customizado - Mantido aqui para uso geral */
+  /* Input Field customizado */
   .input-field {
     @apply w-full px-4 py-3 rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent;
   }
