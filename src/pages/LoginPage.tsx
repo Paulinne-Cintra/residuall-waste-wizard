@@ -41,19 +41,13 @@ const LoginPage = () => {
   };
 
   return (
-    // Fundo gradiente animado para a página de login
-    // Usamos as classes para o gradiente e a animação do body aqui.
-    <div className="min-h-screen flex flex-col relative overflow-hidden
-                    bg-gradient-to-br from-residuall-green-default to-residuall-orange-burnt
-                    bg-[length:400%_400%] animate-[gradient-move_20s_ease_infinite]"> {/* Aplica as classes de animação */}
+    // Aplicando a classe login-animated-bg aqui para o fundo dinâmico
+    <div className="min-h-screen flex flex-col relative overflow-hidden login-animated-bg">
       
-      {/* REMOVIDO: A div para o padrão geométrico estático */}
-      {/* <div className="absolute inset-0 geometric-bg z-0"></div> */}
-
       {/* Header translúcido */}
       <Header />
       
-      {/* Conteúdo principal centralizado, acima do padrão geométrico */}
+      {/* Conteúdo principal centralizado */}
       <main className="flex-grow flex items-center justify-center py-12 relative z-10 px-4">
         <div className="w-full max-w-md bg-residuall-white rounded-3xl shadow-sm overflow-hidden">
           <div className="p-8">
@@ -136,7 +130,8 @@ const LoginPage = () => {
               
               <button
                 type="submit"
-                className="w-full bg-residuall-green-default hover:bg-residuall-gray-dark text-residuall-white font-medium py-3 px-4 rounded-lg transition-colors"
+                // Garante um bom contraste para o botão "Acessar"
+                className="w-full bg-residuall-green-default hover:bg-residuall-gray-dark text-white font-medium py-3 px-4 rounded-lg transition-colors"
               >
                 Acessar
               </button>
