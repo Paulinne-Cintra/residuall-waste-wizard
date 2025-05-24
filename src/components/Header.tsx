@@ -1,4 +1,3 @@
-
 // src/components/Header.tsx
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
@@ -19,6 +18,7 @@ const Header = () => {
   };
 
   // Determinar a cor dos links baseado na página atual
+  // Na página de login, todos os links e logo ficarão brancos
   const linkTextColorClass = location.pathname === '/login' ? 'text-residuall-white' : 'text-residuall-gray-dark';
   const linkHoverColorClass = 'hover:text-residuall-orange-burnt transition-colors';
   const activeLinkClass = 'font-medium text-residuall-orange-burnt'; // Cor de destaque para o link ativo
