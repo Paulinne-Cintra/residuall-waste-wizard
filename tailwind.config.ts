@@ -20,7 +20,7 @@ export default {
 		},
 		extend: {
 			colors: {
-				// Manter suas cores de shadcn/ui e as suas existentes
+				// Manter suas cores de shadcn/ui
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',
@@ -54,21 +54,24 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
-				// Cores personalizadas da Residuall (Originalmente suas)
+				// Cores personalizadas da Residuall (Existentes + Novas)
 				'residuall-green': {
-					DEFAULT: '#1f2f29', // Verde Escuro Principal
+					DEFAULT: '#1f2f29', // Seu Verde Escuro Principal
 					secondary: '#2a4a3d', // Verde Médio
 					card: '#434b3c', // Verde para Card/Fundo
 					gradient: '#6e7848', // Cor do gradiente (final)
 					tag: '#46583a',
 				},
 				'residuall-brown': {
-					DEFAULT: '#ff8c42', // Seu marrom original, manteremos ele para outros usos
+					DEFAULT: '#ff8c42', // Seu marrom original, mantido
 				},
-				// Nova cor de destaque inspirada na imagem do Pinterest
-				'residuall-accent-orange': '#C55323', // Laranja terroso da nova inspiração
+				// Nova cor de destaque para o laranja queimado
+				'residuall-orange-burnt': '#BF6A33', // Seu novo laranja queimado
+				
+				'residuall-accent-orange': '#C55323', // Seu laranja terroso original (mantido)
+
 				'residuall-gray': {
-					light: '#F8F8F8', // Geralmente para fundos claros (manter e usar mais)
+					light: '#F8F8F8', // Geralmente para fundos claros
 					DEFAULT: '#c4c2c2', // Cinza médio
 					dark: '#252525', // Cinza escuro
 					text: '#f4f4f4', // Texto claro (para fundos escuros)
