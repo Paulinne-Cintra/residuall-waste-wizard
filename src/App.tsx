@@ -5,6 +5,10 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
+// Auth Provider
+import { AuthProvider } from "@/hooks/useAuth";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
+
 // Páginas principais do site
 import HomePage from "./pages/HomePage";
 import AboutPage from "./pages/AboutPage";
@@ -34,37 +38,43 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          {/* Rotas públicas */}
-          <Route path="/" element={<HomePage />} />
-          <Route path="/sobre" element={<AboutPage />} />
-          <Route path="/planos" element={<PlansPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/cadastro" element={<RegisterPage />} />
-          
-          {/* Rotas do dashboard (protegidas) */}
-          <Route path="/dashboard" element={<DashboardLayout />}>
-            <Route index element={<Dashboard />} />
-            <Route path="projetos" element={<ProjectsPage />} />
-            <Route path="projetos/:projectId" element={<ProjectDetailPage />} />
-            <Route path="materiais" element={<MaterialsPage />} />
-            <Route path="relatorios" element={<ReportsPage />} />
-            <Route path="relatorios/:reportId" element={<ReportDetailPage />} />
-            <Route path="time" element={<TeamPage />} />
-            <Route path="perfil" element={<ProfilePage />} />
-            <Route path="recomendacoes" element={<RecommendationsPage />} />
-            <Route path="configuracoes" element={<SettingsPage />} />
-            <Route path="arquivados" element={<ArquivadosPage />} />
-            <Route path="ajuda" element={<AjudaPage />} />
-          </Route>
-          
-          {/* Rota 404 */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      <AuthProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            {/* Rotas públicas */}
+            <Route path="/" element={<HomePage />} />
+            <Route path="/sobre" element={<AboutPage />} />
+            <Route path="/planos" element={<PlansPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/cadastro" element={<RegisterPage />} />
+            
+            {/* Rotas do dashboard (protegidas) */}
+            <Route path="/dashboard" element={
+              <ProtectedRoute>
+                <DashboardLayout />
+              </ProtectedRoute>
+            }>
+              <Route index element={<Dashboard />} />
+              <Route path="projetos" element={<ProjectsPage />} />
+              <Route path="projetos/:projectId" element={<ProjectDetailPage />} />
+              <Route path="materiais" element={<MaterialsPage />} />
+              <Route path="relatorios" element={<ReportsPage />} />
+              <Route path="relatorios/:reportId" element={<ReportDetailPage />} />
+              <Route path="time" element={<TeamPage />} />
+              <Route path="perfil" element={<ProfilePage />} />
+              <Route path="recomendacoes" element={<RecommendationsPage />} />
+              <Route path="configuracoes" element={<SettingsPage />} />
+              <Route path="arquivados" element={<ArquivadosPage />} />
+              <Route path="ajuda" element={<AjudaPage />} />
+            </Route>
+            
+            {/* Rota 404 */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
