@@ -9,7 +9,139 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      materials: {
+        Row: {
+          cost_per_unit: number | null
+          created_at: string
+          id: string
+          name: string
+          project_id: string
+          quantity: number | null
+          reused_percentage: number | null
+          type: string | null
+          unit: string | null
+        }
+        Insert: {
+          cost_per_unit?: number | null
+          created_at?: string
+          id?: string
+          name: string
+          project_id: string
+          quantity?: number | null
+          reused_percentage?: number | null
+          type?: string | null
+          unit?: string | null
+        }
+        Update: {
+          cost_per_unit?: number | null
+          created_at?: string
+          id?: string
+          name?: string
+          project_id?: string
+          quantity?: number | null
+          reused_percentage?: number | null
+          type?: string | null
+          unit?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "materials_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          id: string
+          name: string | null
+          role: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          id: string
+          name?: string | null
+          role?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          id?: string
+          name?: string | null
+          role?: string | null
+        }
+        Relationships: []
+      }
+      projects: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      reports: {
+        Row: {
+          created_at: string
+          economy_generated: number | null
+          id: string
+          project_id: string | null
+          report_date: string
+          user_id: string
+          waste_avoided_tons: number | null
+        }
+        Insert: {
+          created_at?: string
+          economy_generated?: number | null
+          id?: string
+          project_id?: string | null
+          report_date?: string
+          user_id: string
+          waste_avoided_tons?: number | null
+        }
+        Update: {
+          created_at?: string
+          economy_generated?: number | null
+          id?: string
+          project_id?: string | null
+          report_date?: string
+          user_id?: string
+          waste_avoided_tons?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reports_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

@@ -1,9 +1,12 @@
-// src/pages/LoginPage.tsx
+
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import Header from '../components/Header';
+import { useAuth } from '@/hooks/useAuth';
+
 const LoginPage = () => {
+  const { signIn, user, loading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
@@ -12,48 +15,54 @@ const LoginPage = () => {
     email?: string;
     password?: string;
   }>({});
-  const handleSubmit = (e: React.FormEvent) => {
+
+  // Redirecionar se já estiver logado
+  if (user) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const newErrors: {
       email?: string;
       password?: string;
     } = {};
+
     if (!email) {
       newErrors.email = 'O e-mail é obrigatório';
     } else if (!/\S+@\S+\.\S+/.test(email)) {
       newErrors.email = 'Por favor, insira um e-mail válido';
     }
+
     if (!password) {
       newErrors.password = 'A senha é obrigatória';
     }
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
 
-    // Aqui seria a integração com a API para login
-    console.log('Login com:', {
-      email,
-      password,
-      rememberMe
-    });
-    window.location.href = '/dashboard';
+    try {
+      await signIn(email, password);
+      // O redirecionamento será tratado automaticamente pelo contexto de auth
+    } catch (error) {
+      // Erros são tratados no hook useAuth
+      console.error('Erro no login:', error);
+    }
   };
+
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);
   };
+
   return (
-    // Aplicando a classe login-animated-bg aqui para o fundo dinâmico
     <div className="min-h-screen flex flex-col relative overflow-hidden login-animated-bg">
-      
-      {/* Header translúcido */}
       <Header />
       
-      {/* Conteúdo principal centralizado */}
       <main className="flex-grow flex items-center justify-center py-12 relative z-10 px-4">
         <div className="w-full max-w-md bg-residuall-white rounded-3xl shadow-sm overflow-hidden">
           <div className="p-8">
-            {/* Títulos estilo Otake */}
             <p className="text-center text-sm font-semibold text-residuall-orange-burnt mb-2">
                 RESIDUALL Login
             </p>
@@ -66,9 +75,16 @@ const LoginPage = () => {
                 <label htmlFor="email" className="block text-sm font-medium text-residuall-gray-dark mb-2">
                   E-mail
                 </label>
-                <input id="email" type="email" className={`w-full p-3 border border-residuall-gray-default rounded-md 
+                <input 
+                  id="email" 
+                  type="email" 
+                  className={`w-full p-3 border border-residuall-gray-default rounded-md 
                               focus:outline-none focus:ring-1 focus:ring-residuall-green-default 
-                              ${errors.email ? 'border-red-500' : ''}`} placeholder="seu@email.com" value={email} onChange={e => setEmail(e.target.value)} />
+                              ${errors.email ? 'border-red-500' : ''}`} 
+                  placeholder="seu@email.com" 
+                  value={email} 
+                  onChange={e => setEmail(e.target.value)} 
+                />
                 {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
               </div>
               
@@ -77,10 +93,21 @@ const LoginPage = () => {
                   Senha
                 </label>
                 <div className="relative">
-                  <input id="password" type={showPassword ? "text" : "password"} className={`w-full p-3 pr-10 border border-residuall-gray-default rounded-md 
+                  <input 
+                    id="password" 
+                    type={showPassword ? "text" : "password"} 
+                    className={`w-full p-3 pr-10 border border-residuall-gray-default rounded-md 
                                 focus:outline-none focus:ring-1 focus:ring-residuall-green-default 
-                                ${errors.password ? 'border-red-500' : ''}`} placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} />
-                  <button type="button" className="absolute inset-y-0 right-0 pr-3 flex items-center text-residuall-gray-dark" onClick={toggleShowPassword}>
+                                ${errors.password ? 'border-red-500' : ''}`} 
+                    placeholder="••••••••" 
+                    value={password} 
+                    onChange={e => setPassword(e.target.value)} 
+                  />
+                  <button 
+                    type="button" 
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-residuall-gray-dark" 
+                    onClick={toggleShowPassword}
+                  >
                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
                 </div>
@@ -89,7 +116,13 @@ const LoginPage = () => {
               
               <div className="flex items-center justify-between mb-6 text-residuall-gray-dark">
                 <div className="flex items-center">
-                  <input id="remember-me" type="checkbox" className="h-4 w-4 text-residuall-green-default border-residuall-gray-default rounded focus:ring-residuall-green-default" checked={rememberMe} onChange={() => setRememberMe(!rememberMe)} />
+                  <input 
+                    id="remember-me" 
+                    type="checkbox" 
+                    className="h-4 w-4 text-residuall-green-default border-residuall-gray-default rounded focus:ring-residuall-green-default" 
+                    checked={rememberMe} 
+                    onChange={() => setRememberMe(!rememberMe)} 
+                  />
                   <label htmlFor="remember-me" className="ml-2 block text-sm">
                     Lembre-se
                   </label>
@@ -102,10 +135,12 @@ const LoginPage = () => {
                 </div>
               </div>
               
-              <button type="submit"
-              // Garante um bom contraste para o botão "Acessar"
-              className="w-full bg-residuall-green-default hover:bg-residuall-gray-dark text-white font-medium py-3 px-4 rounded-lg transition-colors bg-orange-700 hover:bg-orange-600">
-                Acessar
+              <button 
+                type="submit"
+                disabled={loading}
+                className="w-full bg-residuall-green-default hover:bg-residuall-gray-dark text-white font-medium py-3 px-4 rounded-lg transition-colors bg-orange-700 hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? 'Entrando...' : 'Acessar'}
               </button>
             </form>
             
@@ -121,4 +156,5 @@ const LoginPage = () => {
     </div>
   );
 };
+
 export default LoginPage;
