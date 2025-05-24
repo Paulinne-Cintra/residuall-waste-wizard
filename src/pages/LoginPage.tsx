@@ -1,3 +1,4 @@
+// src/pages/LoginPage.tsx
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
@@ -9,47 +10,45 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [errors, setErrors] = useState<{
-    email?: string;
-    password?: string;
-  }>({});
+  const [errors, setErrors] = useState<{email?: string; password?: string}>({});
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const newErrors: {
-      email?: string;
-      password?: string;
-    } = {};
+    
+    const newErrors: {email?: string; password?: string} = {};
+    
     if (!email) {
       newErrors.email = 'O e-mail é obrigatório';
     } else if (!/\S+@\S+\.\S+/.test(email)) {
       newErrors.email = 'Por favor, insira um e-mail válido';
     }
+    
     if (!password) {
       newErrors.password = 'A senha é obrigatória';
     }
+    
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
-
+    
     // Aqui seria a integração com a API para login
-    console.log('Login com:', {
-      email,
-      password,
-      rememberMe
-    });
+    console.log('Login com:', { email, password, rememberMe });
     window.location.href = '/dashboard';
   };
+
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);
   };
+
   return (
     // Fundo gradiente com o padrão geométrico
     <div className="min-h-screen flex flex-col relative overflow-hidden
                     bg-gradient-to-br from-residuall-green-default to-residuall-orange-burnt">
-      {/* Camada para o padrão geométrico sutil */}
+      {/* Camada para o padrão geométrico sutil - Verifique se 'geometric-bg' está no CSS global */}
       <div className="absolute inset-0 geometric-bg z-0"></div>
 
+      {/* Header será translúcido, então ele vai flutuar sobre este gradiente */}
       <Header />
       
       {/* Conteúdo principal centralizado, acima do padrão geométrico */}
@@ -69,12 +68,19 @@ const LoginPage = () => {
                 <label htmlFor="email" className="block text-sm font-medium text-residuall-gray-dark mb-2">
                   E-mail
                 </label>
-                <input id="email" type="email"
-                // Removido 'input-field' e adicionadas classes Tailwind diretas
-                className={`w-full p-3 border border-residuall-gray-default rounded-md 
+                <input
+                  id="email"
+                  type="email"
+                  className={`w-full p-3 border border-residuall-gray-default rounded-md 
                               focus:outline-none focus:ring-1 focus:ring-residuall-green-default 
-                              ${errors.email ? 'border-red-500' : ''}`} placeholder="seu@email.com" value={email} onChange={e => setEmail(e.target.value)} />
-                {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
+                              ${errors.email ? 'border-red-500' : ''}`}
+                  placeholder="seu@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+                {errors.email && (
+                  <p className="mt-1 text-sm text-red-500">{errors.email}</p>
+                )}
               </div>
               
               <div className="mb-6">
@@ -82,23 +88,38 @@ const LoginPage = () => {
                   Senha
                 </label>
                 <div className="relative">
-                  <input id="password" type={showPassword ? "text" : "password"}
-                  // Removido 'input-field' e adicionadas classes Tailwind diretas
-                  className={`w-full p-3 pr-10 border border-residuall-gray-default rounded-md 
+                  <input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    className={`w-full p-3 pr-10 border border-residuall-gray-default rounded-md 
                                 focus:outline-none focus:ring-1 focus:ring-residuall-green-default 
-                                ${errors.password ? 'border-red-500' : ''}`} placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} />
-                  <button type="button" className="absolute inset-y-0 right-0 pr-3 flex items-center text-residuall-gray-dark" onClick={toggleShowPassword}>
+                                ${errors.password ? 'border-red-500' : ''}`}
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-residuall-gray-dark"
+                    onClick={toggleShowPassword}
+                  >
                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
                 </div>
-                {errors.password && <p className="mt-1 text-sm text-red-500">{errors.password}</p>}
+                {errors.password && (
+                  <p className="mt-1 text-sm text-red-500">{errors.password}</p>
+                )}
               </div>
               
               <div className="flex items-center justify-between mb-6 text-residuall-gray-dark">
                 <div className="flex items-center">
-                  <input id="remember-me" type="checkbox"
-                  // Ajuste a cor do checkbox para sua paleta
-                  className="h-4 w-4 text-residuall-green-default border-residuall-gray-default rounded focus:ring-residuall-green-default" checked={rememberMe} onChange={() => setRememberMe(!rememberMe)} />
+                  <input
+                    id="remember-me"
+                    type="checkbox"
+                    className="h-4 w-4 text-residuall-green-default border-residuall-gray-default rounded focus:ring-residuall-green-default"
+                    checked={rememberMe}
+                    onChange={() => setRememberMe(!rememberMe)}
+                  />
                   <label htmlFor="remember-me" className="ml-2 block text-sm">
                     Lembre-se
                   </label>
@@ -113,8 +134,8 @@ const LoginPage = () => {
               
               <button
                 type="submit"
-                // Garanta que text-white esteja aqui para que o texto seja branco
-                className="w-full bg-residuall-green-default hover:bg-residuall-gray-dark text-white font-medium py-3 px-4 rounded-lg transition-colors"
+                // Ajuste para garantir que o texto seja visível
+                className="w-full bg-residuall-green-default hover:bg-residuall-gray-dark text-residuall-white font-medium py-3 px-4 rounded-lg transition-colors"
               >
                 Acessar
               </button>
@@ -131,8 +152,8 @@ const LoginPage = () => {
       </main>
       
       {/* REMOVEMOS O FOOTER AQUI */}
-      {/* <Footer /> */}
     </div>
   );
 };
+
 export default LoginPage;
