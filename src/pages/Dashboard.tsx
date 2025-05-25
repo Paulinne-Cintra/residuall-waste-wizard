@@ -1,268 +1,135 @@
 
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Briefcase, TrendingUp, TrendingDown, CheckCircle, AlertTriangle } from 'lucide-react';
-import DashboardHeader from '../components/DashboardHeader';
-import Chart from '../components/Chart';
+import React from 'react';
+import { Search, Bell, ChevronDown, LogOut } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
+import { useProjects } from '@/hooks/useProjects';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
-const Dashboard = () => {
-  // Dados de exemplo para os gráficos
-  const wasteByStageData = [
-    { name: 'Fundação', value: 25 },
-    { name: 'Estrutura', value: 35 },
-    { name: 'Alvenaria', value: 20 },
-    { name: 'Acabamento', value: 15 },
-    { name: 'Instalações', value: 5 },
-  ];
+const Dashboard: React.FC = () => {
+  const navigate = useNavigate();
+  const { signOut, user } = useAuth();
+  const { projects, loading, error } = useProjects();
 
-  const materialReuseData = [
-    { name: 'Concreto', reused: 45, wasted: 55 },
-    { name: 'Madeira', reused: 70, wasted: 30 },
-    { name: 'Metais', reused: 80, wasted: 20 },
-    { name: 'Cerâmica', reused: 25, wasted: 75 },
-    { name: 'Gesso', reused: 35, wasted: 65 },
-  ];
+  // Calcula o número de projetos ativos
+  const activeProjectsCount = projects.filter(p => p.status === 'active').length;
 
-  const monthlyTrendsData = [
-    { name: 'Jan', economia: 12000, desperdicio: 15000 },
-    { name: 'Fev', economia: 19000, desperdicio: 12000 },
-    { name: 'Mar', economia: 15000, desperdicio: 10000 },
-    { name: 'Abr', economia: 21000, desperdicio: 8000 },
-    { name: 'Mai', economia: 28000, desperdicio: 7500 },
-    { name: 'Jun', economia: 32000, desperdicio: 6000 },
-  ];
+  const handleLogout = async () => {
+    try {
+      console.log('Dashboard - Iniciando logout...');
+      await signOut();
+      navigate('/login', { replace: true });
+      console.log('Dashboard - Navegando para /login após logout');
+    } catch (error) {
+      console.error('Dashboard - Erro ao fazer logout:', error);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-residuall-gray-light flex">
-      
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <DashboardHeader />
-        
-        <main className="flex-1 overflow-y-auto p-4 md:p-6">
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold text-residuall-gray-dark">Dashboard</h1>
-            <p className="text-residuall-gray">Bem-vindo!</p>
-          </div>
-          
-          {/* Cards de Indicadores */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div className="dashboard-card bg-white">
-              <h3 className="text-residuall-gray-dark font-medium mb-2">Projetos Ativos</h3>
-              <div className="flex items-center justify-between">
-                <div className="text-3xl font-bold text-residuall-gray-dark">12</div>
-                <div className="bg-residuall-green bg-opacity-10 p-2 rounded-full">
-                  <Briefcase size={24} className="text-residuall-green" />
-                </div>
+    <div className="p-0">
+      {/* Header com busca e perfil */}
+      <div className="bg-white shadow-sm py-4 px-6 flex items-center justify-between mb-6 rounded-lg">
+        <div className="flex items-center flex-grow">
+          <Search size={20} className="text-gray-400 mr-3" />
+          <input
+            type="text"
+            placeholder="Buscar projetos, relatórios..."
+            className="flex-grow py-2 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-residuall-green"
+          />
+        </div>
+        <div className="flex items-center space-x-4 ml-auto">
+          <button className="p-2 text-gray-600 hover:text-residuall-green transition-colors">
+            <Bell size={20} />
+          </button>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <div className="flex items-center cursor-pointer">
+                <img
+                  src="https://via.placeholder.com/32"
+                  alt="User Avatar"
+                  className="w-8 h-8 rounded-full mr-2"
+                />
+                <span className="text-gray-700 font-medium hidden md:block">
+                  {user?.user_metadata?.name || user?.email || 'Usuário'}
+                </span>
+                <ChevronDown size={16} className="text-gray-500 ml-1 hidden md:block" />
               </div>
-              <div className="mt-4">
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-residuall-green h-2 rounded-full" style={{ width: '75%' }}></div>
-                </div>
-                <p className="text-xs text-residuall-gray mt-1">75% dos projetos em andamento</p>
-              </div>
-            </div>
-            
-            <div className="dashboard-card bg-white">
-              <h3 className="text-residuall-gray-dark font-medium mb-2">Economia Gerada</h3>
-              <div className="flex items-center justify-between">
-                <div className="text-3xl font-bold text-residuall-green">R$ 32.450</div>
-                <div className="bg-residuall-green bg-opacity-10 p-2 rounded-full">
-                  <TrendingUp size={24} className="text-residuall-green" />
-                </div>
-              </div>
-              <div className="flex items-center mt-4">
-                <span className="text-residuall-green text-sm mr-2">+18%</span>
-                <span className="text-xs text-residuall-gray">comparado ao mês anterior</span>
-              </div>
-            </div>
-            
-            <div className="dashboard-card bg-white">
-              <h3 className="text-residuall-gray-dark font-medium mb-2">Materiais Reaproveitados</h3>
-              <div className="flex items-center justify-between">
-                <div className="text-3xl font-bold text-residuall-green">65%</div>
-                <div className="bg-residuall-green bg-opacity-10 p-2 rounded-full">
-                  <CheckCircle size={24} className="text-residuall-green" />
-                </div>
-              </div>
-              <div className="flex items-center mt-4">
-                <span className="text-residuall-green text-sm mr-2">+12%</span>
-                <span className="text-xs text-residuall-gray">comparado ao mês anterior</span>
-              </div>
-            </div>
-            
-            <div className="dashboard-card bg-white">
-              <h3 className="text-residuall-gray-dark font-medium mb-2">Desperdício Evitado</h3>
-              <div className="flex items-center justify-between">
-                <div className="text-3xl font-bold text-residuall-brown">2.8 ton</div>
-                <div className="bg-residuall-brown bg-opacity-10 p-2 rounded-full">
-                  <TrendingDown size={24} className="text-residuall-brown" />
-                </div>
-              </div>
-              <div className="flex items-center mt-4">
-                <span className="text-residuall-brown text-sm mr-2">-25%</span>
-                <span className="text-xs text-residuall-gray">comparado ao mês anterior</span>
-              </div>
-            </div>
-          </div>
-          
-          {/* Gráficos */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            <div className="dashboard-card">
-              <h3 className="text-lg font-medium text-residuall-gray-dark mb-4">
-                Economia x Desperdício
-              </h3>
-              <Chart 
-                type="line" 
-                data={monthlyTrendsData} 
-                height={250} 
-              />
-            </div>
-            
-            <div className="dashboard-card">
-              <h3 className="text-lg font-medium text-residuall-gray-dark mb-4">
-                Desperdício por Etapa
-              </h3>
-              <Chart 
-                type="pie" 
-                data={wasteByStageData} 
-                height={250} 
-              />
-            </div>
-          </div>
-          
-          {/* Projetos Recentes e Recomendações */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="dashboard-card lg:col-span-2">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-medium text-residuall-gray-dark">
-                  Projetos Recentes
-                </h3>
-                <Link to="/dashboard/projetos" className="text-sm text-residuall-green hover:underline">
-                  Ver todos
-                </Link>
-              </div>
-              
-              <div className="space-y-4">
-                <div className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h4 className="font-medium text-residuall-gray-dark">Edifício Aurora</h4>
-                      <p className="text-sm text-residuall-gray">São Paulo, SP</p>
-                    </div>
-                    <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
-                      Em andamento
-                    </span>
-                  </div>
-                  <div className="mt-3">
-                    <div className="flex justify-between text-sm mb-1">
-                      <span>Progresso</span>
-                      <span className="font-medium">75%</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div
-                        className="bg-residuall-green h-2 rounded-full"
-                        style={{ width: '75%' }}
-                      ></div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h4 className="font-medium text-residuall-gray-dark">Residencial Parque Verde</h4>
-                      <p className="text-sm text-residuall-gray">Curitiba, PR</p>
-                    </div>
-                    <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
-                      Iniciando
-                    </span>
-                  </div>
-                  <div className="mt-3">
-                    <div className="flex justify-between text-sm mb-1">
-                      <span>Progresso</span>
-                      <span className="font-medium">25%</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div
-                        className="bg-residuall-green h-2 rounded-full"
-                        style={{ width: '25%' }}
-                      ></div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h4 className="font-medium text-residuall-gray-dark">Torre Corporativa Horizonte</h4>
-                      <p className="text-sm text-residuall-gray">Rio de Janeiro, RJ</p>
-                    </div>
-                    <span className="px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800">
-                      Finalizado
-                    </span>
-                  </div>
-                  <div className="mt-3">
-                    <div className="flex justify-between text-sm mb-1">
-                      <span>Progresso</span>
-                      <span className="font-medium">100%</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div
-                        className="bg-residuall-green h-2 rounded-full"
-                        style={{ width: '100%' }}
-                      ></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="dashboard-card">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-medium text-residuall-gray-dark">
-                  Recomendações
-                </h3>
-                <Link to="/dashboard/recomendacoes" className="text-sm text-residuall-green hover:underline">
-                  Ver todas
-                </Link>
-              </div>
-              
-              <div className="space-y-3">
-                <div className="flex items-start p-3 border border-gray-200 rounded-lg">
-                  <CheckCircle size={18} className="text-green-500 mr-3 mt-0.5 shrink-0" />
-                  <div>
-                    <p className="text-sm text-residuall-gray-dark">Reutilize o concreto excedente da fundação para pequenos elementos decorativos.</p>
-                    <p className="text-xs text-residuall-gray mt-1">Edifício Aurora</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start p-3 border border-gray-200 rounded-lg">
-                  <AlertTriangle size={18} className="text-residuall-brown mr-3 mt-0.5 shrink-0" />
-                  <div>
-                    <p className="text-sm text-residuall-gray-dark">Alto desperdício de cerâmica detectado no Residencial Parque Verde.</p>
-                    <p className="text-xs text-residuall-gray mt-1">Ação recomendada: Revisar processo de corte</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start p-3 border border-gray-200 rounded-lg">
-                  <CheckCircle size={18} className="text-green-500 mr-3 mt-0.5 shrink-0" />
-                  <div>
-                    <p className="text-sm text-residuall-gray-dark">Madeira dos tapumes pode ser reutilizada para formas de concreto menores.</p>
-                    <p className="text-xs text-residuall-gray mt-1">Torre Corporativa Horizonte</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start p-3 border border-gray-200 rounded-lg">
-                  <AlertTriangle size={18} className="text-residuall-brown mr-3 mt-0.5 shrink-0" />
-                  <div>
-                    <p className="text-sm text-residuall-gray-dark">Potencial para reduzir em 15% o uso de argamassa com melhor controle de espessura.</p>
-                    <p className="text-xs text-residuall-gray mt-1">Edifício Aurora</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </main>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-48">
+              <DropdownMenuItem onClick={() => navigate('/dashboard/perfil')}>
+                Meu Perfil
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate('/dashboard/configuracoes')}>
+                Configurações
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleLogout} className="text-red-600 cursor-pointer">
+                <LogOut size={16} className="mr-2" /> Sair
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <button className="bg-residuall-green text-white px-4 py-2 rounded-lg font-medium hover:bg-residuall-green/90 transition-colors hidden md:block">
+            Publish
+          </button>
+        </div>
+      </div>
+
+      {/* Título do Dashboard */}
+      <h1 className="text-3xl font-bold text-gray-800 mb-6 px-6">Dashboard</h1>
+      <p className="text-gray-600 mb-8 px-6">Bem-vindo!</p>
+
+      {/* Cards de indicadores */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 px-6">
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <h3 className="text-lg font-semibold text-gray-700">Projetos Ativos</h3>
+          {loading ? (
+            <p className="text-4xl font-bold text-residuall-green">...</p>
+          ) : error ? (
+            <p className="text-red-500">Erro: {error}</p>
+          ) : (
+            <p className="text-4xl font-bold text-residuall-green">{activeProjectsCount}</p>
+          )}
+          <p className="text-sm text-gray-500 mt-2">
+            {projects.length > 0 
+              ? `${projects.length} projeto${projects.length > 1 ? 's' : ''} total`
+              : 'Nenhum projeto'
+            }
+          </p>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <h3 className="text-lg font-semibold text-gray-700">Economia Gerada</h3>
+          <p className="text-4xl font-bold text-gray-900">R$ 32.450</p>
+          <p className="text-sm text-green-500 mt-2">+18% comparado ao mês anterior</p>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <h3 className="text-lg font-semibold text-gray-700">Materiais Reaproveitados</h3>
+          <p className="text-4xl font-bold text-gray-900">65%</p>
+          <p className="text-sm text-green-500 mt-2">+12% comparado ao mês anterior</p>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <h3 className="text-lg font-semibold text-gray-700">Desperdício Evitado</h3>
+          <p className="text-4xl font-bold text-gray-900">2.8 ton</p>
+          <p className="text-sm text-red-500 mt-2">-25% comparado ao mês anterior</p>
+        </div>
+      </div>
+
+      {/* Seções de gráficos */}
+      <div className="bg-white p-6 rounded-lg shadow-md mb-6 mx-6">
+        <h3 className="text-lg font-semibold text-gray-700 mb-4">Economia x Desperdício</h3>
+        <div className="w-full h-48 bg-gray-100 rounded flex items-center justify-center">
+          <p className="text-gray-500">Gráfico de Economia x Desperdício</p>
+        </div>
+      </div>
+
+      <div className="bg-white p-6 rounded-lg shadow-md mx-6">
+        <h3 className="text-lg font-semibold text-gray-700 mb-4">Desperdício por Etapa</h3>
+        <div className="w-full h-48 bg-gray-100 rounded flex items-center justify-center">
+          <p className="text-gray-500">Gráfico de Desperdício por Etapa</p>
+        </div>
       </div>
     </div>
   );
