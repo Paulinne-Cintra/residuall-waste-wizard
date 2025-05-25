@@ -4,15 +4,29 @@ import { Search, Bell, ChevronDown, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useProjects } from '@/hooks/useProjects';
+import { useMaterials } from '@/hooks/useMaterials';
+import { useReports } from '@/hooks/useReports';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { signOut, user } = useAuth();
-  const { projects, loading, error } = useProjects();
+  const { projects, loading: loadingProjects, error: errorProjects } = useProjects();
+  const { materials, loading: loadingMaterials, error: errorMaterials } = useMaterials();
+  const { reports, loading: loadingReports, error: errorReports } = useReports();
 
   // Calcula o número de projetos ativos
   const activeProjectsCount = projects.filter(p => p.status === 'active').length;
+  
+  // Calcula total de materiais reaproveitados (baseado na porcentagem de reuso)
+  const totalMaterialsReused = materials.reduce((sum, m) => {
+    const quantity = m.quantity || 0;
+    const reusedPercentage = m.reused_percentage || 0;
+    return sum + (quantity * reusedPercentage / 100);
+  }, 0);
+
+  // Calcula economia total dos relatórios
+  const totalEconomy = reports.reduce((sum, r) => sum + (r.economy_generated || 0), 0);
 
   const handleLogout = async () => {
     try {
@@ -83,10 +97,10 @@ const Dashboard: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 px-6">
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h3 className="text-lg font-semibold text-gray-700">Projetos Ativos</h3>
-          {loading ? (
+          {loadingProjects ? (
             <p className="text-4xl font-bold text-residuall-green">...</p>
-          ) : error ? (
-            <p className="text-red-500">Erro: {error}</p>
+          ) : errorProjects ? (
+            <p className="text-red-500">Erro: {errorProjects}</p>
           ) : (
             <p className="text-4xl font-bold text-residuall-green">{activeProjectsCount}</p>
           )}
@@ -100,20 +114,42 @@ const Dashboard: React.FC = () => {
 
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h3 className="text-lg font-semibold text-gray-700">Economia Gerada</h3>
-          <p className="text-4xl font-bold text-gray-900">R$ 32.450</p>
-          <p className="text-sm text-green-500 mt-2">+18% comparado ao mês anterior</p>
+          {loadingReports ? (
+            <p className="text-4xl font-bold text-gray-900">...</p>
+          ) : errorReports ? (
+            <p className="text-red-500">Erro: {errorReports}</p>
+          ) : (
+            <p className="text-4xl font-bold text-gray-900">
+              R$ {totalEconomy.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            </p>
+          )}
+          <p className="text-sm text-green-500 mt-2">Baseado nos relatórios</p>
         </div>
 
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h3 className="text-lg font-semibold text-gray-700">Materiais Reaproveitados</h3>
-          <p className="text-4xl font-bold text-gray-900">65%</p>
-          <p className="text-sm text-green-500 mt-2">+12% comparado ao mês anterior</p>
+          {loadingMaterials ? (
+            <p className="text-4xl font-bold text-gray-900">...</p>
+          ) : errorMaterials ? (
+            <p className="text-red-500">Erro: {errorMaterials}</p>
+          ) : (
+            <p className="text-4xl font-bold text-gray-900">{Math.round(totalMaterialsReused)}</p>
+          )}
+          <p className="text-sm text-green-500 mt-2">
+            {materials.length > 0 ? `${materials.length} materiais cadastrados` : 'Nenhum material cadastrado'}
+          </p>
         </div>
 
         <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-lg font-semibold text-gray-700">Desperdício Evitado</h3>
-          <p className="text-4xl font-bold text-gray-900">2.8 ton</p>
-          <p className="text-sm text-red-500 mt-2">-25% comparado ao mês anterior</p>
+          <h3 className="text-lg font-semibold text-gray-700">Relatórios Gerados</h3>
+          {loadingReports ? (
+            <p className="text-4xl font-bold text-gray-900">...</p>
+          ) : errorReports ? (
+            <p className="text-red-500">Erro: {errorReports}</p>
+          ) : (
+            <p className="text-4xl font-bold text-gray-900">{reports.length}</p>
+          )}
+          <p className="text-sm text-gray-500 mt-2">Total de relatórios</p>
         </div>
       </div>
 
