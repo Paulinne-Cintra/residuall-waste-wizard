@@ -5,11 +5,11 @@ import { useAuth } from '@/hooks/useAuth';
 
 interface Report {
   id: string;
-  user_id: string;
-  project_id: string | null;
-  report_date: string;
-  economy_generated: number | null;
-  waste_avoided_tons: number | null;
+  project_id: string;
+  material_type_name: string;
+  total_wasted_quantity: number;
+  total_economy_generated: number;
+  project_name: string;
   created_at: string;
 }
 
@@ -38,18 +38,56 @@ export const useReports = (): UseReportsResult => {
 
       try {
         console.log('Buscando relatórios para o usuário:', user.id);
+        
+        // Buscar dados agregados de desperdício por material e projeto
         const { data, error } = await supabase
-          .from('reports')
-          .select('*')
-          .eq('user_id', user.id);
+          .from('waste_entries')
+          .select(`
+            wasted_quantity,
+            project_materials!inner(
+              id,
+              material_type_name,
+              cost_per_unit,
+              project_id,
+              projects!inner(
+                name,
+                user_id
+              )
+            )
+          `)
+          .eq('project_materials.projects.user_id', user.id);
 
         if (error) {
           console.error('Erro ao buscar relatórios:', error);
           throw error;
         }
         
-        console.log('Relatórios encontrados:', data);
-        setReports(data as Report[]);
+        console.log('Dados de desperdício encontrados:', data);
+        
+        // Agregar dados por material e projeto
+        const aggregatedReports: Record<string, Report> = {};
+        
+        data?.forEach((entry: any) => {
+          const key = `${entry.project_materials.project_id}-${entry.project_materials.material_type_name}`;
+          
+          if (!aggregatedReports[key]) {
+            aggregatedReports[key] = {
+              id: key,
+              project_id: entry.project_materials.project_id,
+              material_type_name: entry.project_materials.material_type_name,
+              total_wasted_quantity: 0,
+              total_economy_generated: 0,
+              project_name: entry.project_materials.projects.name,
+              created_at: new Date().toISOString()
+            };
+          }
+          
+          aggregatedReports[key].total_wasted_quantity += entry.wasted_quantity;
+          aggregatedReports[key].total_economy_generated += 
+            entry.wasted_quantity * (entry.project_materials.cost_per_unit || 0);
+        });
+        
+        setReports(Object.values(aggregatedReports));
       } catch (err: any) {
         console.error('Erro na busca de relatórios:', err);
         setError(err.message);

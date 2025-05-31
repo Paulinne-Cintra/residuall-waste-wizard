@@ -6,13 +6,13 @@ import { useAuth } from '@/hooks/useAuth';
 interface Material {
   id: string;
   project_id: string;
-  name: string;
-  type: string | null;
-  quantity: number | null;
-  unit: string | null;
+  material_type_name: string;
+  estimated_quantity: number | null;
+  unit_of_measurement: string | null;
+  dimensions_specs: string | null;
   cost_per_unit: number | null;
-  reused_percentage: number | null;
   created_at: string;
+  updated_at: string;
 }
 
 interface UseMaterialsResult {
@@ -41,8 +41,12 @@ export const useMaterials = (): UseMaterialsResult => {
       try {
         console.log('Buscando materiais para o usuário:', user.id);
         const { data, error } = await supabase
-          .from('materials')
-          .select('*');
+          .from('project_materials')
+          .select(`
+            *,
+            projects!inner(user_id)
+          `)
+          .eq('projects.user_id', user.id);
 
         if (error) {
           console.error('Erro ao buscar materiais:', error);
