@@ -135,6 +135,7 @@ export type Database = {
       }
       projects: {
         Row: {
+          arquivado: boolean
           budget: number | null
           created_at: string | null
           description_notes: string | null
@@ -151,6 +152,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          arquivado?: boolean
           budget?: number | null
           created_at?: string | null
           description_notes?: string | null
@@ -167,6 +169,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          arquivado?: boolean
           budget?: number | null
           created_at?: string | null
           description_notes?: string | null

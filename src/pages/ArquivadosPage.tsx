@@ -7,56 +7,70 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-
-interface ArchivedItem {
-  id: string;
-  name: string;
-  type: string;
-  date: string;
-}
+import { useArchivedProjects } from "@/hooks/useArchivedProjects";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 const ArquivadosPage = () => {
   const { toast } = useToast();
+  const { archivedProjects, loading, error, restoreProject, deleteProject } = useArchivedProjects();
   const [typeFilter, setTypeFilter] = useState('Tipo');
   const [dateFilter, setDateFilter] = useState('Data');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // State para lista de itens (iniciando com dados de exemplo)
-  const [archivedItems, setArchivedItems] = useState<ArchivedItem[]>([
-    { id: '1', name: 'Projeto Alpha', type: 'Projeto', date: '15/01/2023' },
-    { id: '2', name: 'Relatório Mensal Fev', type: 'Relatório', date: '28/02/2023' },
-    { id: '3', name: 'Material X', type: 'Material', date: '10/03/2023' },
-    { id: '4', name: 'Estudo de Viabilidade', type: 'Projeto', date: '22/04/2023' },
-  ]);
-
-  const handleRestore = (item: ArchivedItem) => {
-    // Remove o item da lista
-    setArchivedItems(prevItems => prevItems.filter(i => i.id !== item.id));
-    
-    toast({
-      title: "Sucesso!",
-      description: `"${item.name}" restaurado com sucesso!`,
-      duration: 3000,
-    });
+  const handleRestore = async (project: any) => {
+    const success = await restoreProject(project.id);
+    if (success) {
+      console.log(`Projeto "${project.name}" restaurado com sucesso`);
+    }
   };
 
-  const handleDelete = (item: ArchivedItem) => {
-    // Remove o item da lista
-    setArchivedItems(prevItems => prevItems.filter(i => i.id !== item.id));
-    
-    toast({
-      title: "Excluído!",
-      description: `"${item.name}" excluído permanentemente!`,
-      duration: 3000,
-      variant: "destructive",
-    });
+  const handleDelete = async (project: any) => {
+    const success = await deleteProject(project.id);
+    if (success) {
+      console.log(`Projeto "${project.name}" excluído permanentemente`);
+    }
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchQuery(value);
-    console.log('Busca projetos, relatórios...:', value);
+    console.log('Busca projetos arquivados:', value);
   };
+
+  // Filtragem dos projetos com base na busca
+  const filteredProjects = archivedProjects.filter(project => {
+    const matchesSearch = project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         (project.location?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false) ||
+                         (project.project_type?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false);
+    
+    const matchesType = typeFilter === 'Tipo' || typeFilter === 'Todos' || project.project_type === typeFilter;
+    
+    return matchesSearch && matchesType;
+  });
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('pt-BR');
+  };
+
+  if (loading) {
+    return (
+      <div className="flex-1 p-6 bg-residuall-gray-light">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-residuall-green"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex-1 p-6 bg-residuall-gray-light">
+        <div className="text-center text-red-600">
+          Erro ao carregar projetos arquivados: {error}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 p-6 bg-residuall-gray-light">
@@ -80,9 +94,10 @@ const ArquivadosPage = () => {
               </DropdownMenuTrigger>
               <DropdownMenuContent>
                 <DropdownMenuItem onClick={() => setTypeFilter('Todos')}>Todos</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTypeFilter('Projeto')}>Projeto</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTypeFilter('Relatório')}>Relatório</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTypeFilter('Material')}>Material</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTypeFilter('Residencial')}>Residencial</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTypeFilter('Comercial')}>Comercial</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTypeFilter('Industrial')}>Industrial</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTypeFilter('Infraestrutura')}>Infraestrutura</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             
@@ -106,7 +121,7 @@ const ArquivadosPage = () => {
           <div>
             <Input
               type="text"
-              placeholder="Buscar projetos, relatórios..."
+              placeholder="Buscar projetos arquivados..."
               value={searchQuery}
               onChange={handleSearchChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-residuall-green focus:border-transparent"
@@ -121,36 +136,58 @@ const ArquivadosPage = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Nome do Item</TableHead>
+                <TableHead>Nome do Projeto</TableHead>
                 <TableHead>Tipo</TableHead>
+                <TableHead>Localização</TableHead>
                 <TableHead>Data de Arquivamento</TableHead>
                 <TableHead className="text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {archivedItems.map((item) => (
-                <TableRow key={item.id}>
-                  <TableCell className="font-medium">{item.name}</TableCell>
-                  <TableCell>{item.type}</TableCell>
-                  <TableCell>{item.date}</TableCell>
+              {filteredProjects.map((project) => (
+                <TableRow key={project.id}>
+                  <TableCell className="font-medium">{project.name}</TableCell>
+                  <TableCell>{project.project_type || 'Não definido'}</TableCell>
+                  <TableCell>{project.location || 'Não definido'}</TableCell>
+                  <TableCell>{formatDate(project.updated_at)}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end space-x-2">
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleRestore(item)}
+                        onClick={() => handleRestore(project)}
                         className="flex items-center"
                       >
                         <File size={16} className="mr-1" /> Restaurar
                       </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-red-500 hover:text-red-700 flex items-center"
-                        onClick={() => handleDelete(item)}
-                      >
-                        <Trash2 size={16} className="mr-1" /> Excluir
-                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-red-500 hover:text-red-700 flex items-center"
+                          >
+                            <Trash2 size={16} className="mr-1" /> Excluir
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Tem certeza que deseja excluir este item permanentemente? Esta ação não pode ser desfeita.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleDelete(project)}
+                              className="bg-red-500 hover:bg-red-600"
+                            >
+                              Excluir Permanentemente
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -159,9 +196,14 @@ const ArquivadosPage = () => {
           </Table>
         </div>
         
-        {archivedItems.length === 0 && (
+        {filteredProjects.length === 0 && (
           <div className="text-center py-8">
-            <p className="text-residuall-gray">Nenhum item arquivado encontrado.</p>
+            <p className="text-residuall-gray">
+              {archivedProjects.length === 0 
+                ? "Nenhum projeto arquivado encontrado." 
+                : "Nenhum projeto encontrado com os filtros aplicados."
+              }
+            </p>
           </div>
         )}
       </div>
