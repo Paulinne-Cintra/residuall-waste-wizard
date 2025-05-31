@@ -1,7 +1,7 @@
-// src/pages/LoginPage.tsx
+
 import { useState, useEffect } from 'react';
 import { Link, Navigate, useLocation } from 'react-router-dom';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import Header from '../components/Header';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -22,7 +22,7 @@ const LoginPage = () => {
 
   console.log('LoginPage - user:', !!user, 'authLoading:', authLoading);
 
-  // Redirecionar se já estiver logado (sem loading)
+  // Redirecionar se já estiver logado
   if (!authLoading && user) {
     console.log('LoginPage - redirecting authenticated user to:', from);
     return <Navigate to={from} replace />;
@@ -68,100 +68,113 @@ const LoginPage = () => {
     <div className="min-h-screen flex flex-col relative overflow-hidden login-animated-bg">
       <Header />
       
-      <main className="flex-grow flex items-center justify-center py-12 relative z-10 px-4">
-        <div className="w-full max-w-md bg-residuall-white rounded-3xl shadow-sm overflow-hidden">
-          <div className="p-8">
-            <p className="text-center text-sm font-semibold text-residuall-orange-burnt mb-2">
-                RESIDUALL Login
-            </p>
-            <h1 className="text-4xl font-bold text-residuall-gray-dark text-center mb-6">
-                Bem-vindo(a)!
-            </h1>
-            
-            <form onSubmit={handleSubmit}>
-              
-              <div className="mb-6">
-                <label htmlFor="email" className="block text-sm font-medium text-residuall-gray-dark mb-2">
-                  E-mail
-                </label>
-                <input 
-                  id="email" 
-                  type="email" 
-                  className={`w-full p-3 border border-residuall-gray-default rounded-md 
-                              focus:outline-none focus:ring-1 focus:ring-residuall-green-default 
-                              ${errors.email ? 'border-red-500' : ''}`} 
-                  placeholder="seu@email.com" 
-                  value={email} 
-                  onChange={e => setEmail(e.target.value)} 
-                />
-                {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
+      <main className="flex-grow flex items-center justify-center py-12 relative z-10 px-4 pt-20 md:pt-24">
+        <div className="w-full max-w-md">
+          {/* Card principal */}
+          <div className="bg-white rounded-3xl shadow-2xl overflow-hidden backdrop-blur-sm">
+            <div className="p-8 md:p-10">
+              {/* Header do formulário */}
+              <div className="text-center mb-8">
+                <h1 className="brand-text text-3xl text-residuall-green mb-2">
+                  RESIDUALL
+                </h1>
+                <p className="text-residuall-gray font-medium">
+                  Bem-vindo de volta!
+                </p>
               </div>
               
-              <div className="mb-6">
-                <label htmlFor="password" className="block text-sm font-medium text-residuall-gray-dark mb-2">
-                  Senha
-                </label>
-                <div className="relative">
-                  <input 
-                    id="password" 
-                    type={showPassword ? "text" : "password"} 
-                    className={`w-full p-3 pr-10 border border-residuall-gray-default rounded-md 
-                                focus:outline-none focus:ring-1 focus:ring-residuall-green-default 
-                                ${errors.password ? 'border-red-500' : ''}`} 
-                    placeholder="••••••••" 
-                    value={password} 
-                    onChange={e => setPassword(e.target.value)} 
-                  />
-                  <button 
-                    type="button" 
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-residuall-gray-dark" 
-                    onClick={toggleShowPassword}
-                  >
-                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                  </button>
-                </div>
-                {errors.password && <p className="mt-1 text-sm text-red-500">{errors.password}</p>}
-              </div>
-              
-              <div className="flex items-center justify-between mb-6 text-residuall-gray-dark">
-                <div className="flex items-center">
-                  <input 
-                    id="remember-me" 
-                    type="checkbox" 
-                    className="h-4 w-4 text-residuall-green-default border-residuall-gray-default rounded focus:ring-residuall-green-default" 
-                    checked={rememberMe} 
-                    onChange={() => setRememberMe(!rememberMe)} 
-                  />
-                  <label htmlFor="remember-me" className="ml-2 block text-sm">
-                    Lembre-se
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Campo E-mail */}
+                <div>
+                  <label htmlFor="email" className="block text-sm font-montserrat font-medium text-residuall-gray mb-2">
+                    E-mail
                   </label>
+                  <div className="relative">
+                    <Mail size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-residuall-gray" />
+                    <input 
+                      id="email" 
+                      type="email" 
+                      className={`input-modern pl-11 ${errors.email ? 'border-red-500 focus:ring-red-500' : ''}`}
+                      placeholder="seu@email.com" 
+                      value={email} 
+                      onChange={e => setEmail(e.target.value)} 
+                    />
+                  </div>
+                  {errors.email && <p className="mt-2 text-sm text-red-500">{errors.email}</p>}
                 </div>
                 
-                <div className="text-sm">
-                  <a href="#" className="text-residuall-gray-dark hover:text-residuall-orange-burnt transition-colors">
-                    Esqueceu a senha?
-                  </a>
+                {/* Campo Senha */}
+                <div>
+                  <label htmlFor="password" className="block text-sm font-montserrat font-medium text-residuall-gray mb-2">
+                    Senha
+                  </label>
+                  <div className="relative">
+                    <Lock size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-residuall-gray" />
+                    <input 
+                      id="password" 
+                      type={showPassword ? "text" : "password"} 
+                      className={`input-modern pl-11 pr-11 ${errors.password ? 'border-red-500 focus:ring-red-500' : ''}`}
+                      placeholder="••••••••" 
+                      value={password} 
+                      onChange={e => setPassword(e.target.value)} 
+                    />
+                    <button 
+                      type="button" 
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-residuall-gray hover:text-residuall-green transition-colors" 
+                      onClick={toggleShowPassword}
+                    >
+                      {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    </button>
+                  </div>
+                  {errors.password && <p className="mt-2 text-sm text-red-500">{errors.password}</p>}
                 </div>
-              </div>
-              
-              {errors.general && (
-                <p className="mt-1 mb-4 text-sm text-red-500 text-center">{errors.general}</p>
-              )}
+                
+                {/* Opções extras */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <input 
+                      id="remember-me" 
+                      type="checkbox" 
+                      className="h-4 w-4 text-residuall-green border-gray-300 rounded focus:ring-residuall-green transition-colors" 
+                      checked={rememberMe} 
+                      onChange={() => setRememberMe(!rememberMe)} 
+                    />
+                    <label htmlFor="remember-me" className="ml-2 block text-sm text-residuall-gray">
+                      Lembrar-me
+                    </label>
+                  </div>
+                  
+                  <div className="text-sm">
+                    <a href="#" className="text-residuall-green hover:text-residuall-green-light transition-colors font-medium">
+                      Esqueceu a senha?
+                    </a>
+                  </div>
+                </div>
+                
+                {/* Mensagem de erro geral */}
+                {errors.general && (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                    <p className="text-sm text-red-600 text-center">{errors.general}</p>
+                  </div>
+                )}
 
-              <button 
-                type="submit"
-                disabled={authLoading} 
-                className="w-full bg-residuall-green-default hover:bg-residuall-gray-dark text-white font-medium py-3 px-4 rounded-lg transition-colors bg-orange-700 hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {authLoading ? 'Entrando...' : 'Acessar'}
-              </button>
-            </form>
-            
-            <div className="text-center mt-6">
-              <span className="text-residuall-gray-dark">Não tem uma conta?</span>{" "}
-              <Link to="/cadastro" className="text-residuall-orange-burnt hover:text-residuall-green-default font-semibold transition-colors">
-                Cadastrar-se
-              </Link>
+                {/* Botão de login */}
+                <button 
+                  type="submit"
+                  disabled={authLoading} 
+                  className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed font-montserrat font-semibold text-lg py-4"
+                >
+                  {authLoading ? 'Entrando...' : 'ACESSAR PLATAFORMA'}
+                </button>
+              </form>
+              
+              {/* Link para cadastro */}
+              <div className="text-center mt-8 pt-6 border-t border-gray-100">
+                <span className="text-residuall-gray">Não tem uma conta? </span>
+                <Link to="/cadastro" className="text-residuall-green hover:text-residuall-green-light font-montserrat font-semibold transition-colors">
+                  Cadastre-se gratuitamente
+                </Link>
+              </div>
             </div>
           </div>
         </div>

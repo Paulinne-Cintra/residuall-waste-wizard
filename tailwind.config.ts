@@ -1,4 +1,4 @@
-// tailwind.config.ts
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -54,33 +54,44 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
-				// Cores personalizadas da Residuall (Existentes + Novas)
+				// Nova paleta de cores RESIDUALL
 				'residuall-green': {
-					DEFAULT: '#1f2f29', // Seu Verde Escuro Principal
-					secondary: '#2a4a3d', // Verde Médio
-					card: '#434b3c', // Verde para Card/Fundo
-					gradient: '#6e7848', // Cor do gradiente (final)
-					tag: '#46583a',
+					DEFAULT: '#2F4A3A', // Verde escuro principal
+					light: '#3A5A47',
+					dark: '#1F3127'
 				},
-				'residuall-brown': {
-					DEFAULT: '#ff8c42', // Seu marrom original, mantido
+				'residuall-orange': {
+					DEFAULT: '#D87C4A', // Laranja queimado
+					light: '#E09966',
+					dark: '#B8652E'
 				},
-				// Nova cor de destaque para o laranja queimado
-				'residuall-orange-burnt': '#BF6A33', // Seu novo laranja queimado
-				
-				'residuall-accent-orange': '#C55323', // Seu laranja terroso original (mantido)
-
 				'residuall-gray': {
-					light: '#F8F8F8', // Geralmente para fundos claros
-					DEFAULT: '#c4c2c2', // Cinza médio
-					dark: '#252525', // Cinza escuro
-					text: '#f4f4f4', // Texto claro (para fundos escuros)
-					username: '#2b2b2b',
-					tableText: '#252525',
-					chartLight: '#8a8a8a',
-					chartDark: '#3b3b3b',
+					light: '#F4F4F4', // Cinza claro quase branco
+					DEFAULT: '#454545', // Grafite escuro
+					dark: '#2A2A2A'
 				},
-				'residuall-white': '#ffffff',
+				'residuall-beige': '#E7C792', // Bege dourado claro
+				'residuall-white': '#FFFFFF',
+				
+				// Cores antigas mantidas para compatibilidade
+				'residuall-green-default': '#2F4A3A',
+				'residuall-green-secondary': '#3A5A47',
+				'residuall-green-card': '#434b3c',
+				'residuall-green-gradient': '#6e7848',
+				'residuall-green-tag': '#46583a',
+				'residuall-brown': {
+					DEFAULT: '#D87C4A',
+					light: '#E09966'
+				},
+				'residuall-orange-burnt': '#D87C4A',
+				'residuall-accent-orange': '#D87C4A',
+				'residuall-gray-dark': '#454545',
+				'residuall-gray-text': '#f4f4f4',
+				'residuall-gray-username': '#2b2b2b',
+				'residuall-gray-tableText': '#252525',
+				'residuall-gray-chartLight': '#8a8a8a',
+				'residuall-gray-chartDark': '#3b3b3b',
+				
 				sidebar: {
 					DEFAULT: '#1f2f29',
 					foreground: '#f4f4f4',
@@ -104,6 +115,8 @@ export default {
 			},
 			backgroundImage: {
 				'sidebar-active': 'radial-gradient(circle at 0%, #2a4a3d 0%, #2a4a3d 50%, #6e7848 100%)',
+				'login-bg': 'linear-gradient(135deg, #2F4A3A 0%, #D87C4A 100%)',
+				'hero-gradient': 'linear-gradient(135deg, #2F4A3A 0%, #3A5A47 50%, #2F4A3A 100%)'
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -113,13 +126,16 @@ export default {
 			boxShadow: {
 				'residuall': '0px 4px 6px rgba(0, 0, 0, 0.1)',
 				'residuall-hover': '0px 6px 8px rgba(0, 0, 0, 0.15)',
-				// Adicionando sombras mais suaves inspiradas na nova imagem
 				'soft-xl': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
 				'soft-2xl': '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+				'card': '0 4px 12px rgba(47, 74, 58, 0.1)',
+				'card-hover': '0 8px 24px rgba(47, 74, 58, 0.15)'
 			},
 			fontFamily: {
-				sans: ['Open Sans', 'Lato', 'sans-serif'],
+				sans: ['Lato', 'sans-serif'],
 				montserrat: ['Montserrat', 'sans-serif'],
+				quicksand: ['Quicksand', 'sans-serif'],
+				lato: ['Lato', 'sans-serif']
 			},
 			keyframes: {
 				'accordion-down': {
@@ -137,13 +153,19 @@ export default {
 				'slide-in-right': {
 					'0%': { transform: 'translateX(100%)' },
 					'100%': { transform: 'translateX(0)' }
+				},
+				'geometric-move': {
+					'0%': { transform: 'translateX(-100px) rotate(0deg)' },
+					'50%': { transform: 'translateX(100px) rotate(180deg)' },
+					'100%': { transform: 'translateX(-100px) rotate(360deg)' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'fade-in': 'fade-in 0.5s ease-out forwards',
-				'slide-in-right': 'slide-in-right 0.5s ease-out forwards'
+				'slide-in-right': 'slide-in-right 0.5s ease-out forwards',
+				'geometric-move': 'geometric-move 20s linear infinite'
 			}
 		}
 	},

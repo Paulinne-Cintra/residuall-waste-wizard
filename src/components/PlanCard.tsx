@@ -24,54 +24,60 @@ const PlanCard = ({
 }: PlanCardProps) => {
   return (
     <div 
-      className={`bg-white rounded-xl shadow-lg overflow-hidden transition-transform hover:scale-105 border-2 ${
+      className={`relative bg-white rounded-2xl shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-2 border-2 ${
         highlighted 
-          ? 'border-residuall-brown relative' 
-          : 'border-transparent'
+          ? 'border-residuall-orange scale-105' 
+          : 'border-transparent hover:border-residuall-green/20'
       }`}
     >
       {highlighted && (
-        <div className="absolute top-0 left-0 right-0 bg-residuall-brown text-white text-center py-1 text-sm font-medium">
-          RECOMENDADO
+        <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+          <div className="bg-residuall-orange text-white text-center py-2 px-6 rounded-full text-sm font-montserrat font-semibold shadow-lg">
+            MAIS POPULAR
+          </div>
         </div>
       )}
       
-      <div className="p-6 pt-8">
-        <div className="flex justify-center items-center h-32 mb-6">
+      <div className="p-8">
+        <div className="flex justify-center items-center h-24 mb-6">
           {image}
         </div>
         
-        <h3 className="text-xl font-bold text-center mb-2">{title}</h3>
+        <h3 className="font-montserrat font-bold text-2xl text-center text-residuall-green mb-2">
+          {title}
+        </h3>
         
-        <div className="text-center mb-6">
-          <div className="flex items-center justify-center">
+        <div className="text-center mb-8">
+          <div className="flex items-baseline justify-center">
             {price === 'Grátis' ? (
-              <span className="text-3xl font-bold text-residuall-green">Grátis</span>
+              <span className="text-4xl font-bold text-residuall-green">Grátis</span>
             ) : (
               <>
-                <span className="text-lg font-medium">R$</span>
-                <span className="text-3xl font-bold text-residuall-green mx-1">{price}</span>
+                <span className="text-lg font-medium text-residuall-gray">R$</span>
+                <span className="text-4xl font-bold text-residuall-green mx-1">{price}</span>
                 <span className="text-sm text-residuall-gray">{period}</span>
               </>
             )}
           </div>
         </div>
         
-        <ul className="space-y-3 mb-8">
+        <ul className="space-y-4 mb-8">
           {features.map((feature, index) => (
             <li key={index} className="flex items-start">
-              <Check size={20} className="text-residuall-green shrink-0 mt-0.5 mr-2" />
-              <span className="text-sm text-residuall-gray-dark">{feature}</span>
+              <div className="w-5 h-5 bg-residuall-green/10 rounded-full flex items-center justify-center mr-3 mt-0.5 flex-shrink-0">
+                <Check size={14} className="text-residuall-green" />
+              </div>
+              <span className="text-sm text-residuall-gray leading-relaxed">{feature}</span>
             </li>
           ))}
         </ul>
         
         <Link
           to="/cadastro" 
-          className={`block w-full text-center py-3 px-4 rounded-lg transition-colors ${
+          className={`block w-full text-center py-4 px-6 rounded-lg font-montserrat font-semibold transition-all duration-300 hover:scale-105 ${
             highlighted
-              ? 'bg-residuall-brown hover:bg-residuall-brown-light text-white'
-              : 'bg-residuall-green hover:bg-residuall-green-light text-white'
+              ? 'bg-residuall-orange hover:bg-residuall-orange-light text-white shadow-lg'
+              : 'bg-residuall-green hover:bg-residuall-green-light text-white shadow-lg'
           }`}
         >
           {buttonText}
