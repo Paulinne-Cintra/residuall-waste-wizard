@@ -9,6 +9,7 @@ interface Project {
   name: string;
   description: string | null;
   status: string;
+  progress: number;
   created_at: string;
 }
 

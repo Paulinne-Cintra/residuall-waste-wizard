@@ -28,6 +28,11 @@ const Dashboard: React.FC = () => {
   // Calcula economia total dos relatórios
   const totalEconomy = reports.reduce((sum, r) => sum + (r.economy_generated || 0), 0);
 
+  // Projetos recentes (ordenados por data de criação, limitados a 3)
+  const recentProjects = projects
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .slice(0, 3);
+
   const handleLogout = async () => {
     try {
       console.log('Dashboard - Iniciando logout...');
@@ -151,6 +156,36 @@ const Dashboard: React.FC = () => {
           )}
           <p className="text-sm text-gray-500 mt-2">Total de relatórios</p>
         </div>
+      </div>
+
+      {/* NOVA SEÇÃO: Projetos Recentes com Barra de Progresso */}
+      <div className="bg-white p-6 rounded-lg shadow-md mb-6 mx-6">
+        <h3 className="text-lg font-semibold text-gray-700 mb-4">Projetos Recentes</h3>
+        {loadingProjects ? (
+          <p className="text-gray-500">Carregando projetos...</p>
+        ) : errorProjects ? (
+          <p className="text-red-500">Erro ao carregar projetos: {errorProjects}</p>
+        ) : recentProjects.length === 0 ? (
+          <p className="text-gray-500">Nenhum projeto recente para exibir.</p>
+        ) : (
+          <div className="space-y-4">
+            {recentProjects.map((project) => (
+              <div key={project.id} className="border-b border-gray-200 pb-4 last:border-b-0 last:pb-0">
+                <div className="flex justify-between items-center mb-2">
+                  <h4 className="font-medium text-gray-800">{project.name}</h4>
+                  <span className="text-sm text-gray-600">{project.progress}%</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2.5">
+                  <div
+                    className="bg-residuall-green h-2.5 rounded-full transition-all duration-300"
+                    style={{ width: `${project.progress}%` }}
+                  ></div>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">Status: {project.status}</p>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Seções de gráficos */}

@@ -17,9 +17,12 @@ export type Database = {
           name: string
           project_id: string
           quantity: number | null
+          reuse_rate: number | null
           reused_percentage: number | null
+          status: string | null
           type: string | null
           unit: string | null
+          user_id: string | null
         }
         Insert: {
           cost_per_unit?: number | null
@@ -28,9 +31,12 @@ export type Database = {
           name: string
           project_id: string
           quantity?: number | null
+          reuse_rate?: number | null
           reused_percentage?: number | null
+          status?: string | null
           type?: string | null
           unit?: string | null
+          user_id?: string | null
         }
         Update: {
           cost_per_unit?: number | null
@@ -39,9 +45,12 @@ export type Database = {
           name?: string
           project_id?: string
           quantity?: number | null
+          reuse_rate?: number | null
           reused_percentage?: number | null
+          status?: string | null
           type?: string | null
           unit?: string | null
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -83,6 +92,7 @@ export type Database = {
           description: string | null
           id: string
           name: string
+          progress: number
           status: string
           user_id: string
         }
@@ -91,6 +101,7 @@ export type Database = {
           description?: string | null
           id?: string
           name: string
+          progress?: number
           status?: string
           user_id: string
         }
@@ -99,7 +110,44 @@ export type Database = {
           description?: string | null
           id?: string
           name?: string
+          progress?: number
           status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      recommendations: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          impact_level: string
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          impact_level?: string
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          impact_level?: string
+          status?: string
+          title?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
@@ -107,28 +155,43 @@ export type Database = {
       reports: {
         Row: {
           created_at: string
+          description: string | null
           economy_generated: number | null
           id: string
+          location: string | null
           project_id: string | null
           report_date: string
+          responsible: string | null
+          status: string
+          title: string | null
           user_id: string
           waste_avoided_tons: number | null
         }
         Insert: {
           created_at?: string
+          description?: string | null
           economy_generated?: number | null
           id?: string
+          location?: string | null
           project_id?: string | null
           report_date?: string
+          responsible?: string | null
+          status?: string
+          title?: string | null
           user_id: string
           waste_avoided_tons?: number | null
         }
         Update: {
           created_at?: string
+          description?: string | null
           economy_generated?: number | null
           id?: string
+          location?: string | null
           project_id?: string | null
           report_date?: string
+          responsible?: string | null
+          status?: string
+          title?: string | null
           user_id?: string
           waste_avoided_tons?: number | null
         }
@@ -141,6 +204,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      team_members: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string
+          id: string
+          name: string
+          role: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          role: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          role?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
     }
     Views: {
