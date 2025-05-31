@@ -24,54 +24,54 @@ const PlanCard = ({
 }: PlanCardProps) => {
   return (
     <div 
-      className={`card-modern relative overflow-hidden border-2 transition-all duration-300 hover:scale-105 ${
+      className={`bg-white rounded-xl shadow-lg overflow-hidden transition-transform hover:scale-105 border-2 ${
         highlighted 
-          ? 'border-residuall-orange shadow-lg' 
+          ? 'border-residuall-brown relative' 
           : 'border-transparent'
       }`}
     >
       {highlighted && (
-        <div className="absolute top-0 left-0 right-0 bg-residuall-orange text-white text-center py-2 text-sm font-montserrat font-semibold">
+        <div className="absolute top-0 left-0 right-0 bg-residuall-brown text-white text-center py-1 text-sm font-medium">
           RECOMENDADO
         </div>
       )}
       
-      <div className={`${highlighted ? 'pt-10' : 'pt-6'}`}>
+      <div className="p-6 pt-8">
         <div className="flex justify-center items-center h-32 mb-6">
           {image}
         </div>
         
-        <h3 className="text-2xl font-montserrat font-bold text-center mb-4 text-residuall-green">{title}</h3>
+        <h3 className="text-xl font-bold text-center mb-2">{title}</h3>
         
-        <div className="text-center mb-8">
+        <div className="text-center mb-6">
           <div className="flex items-center justify-center">
             {price === 'Grátis' ? (
-              <span className="text-3xl font-montserrat font-bold text-residuall-green">Grátis</span>
+              <span className="text-3xl font-bold text-residuall-green">Grátis</span>
             ) : (
               <>
-                <span className="text-lg font-montserrat font-medium text-residuall-gray">R$</span>
-                <span className="text-4xl font-montserrat font-bold text-residuall-green mx-1">{price}</span>
-                <span className="text-sm text-residuall-gray font-lato">{period}</span>
+                <span className="text-lg font-medium">R$</span>
+                <span className="text-3xl font-bold text-residuall-green mx-1">{price}</span>
+                <span className="text-sm text-residuall-gray">{period}</span>
               </>
             )}
           </div>
         </div>
         
-        <ul className="space-y-4 mb-8">
+        <ul className="space-y-3 mb-8">
           {features.map((feature, index) => (
             <li key={index} className="flex items-start">
-              <Check size={20} className="text-residuall-green shrink-0 mt-0.5 mr-3" />
-              <span className="text-sm text-residuall-gray font-lato leading-relaxed">{feature}</span>
+              <Check size={20} className="text-residuall-green shrink-0 mt-0.5 mr-2" />
+              <span className="text-sm text-residuall-gray-dark">{feature}</span>
             </li>
           ))}
         </ul>
         
         <Link
           to="/cadastro" 
-          className={`block w-full text-center py-3 px-4 rounded-lg transition-all duration-300 font-montserrat font-semibold hover:scale-105 ${
+          className={`block w-full text-center py-3 px-4 rounded-lg transition-colors ${
             highlighted
-              ? 'bg-residuall-orange hover:bg-residuall-orange-light text-white shadow-residuall hover:shadow-residuall-hover'
-              : 'bg-residuall-green hover:bg-residuall-green-secondary text-white shadow-residuall hover:shadow-residuall-hover'
+              ? 'bg-residuall-brown hover:bg-residuall-brown-light text-white'
+              : 'bg-residuall-green hover:bg-residuall-green-light text-white'
           }`}
         >
           {buttonText}

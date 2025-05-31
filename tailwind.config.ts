@@ -1,4 +1,3 @@
-
 // tailwind.config.ts
 import type { Config } from "tailwindcss";
 
@@ -21,7 +20,7 @@ export default {
 		},
 		extend: {
 			colors: {
-				// Cores do shadcn/ui
+				// Manter suas cores de shadcn/ui
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',
@@ -55,49 +54,56 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
-				// Nova paleta de cores da RESIDUALL
+				// Cores personalizadas da Residuall (Existentes + Novas)
 				'residuall-green': {
-					DEFAULT: '#2F4A3A', // Verde escuro principal
-					secondary: '#3a5944', // Variação para hover
-					light: '#4a6b56', // Verde mais claro
+					DEFAULT: '#1f2f29', // Seu Verde Escuro Principal
+					secondary: '#2a4a3d', // Verde Médio
+					card: '#434b3c', // Verde para Card/Fundo
+					gradient: '#6e7848', // Cor do gradiente (final)
+					tag: '#46583a',
 				},
-				'residuall-orange': {
-					DEFAULT: '#D87C4A', // Laranja queimado
-					light: '#e59464', // Variação mais clara
-					dark: '#c16a3a', // Variação mais escura
+				'residuall-brown': {
+					DEFAULT: '#ff8c42', // Seu marrom original, mantido
 				},
+				// Nova cor de destaque para o laranja queimado
+				'residuall-orange-burnt': '#BF6A33', // Seu novo laranja queimado
+				
+				'residuall-accent-orange': '#C55323', // Seu laranja terroso original (mantido)
+
 				'residuall-gray': {
-					light: '#F4F4F4', // Cinza claro quase branco
-					DEFAULT: '#454545', // Grafite escuro
-					dark: '#2a2a2a', // Mais escuro para textos
+					light: '#F8F8F8', // Geralmente para fundos claros
+					DEFAULT: '#c4c2c2', // Cinza médio
+					dark: '#252525', // Cinza escuro
+					text: '#f4f4f4', // Texto claro (para fundos escuros)
+					username: '#2b2b2b',
+					tableText: '#252525',
+					chartLight: '#8a8a8a',
+					chartDark: '#3b3b3b',
 				},
-				'residuall-beige': '#E7C792', // Bege dourado claro
-				'residuall-white': '#FFFFFF',
-				// Cores para sidebar (compatibilidade)
+				'residuall-white': '#ffffff',
 				sidebar: {
-					DEFAULT: '#2F4A3A',
+					DEFAULT: '#1f2f29',
 					foreground: '#f4f4f4',
 					'item-text': '#f4f4f4',
-					'item-active-bg': '#3a5944',
+					'item-active-bg': '#2a4a3d',
 					'item-active-text': '#ffffff',
-					'item-hover-bg': '#3a5944',
-					border: '#3a5944',
-					ring: '#4a6b56',
+					'item-hover-bg': '#2a4a3d',
+					border: '#2a4a3d',
+					ring: '#6e7848',
 					dark: {
-						DEFAULT: '#1a2e22',
+						DEFAULT: '#15201c',
 						foreground: '#ffffff',
 						'item-text': '#a8a8a8',
-						'item-active-bg': '#3a5944',
+						'item-active-bg': '#2a4a3d',
 						'item-active-text': '#ffffff',
-						'item-hover-bg': '#3a5944',
-						border: '#3a5944',
-						ring: '#4a6b56',
+						'item-hover-bg': '#2a4a3d',
+						border: '#2a4a3d',
+						ring: '#6e7848',
 					}
 				}
 			},
 			backgroundImage: {
-				'residuall-gradient': 'linear-gradient(135deg, #2F4A3A 0%, #D87C4A 100%)',
-				'login-bg': 'linear-gradient(135deg, #2F4A3A 0%, #3a5944 50%, #D87C4A 100%)',
+				'sidebar-active': 'radial-gradient(circle at 0%, #2a4a3d 0%, #2a4a3d 50%, #6e7848 100%)',
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -105,16 +111,15 @@ export default {
 				sm: 'calc(var(--radius) - 4px)'
 			},
 			boxShadow: {
-				'residuall': '0 4px 6px -1px rgba(47, 74, 58, 0.1), 0 2px 4px -1px rgba(47, 74, 58, 0.06)',
-				'residuall-hover': '0 10px 15px -3px rgba(47, 74, 58, 0.1), 0 4px 6px -2px rgba(47, 74, 58, 0.05)',
-				'card': '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
-				'card-hover': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+				'residuall': '0px 4px 6px rgba(0, 0, 0, 0.1)',
+				'residuall-hover': '0px 6px 8px rgba(0, 0, 0, 0.15)',
+				// Adicionando sombras mais suaves inspiradas na nova imagem
+				'soft-xl': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+				'soft-2xl': '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
 			},
 			fontFamily: {
-				sans: ['Lato', 'sans-serif'],
-				lato: ['Lato', 'sans-serif'],
+				sans: ['Open Sans', 'Lato', 'sans-serif'],
 				montserrat: ['Montserrat', 'sans-serif'],
-				quicksand: ['Quicksand', 'sans-serif'],
 			},
 			keyframes: {
 				'accordion-down': {
@@ -132,24 +137,13 @@ export default {
 				'slide-in-right': {
 					'0%': { transform: 'translateX(100%)' },
 					'100%': { transform: 'translateX(0)' }
-				},
-				'glow': {
-					'0%': { filter: 'brightness(1)' },
-					'100%': { filter: 'brightness(1.2)' }
-				},
-				'geometric-move': {
-					'0%': { transform: 'translateX(-100%) translateY(0) rotate(0deg)' },
-					'50%': { transform: 'translateX(50vw) translateY(-20px) rotate(180deg)' },
-					'100%': { transform: 'translateX(100vw) translateY(0) rotate(360deg)' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'fade-in': 'fade-in 0.5s ease-out forwards',
-				'slide-in-right': 'slide-in-right 0.5s ease-out forwards',
-				'glow': 'glow 0.3s ease-in-out',
-				'geometric-move': 'geometric-move 20s linear infinite',
+				'slide-in-right': 'slide-in-right 0.5s ease-out forwards'
 			}
 		}
 	},

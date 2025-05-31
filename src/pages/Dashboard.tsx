@@ -72,11 +72,11 @@ const Dashboard: React.FC = () => {
           <input
             type="text"
             placeholder="Buscar projetos, relatórios..."
-            className="flex-grow py-2 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-grow py-2 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-residuall-green"
           />
         </div>
         <div className="flex items-center space-x-4 ml-auto">
-          <button className="p-2 text-gray-600 hover:text-blue-600 transition-colors">
+          <button className="p-2 text-gray-600 hover:text-residuall-green transition-colors">
             <Bell size={20} />
           </button>
 
@@ -107,7 +107,7 @@ const Dashboard: React.FC = () => {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <button className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors hidden md:block">
+          <button className="bg-residuall-green text-white px-4 py-2 rounded-lg font-medium hover:bg-residuall-green/90 transition-colors hidden md:block">
             Publish
           </button>
         </div>
@@ -122,11 +122,11 @@ const Dashboard: React.FC = () => {
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h3 className="text-lg font-semibold text-gray-700">Projetos Ativos</h3>
           {loadingProjects ? (
-            <p className="text-4xl font-bold text-blue-600">...</p>
+            <p className="text-4xl font-bold text-residuall-green">...</p>
           ) : errorProjects ? (
             <p className="text-red-500">Erro: {errorProjects}</p>
           ) : (
-            <p className="text-4xl font-bold text-blue-600">{activeProjectsCount}</p>
+            <p className="text-4xl font-bold text-residuall-green">{activeProjectsCount}</p>
           )}
           <p className="text-sm text-gray-500 mt-2">
             {projects.length > 0 
@@ -200,7 +200,7 @@ const Dashboard: React.FC = () => {
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2.5">
                     <div
-                      className="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
+                      className="bg-residuall-green h-2.5 rounded-full transition-all duration-300"
                       style={{ width: `${progress}%` }}
                     ></div>
                   </div>
