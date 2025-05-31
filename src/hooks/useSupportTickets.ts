@@ -43,7 +43,7 @@ export const useSupportTickets = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setTickets(data || []);
+      setTickets((data || []) as SupportTicket[]);
     } catch (error) {
       console.error('Erro ao buscar chamados:', error);
       toast({
