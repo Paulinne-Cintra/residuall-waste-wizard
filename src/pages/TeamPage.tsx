@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Search, UserPlus, ChevronDown, User, Edit, ArrowLeft, Settings } from 'lucide-react';
+import { Search, UserPlus, ChevronDown, User, Edit, ArrowLeft, Settings, Clock, CheckCircle, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
@@ -9,8 +9,8 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useTeamInvitations } from "@/hooks/useTeamInvitations";
 
 type TeamMember = {
   id: number;
@@ -88,6 +88,7 @@ const mockProjects = [
 const TeamPage: React.FC = () => {
   const { toast } = useToast();
   const { user } = useAuth();
+  const { invitations, loading, sendInvitation, updateInvitationStatus } = useTeamInvitations();
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState('Todos os Cargos');
   const [statusFilter, setStatusFilter] = useState('Todos os Status');
@@ -103,8 +104,25 @@ const TeamPage: React.FC = () => {
   const [editedMember, setEditedMember] = useState<TeamMember | null>(null);
   const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
 
+  // Combinar membros existentes com convites pendentes/aceitos
+  const getAllMembers = () => {
+    const invitedMembers = invitations.map((invitation, index) => ({
+      id: 1000 + index, // ID único para membros convidados
+      name: invitation.name,
+      role: 'Convidado',
+      email: invitation.email,
+      status: invitation.status === 'accepted' ? 'active' as const : 
+              invitation.status === 'declined' ? 'inactive' as const : 'away' as const,
+      avatarUrl: `https://i.pravatar.cc/150?img=${20 + index}`,
+      projects: [],
+      invitationStatus: invitation.status // Status do convite
+    }));
+
+    return [...mockTeamMembers, ...invitedMembers];
+  };
+
   // Filter team members based on search query and filters
-  const filteredMembers = mockTeamMembers.filter(member => {
+  const filteredMembers = getAllMembers().filter(member => {
     const matchesSearch = member.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           member.email.toLowerCase().includes(searchQuery.toLowerCase());
     
@@ -140,6 +158,32 @@ const TeamPage: React.FC = () => {
     }
   };
 
+  const getInvitationStatusIcon = (invitationStatus: string) => {
+    switch (invitationStatus) {
+      case 'pending':
+        return <Clock size={16} className="text-yellow-600" />;
+      case 'accepted':
+        return <CheckCircle size={16} className="text-green-600" />;
+      case 'declined':
+        return <XCircle size={16} className="text-red-600" />;
+      default:
+        return null;
+    }
+  };
+
+  const getInvitationStatusText = (invitationStatus: string) => {
+    switch (invitationStatus) {
+      case 'pending':
+        return 'Pendente';
+      case 'accepted':
+        return 'Confirmado';
+      case 'declined':
+        return 'Recusado';
+      default:
+        return '';
+    }
+  };
+
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchQuery(value);
@@ -157,19 +201,8 @@ const TeamPage: React.FC = () => {
     }
 
     try {
-      const token = Math.random().toString(36).substring(2, 15);
+      await sendInvitation(newMember.email, newMember.name);
       
-      const { error } = await supabase
-        .from('team_invitations')
-        .insert({
-          email: newMember.email,
-          name: newMember.name,
-          token: token,
-          invited_by_user_id: user?.id
-        });
-
-      if (error) throw error;
-
       console.log('Convite enviado para:', newMember);
       setIsAddModalOpen(false);
       setNewMember({ name: '', email: '' });
@@ -265,6 +298,16 @@ const TeamPage: React.FC = () => {
                     </div>
                     <div className={`absolute bottom-2 right-2 w-6 h-6 rounded-full ${getStatusColor(selectedMember.status)} border-2 border-white`}></div>
                   </div>
+                  
+                  {/* Status do convite para membros convidados */}
+                  {(selectedMember as any).invitationStatus && (
+                    <div className="flex items-center gap-2 mb-4 px-3 py-1 bg-gray-100 rounded-full">
+                      {getInvitationStatusIcon((selectedMember as any).invitationStatus)}
+                      <span className="text-sm font-medium">
+                        {getInvitationStatusText((selectedMember as any).invitationStatus)}
+                      </span>
+                    </div>
+                  )}
                   
                   {/* Botão Editar movido para baixo do avatar na visualização */}
                   {!isEditing && (
@@ -514,6 +557,8 @@ const TeamPage: React.FC = () => {
                   <h3 className="text-xl font-bold text-[#333333]">{member.name}</h3>
                   <p className="text-sm text-gray-600 mt-1">{member.role}</p>
                   <p className="text-sm text-gray-500 mt-2">{member.email}</p>
+                  
+                  {/* Status do membro */}
                   <div className="flex items-center justify-center mt-2">
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                       member.status === 'active' ? 'bg-green-100 text-green-800' :
@@ -523,6 +568,16 @@ const TeamPage: React.FC = () => {
                       {getStatusText(member.status)}
                     </span>
                   </div>
+
+                  {/* Status do convite para membros convidados */}
+                  {(member as any).invitationStatus && (
+                    <div className="flex items-center justify-center gap-2 mt-2 px-2 py-1 bg-gray-50 rounded-full">
+                      {getInvitationStatusIcon((member as any).invitationStatus)}
+                      <span className="text-xs font-medium text-gray-700">
+                        {getInvitationStatusText((member as any).invitationStatus)}
+                      </span>
+                    </div>
+                  )}
                 </div>
                 
                 {/* Actions - apenas botão Ver Perfil */}
