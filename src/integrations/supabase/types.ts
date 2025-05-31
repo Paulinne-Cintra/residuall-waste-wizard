@@ -9,6 +9,39 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      login_history: {
+        Row: {
+          created_at: string
+          device_info: string | null
+          id: string
+          ip_address: unknown | null
+          location: string | null
+          login_date: string
+          success: boolean
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          device_info?: string | null
+          id?: string
+          ip_address?: unknown | null
+          location?: string | null
+          login_date?: string
+          success?: boolean
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          device_info?: string | null
+          id?: string
+          ip_address?: unknown | null
+          location?: string | null
+          login_date?: string
+          success?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -334,6 +367,63 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_settings: {
+        Row: {
+          browser_notifications: boolean
+          created_at: string
+          email_notifications: boolean
+          id: string
+          language: string
+          project_updates: boolean
+          recommendation_alerts: boolean
+          sms_notifications: boolean
+          system_alerts: boolean
+          theme: string
+          timezone: string
+          two_factor_enabled: boolean
+          two_factor_secret: string | null
+          updated_at: string
+          user_id: string
+          weekly_summary: boolean
+        }
+        Insert: {
+          browser_notifications?: boolean
+          created_at?: string
+          email_notifications?: boolean
+          id?: string
+          language?: string
+          project_updates?: boolean
+          recommendation_alerts?: boolean
+          sms_notifications?: boolean
+          system_alerts?: boolean
+          theme?: string
+          timezone?: string
+          two_factor_enabled?: boolean
+          two_factor_secret?: string | null
+          updated_at?: string
+          user_id: string
+          weekly_summary?: boolean
+        }
+        Update: {
+          browser_notifications?: boolean
+          created_at?: string
+          email_notifications?: boolean
+          id?: string
+          language?: string
+          project_updates?: boolean
+          recommendation_alerts?: boolean
+          sms_notifications?: boolean
+          system_alerts?: boolean
+          theme?: string
+          timezone?: string
+          two_factor_enabled?: boolean
+          two_factor_secret?: string | null
+          updated_at?: string
+          user_id?: string
+          weekly_summary?: boolean
+        }
+        Relationships: []
       }
       waste_entries: {
         Row: {

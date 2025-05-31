@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -7,39 +8,30 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { useToast } from "@/hooks/use-toast";
+import { useUserSettings } from "@/hooks/useUserSettings";
+import { TwoFactorModal } from "@/components/TwoFactorModal";
+import { useTranslation } from 'react-i18next';
+import { format } from 'date-fns';
+import { ptBR, enUS, es } from 'date-fns/locale';
 
 const SettingsPage = () => {
-  const { toast } = useToast();
+  const { t, i18n } = useTranslation();
+  const { settings, loginHistory, loading, updateSettings } = useUserSettings();
   const [activeTab, setActiveTab] = useState("geral");
-  
-  // Settings state
-  const [language, setLanguage] = useState("pt-br");
-  const [timezone, setTimezone] = useState("america-sp");
-  const [theme, setTheme] = useState("claro");
-  
-  // Notification settings
-  const [emailNotifications, setEmailNotifications] = useState(false);
-  const [systemAlerts, setSystemAlerts] = useState(false);
-  const [projectUpdates, setProjectUpdates] = useState(true);
-  const [recommendationAlerts, setRecommendationAlerts] = useState(true);
-  const [weeklySummary, setWeeklySummary] = useState(false);
-  const [browserNotifications, setBrowserNotifications] = useState(false);
-  const [smsNotifications, setSmsNotifications] = useState(false);
-  
-  // Security settings
-  const [twoFactorAuth, setTwoFactorAuth] = useState(false);
+  const [twoFactorModalOpen, setTwoFactorModalOpen] = useState(false);
 
   // Apply theme to document
   useEffect(() => {
+    if (!settings) return;
+
     const applyTheme = () => {
       const html = document.documentElement;
       
-      if (theme === "escuro") {
+      if (settings.theme === "escuro") {
         html.classList.add("dark");
-      } else if (theme === "claro") {
+      } else if (settings.theme === "claro") {
         html.classList.remove("dark");
-      } else if (theme === "sistema") {
+      } else if (settings.theme === "sistema") {
         // Check system preference
         const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
         if (prefersDark) {
@@ -53,22 +45,71 @@ const SettingsPage = () => {
     applyTheme();
 
     // Listen for system theme changes when "sistema" is selected
-    if (theme === "sistema") {
+    if (settings.theme === "sistema") {
       const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
       const handleChange = () => applyTheme();
       mediaQuery.addEventListener("change", handleChange);
       
       return () => mediaQuery.removeEventListener("change", handleChange);
     }
-  }, [theme]);
-  
-  const handleSaveChanges = () => {
-    toast({
-      title: "Alterações salvas",
-      description: "Suas configurações foram atualizadas com sucesso.",
-      variant: "default",
-    });
+  }, [settings]);
+
+  // Apply language changes
+  useEffect(() => {
+    if (settings?.language && i18n.language !== settings.language) {
+      i18n.changeLanguage(settings.language);
+    }
+  }, [settings?.language, i18n]);
+
+  const handleLanguageChange = async (language: string) => {
+    await updateSettings({ language });
+    i18n.changeLanguage(language);
   };
+
+  const handleTimezoneChange = async (timezone: string) => {
+    await updateSettings({ timezone });
+  };
+
+  const handleThemeChange = async (theme: string) => {
+    await updateSettings({ theme });
+  };
+
+  const handleNotificationChange = async (field: string, value: boolean) => {
+    await updateSettings({ [field]: value });
+  };
+
+  const getDateLocale = () => {
+    switch (settings?.language) {
+      case 'en-us': return enUS;
+      case 'es': return es;
+      default: return ptBR;
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return format(date, 'dd/MM/yyyy HH:mm', { locale: getDateLocale() });
+  };
+
+  if (loading) {
+    return (
+      <main className="p-6">
+        <div className="flex items-center justify-center h-64">
+          <p className="text-gray-500">Carregando configurações...</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (!settings) {
+    return (
+      <main className="p-6">
+        <div className="flex items-center justify-center h-64">
+          <p className="text-red-500">Erro ao carregar configurações.</p>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="p-6">
@@ -88,19 +129,19 @@ const SettingsPage = () => {
                     value="geral" 
                     className="justify-start px-4 py-3 data-[state=active]:bg-gray-100 data-[state=active]:text-gray-900 data-[state=active]:border-l-4 data-[state=active]:border-blue-500 text-gray-600 data-[state=inactive]:hover:bg-gray-50"
                   >
-                    Geral
+                    {t('general')}
                   </TabsTrigger>
                   <TabsTrigger 
                     value="notificacoes" 
                     className="justify-start px-4 py-3 data-[state=active]:bg-gray-100 data-[state=active]:text-gray-900 data-[state=active]:border-l-4 data-[state=active]:border-blue-500 text-gray-600 data-[state=inactive]:hover:bg-gray-50"
                   >
-                    Notificações
+                    {t('notifications')}
                   </TabsTrigger>
                   <TabsTrigger 
                     value="seguranca" 
                     className="justify-start px-4 py-3 data-[state=active]:bg-gray-100 data-[state=active]:text-gray-900 data-[state=active]:border-l-4 data-[state=active]:border-blue-500 text-gray-600 data-[state=inactive]:hover:bg-gray-50"
                   >
-                    Segurança
+                    {t('security')}
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
@@ -120,8 +161,8 @@ const SettingsPage = () => {
                   <div className="space-y-4">
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <div className="space-y-2">
-                        <Label htmlFor="language" className="text-gray-700">Idioma</Label>
-                        <Select value={language} onValueChange={setLanguage}>
+                        <Label htmlFor="language" className="text-gray-700">{t('language')}</Label>
+                        <Select value={settings.language} onValueChange={handleLanguageChange}>
                           <SelectTrigger id="language" className="w-full">
                             <SelectValue placeholder="Selecione o idioma" />
                           </SelectTrigger>
@@ -129,20 +170,29 @@ const SettingsPage = () => {
                             <SelectItem value="pt-br">Português (Brasil)</SelectItem>
                             <SelectItem value="en-us">English (US)</SelectItem>
                             <SelectItem value="es">Español</SelectItem>
+                            <SelectItem value="fr">Français</SelectItem>
+                            <SelectItem value="de">Deutsch</SelectItem>
+                            <SelectItem value="it">Italiano</SelectItem>
+                            <SelectItem value="zh">中文 (简体)</SelectItem>
+                            <SelectItem value="ja">日本語</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="timezone" className="text-gray-700">Fuso Horário</Label>
-                        <Select value={timezone} onValueChange={setTimezone}>
+                        <Label htmlFor="timezone" className="text-gray-700">{t('timezone')}</Label>
+                        <Select value={settings.timezone} onValueChange={handleTimezoneChange}>
                           <SelectTrigger id="timezone" className="w-full">
                             <SelectValue placeholder="Selecione o fuso horário" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="america-sp">América/São Paulo (GMT-3)</SelectItem>
-                            <SelectItem value="america-ny">América/Nova York (GMT-5)</SelectItem>
-                            <SelectItem value="europe-london">Europa/Londres (GMT+0)</SelectItem>
+                            <SelectItem value="America/Sao_Paulo">{t('America/Sao_Paulo')}</SelectItem>
+                            <SelectItem value="America/New_York">{t('America/New_York')}</SelectItem>
+                            <SelectItem value="Europe/London">{t('Europe/London')}</SelectItem>
+                            <SelectItem value="Europe/Madrid">{t('Europe/Madrid')}</SelectItem>
+                            <SelectItem value="Asia/Tokyo">{t('Asia/Tokyo')}</SelectItem>
+                            <SelectItem value="Australia/Sydney">Austrália/Sydney (GMT+10)</SelectItem>
+                            <SelectItem value="America/Los_Angeles">América/Los Angeles (GMT-8)</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -153,19 +203,19 @@ const SettingsPage = () => {
 
               <Card className="shadow-sm">
                 <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold mb-4 text-gray-900">Tema da Interface</h3>
+                  <h3 className="text-lg font-semibold mb-4 text-gray-900">{t('theme')}</h3>
                   
                   <div>
                     <p className="text-sm text-gray-600 mb-3">Selecione o tema de exibição do sistema:</p>
-                    <ToggleGroup type="single" value={theme} onValueChange={(value) => value && setTheme(value)}>
+                    <ToggleGroup type="single" value={settings.theme} onValueChange={handleThemeChange}>
                       <ToggleGroupItem value="claro" className="data-[state=on]:bg-blue-500 data-[state=on]:text-white">
-                        Claro
+                        {t('lightMode')}
                       </ToggleGroupItem>
                       <ToggleGroupItem value="escuro" className="data-[state=on]:bg-blue-500 data-[state=on]:text-white">
-                        Escuro
+                        {t('darkMode')}
                       </ToggleGroupItem>
                       <ToggleGroupItem value="sistema" className="data-[state=on]:bg-blue-500 data-[state=on]:text-white">
-                        Sistema
+                        {t('systemMode')}
                       </ToggleGroupItem>
                     </ToggleGroup>
                   </div>
@@ -183,10 +233,10 @@ const SettingsPage = () => {
                     <div className="flex items-center space-x-2">
                       <Checkbox 
                         id="email-notifications" 
-                        checked={emailNotifications}
-                        onCheckedChange={(checked) => { // CORREÇÃO APLICADA AQUI
+                        checked={settings.email_notifications}
+                        onCheckedChange={(checked) => { 
                           if (typeof checked === 'boolean') {
-                            setEmailNotifications(checked);
+                            handleNotificationChange('email_notifications', checked);
                           }
                         }}
                       />
@@ -198,10 +248,10 @@ const SettingsPage = () => {
                     <div className="flex items-center space-x-2">
                       <Checkbox 
                         id="system-alerts" 
-                        checked={systemAlerts}
-                        onCheckedChange={(checked) => { // CORREÇÃO APLICADA AQUI
+                        checked={settings.system_alerts}
+                        onCheckedChange={(checked) => { 
                           if (typeof checked === 'boolean') {
-                            setSystemAlerts(checked);
+                            handleNotificationChange('system_alerts', checked);
                           }
                         }}
                       />
@@ -213,10 +263,10 @@ const SettingsPage = () => {
                     <div className="flex items-center space-x-2">
                       <Checkbox 
                         id="project-updates" 
-                        checked={projectUpdates}
-                        onCheckedChange={(checked) => { // CORREÇÃO APLICADA AQUI
+                        checked={settings.project_updates}
+                        onCheckedChange={(checked) => { 
                           if (typeof checked === 'boolean') {
-                            setProjectUpdates(checked);
+                            handleNotificationChange('project_updates', checked);
                           }
                         }}
                       />
@@ -228,10 +278,10 @@ const SettingsPage = () => {
                     <div className="flex items-center space-x-2">
                       <Checkbox 
                         id="recommendation-alerts" 
-                        checked={recommendationAlerts}
-                        onCheckedChange={(checked) => { // CORREÇÃO APLICADA AQUI
+                        checked={settings.recommendation_alerts}
+                        onCheckedChange={(checked) => { 
                           if (typeof checked === 'boolean') {
-                            setRecommendationAlerts(checked);
+                            handleNotificationChange('recommendation_alerts', checked);
                           }
                         }}
                       />
@@ -243,10 +293,10 @@ const SettingsPage = () => {
                     <div className="flex items-center space-x-2">
                       <Checkbox 
                         id="weekly-summary" 
-                        checked={weeklySummary}
-                        onCheckedChange={(checked) => { // CORREÇÃO APLICADA AQUI
+                        checked={settings.weekly_summary}
+                        onCheckedChange={(checked) => { 
                           if (typeof checked === 'boolean') {
-                            setWeeklySummary(checked);
+                            handleNotificationChange('weekly_summary', checked);
                           }
                         }}
                       />
@@ -269,10 +319,10 @@ const SettingsPage = () => {
                         <p className="text-sm text-gray-600">Receba notificações em tempo real no navegador</p>
                       </div>
                       <Switch 
-                        checked={browserNotifications}
-                        onCheckedChange={(checked) => { // CORREÇÃO APLICADA AQUI
+                        checked={settings.browser_notifications}
+                        onCheckedChange={(checked) => { 
                           if (typeof checked === 'boolean') {
-                            setBrowserNotifications(checked);
+                            handleNotificationChange('browser_notifications', checked);
                           }
                         }}
                       />
@@ -284,10 +334,10 @@ const SettingsPage = () => {
                         <p className="text-sm text-gray-600">Receba alertas críticos por mensagem de texto</p>
                       </div>
                       <Switch 
-                        checked={smsNotifications}
-                        onCheckedChange={(checked) => { // CORREÇÃO APLICADA AQUI
+                        checked={settings.sms_notifications}
+                        onCheckedChange={(checked) => { 
                           if (typeof checked === 'boolean') {
-                            setSmsNotifications(checked);
+                            handleNotificationChange('sms_notifications', checked);
                           }
                         }}
                       />
@@ -310,17 +360,17 @@ const SettingsPage = () => {
                         <p className="text-sm text-gray-600">Adicione uma camada extra de segurança à sua conta</p>
                       </div>
                       <Switch 
-                        checked={twoFactorAuth}
-                        onCheckedChange={(checked) => { // CORREÇÃO APLICADA AQUI
-                          if (typeof checked === 'boolean') {
-                            setTwoFactorAuth(checked);
-                          }
-                        }}
+                        checked={settings.two_factor_enabled}
+                        onCheckedChange={() => setTwoFactorModalOpen(true)}
                       />
                     </div>
                     
-                    <Button variant="outline" className="mt-4">
-                      Configurar
+                    <Button 
+                      variant="outline" 
+                      className="mt-4"
+                      onClick={() => setTwoFactorModalOpen(true)}
+                    >
+                      {settings.two_factor_enabled ? 'Gerenciar 2FA' : 'Configurar 2FA'}
                     </Button>
                   </div>
                 </CardContent>
@@ -341,24 +391,24 @@ const SettingsPage = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        <tr className="border-b">
-                          <td className="py-3 text-gray-700">22/05/2023 08:32</td>
-                          <td className="py-3 text-gray-700">Chrome / Windows</td>
-                          <td className="py-3 text-gray-700">São Paulo, Brasil</td>
-                          <td className="py-3 text-green-600">Sucesso</td>
-                        </tr>
-                        <tr className="border-b">
-                          <td className="py-3 text-gray-700">21/05/2023 17:45</td>
-                          <td className="py-3 text-gray-700">Safari / iOS</td>
-                          <td className="py-3 text-gray-700">São Paulo, Brasil</td>
-                          <td className="py-3 text-green-600">Sucesso</td>
-                        </tr>
-                        <tr>
-                          <td className="py-3 text-gray-700">19/05/2023 14:12</td>
-                          <td className="py-3 text-gray-700">Firefox / macOS</td>
-                          <td className="py-3 text-gray-700">Rio de Janeiro, Brasil</td>
-                          <td className="py-3 text-red-600">Falha</td>
-                        </tr>
+                        {loginHistory.length > 0 ? (
+                          loginHistory.map((entry) => (
+                            <tr key={entry.id} className="border-b">
+                              <td className="py-3 text-gray-700">{formatDate(entry.login_date)}</td>
+                              <td className="py-3 text-gray-700">{entry.device_info || 'Desconhecido'}</td>
+                              <td className="py-3 text-gray-700">{entry.location || 'Brasil'}</td>
+                              <td className={`py-3 ${entry.success ? 'text-green-600' : 'text-red-600'}`}>
+                                {entry.success ? 'Sucesso' : 'Falha'}
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan={4} className="py-3 text-gray-500 text-center">
+                              Nenhum histórico de login disponível
+                            </td>
+                          </tr>
+                        )}
                       </tbody>
                     </table>
                   </div>
@@ -366,18 +416,13 @@ const SettingsPage = () => {
               </Card>
             </TabsContent>
           </Tabs>
-
-          {/* Botão Salvar Alterações */}
-          <div className="flex justify-end mt-6">
-            <Button 
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-              onClick={handleSaveChanges}
-            >
-              Salvar Alterações
-            </Button>
-          </div>
         </div>
       </div>
+
+      <TwoFactorModal 
+        open={twoFactorModalOpen} 
+        onOpenChange={setTwoFactorModalOpen} 
+      />
     </main>
   );
 };
