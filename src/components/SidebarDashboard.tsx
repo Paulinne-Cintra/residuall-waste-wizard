@@ -1,15 +1,16 @@
+
 // src/components/SidebarDashboard.tsx
 import { useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom"; // Importe useNavigate
-import { Home, FileText, Briefcase, Users, Layers, User, CheckCircle, Settings, File, LogOut, HelpCircle, Menu, X, ChevronLeft, ChevronRight } from "lucide-react";
-import { useAuth } from '@/hooks/useAuth'; // Importe o useAuth
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Home, FileText, Briefcase, Users, Layers, User, CheckCircle, Settings, File, LogOut, HelpCircle, Menu, X, ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { useAuth } from '@/hooks/useAuth';
 
 const SidebarDashboard = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
-  const navigate = useNavigate(); // Inicialize useNavigate
-  const { signOut } = useAuth(); // Obtenha a função signOut do seu hook de autenticação
+  const navigate = useNavigate();
+  const { signOut } = useAuth();
 
   const isActiveRoute = (path: string) => {
     return location.pathname === path;
@@ -24,15 +25,14 @@ const SidebarDashboard = () => {
   };
 
   const handleLogout = async () => {
-    console.log('SidebarDashboard - Tentando fazer logout...'); // Log para depuração
+    console.log('SidebarDashboard - Tentando fazer logout...');
     try {
-      await signOut(); // Chama a função signOut do useAuth
-      setMobileOpen(false); // Fecha o sidebar móvel após o logout
-      navigate('/login'); // Redireciona para a página de login
-      console.log('SidebarDashboard - Navegou para /login após logout.'); // Log para depuração
+      await signOut();
+      setMobileOpen(false);
+      navigate('/login');
+      console.log('SidebarDashboard - Navegou para /login após logout.');
     } catch (error) {
       console.error('SidebarDashboard - Erro ao fazer logout:', error);
-      // Aqui você pode adicionar um toast de erro se desejar
     }
   };
 
@@ -71,7 +71,7 @@ const SidebarDashboard = () => {
                   maxHeight: '32px',
                   width: 'auto'
                 }}
-                src="/lovable-uploads/d4826481-6237-4186-8ced-b0b927c45423.png" // Verifique se este caminho da imagem está correto
+                src="/lovable-uploads/d4826481-6237-4186-8ced-b0b927c45423.png"
                 className="h-8 mr-2 block object-scale-down"
               />
               <span className="text-white dark:text-white">RESIDUALL</span>
@@ -94,6 +94,17 @@ const SidebarDashboard = () => {
         <SidebarLink to="/dashboard" icon={Home} label="Visão Geral" />
         <SidebarLink to="/dashboard/relatorios" icon={FileText} label="Relatórios" />
         <SidebarLink to="/dashboard/projetos" icon={Briefcase} label="Projetos" />
+        
+        {/* Novo link para criar projeto */}
+        <Link
+          to="/dashboard/projetos/novo"
+          className="sidebar-menu-item ml-6 text-sm"
+          onClick={() => setMobileOpen(false)}
+        >
+          <Plus size={16} className="sidebar-icon" />
+          {!collapsed && <span>Novo Projeto</span>}
+        </Link>
+        
         <SidebarLink to="/dashboard/time" icon={Users} label="Time" />
         <SidebarLink to="/dashboard/materiais" icon={Layers} label="Materiais" />
         <SidebarLink to="/dashboard/perfil" icon={User} label="Perfil" />
@@ -104,10 +115,9 @@ const SidebarDashboard = () => {
       </div>
 
       <div className="p-4 border-t border-sidebar-border">
-        {/* Botão Sair - Agora chama handleLogout */}
         <button
-          onClick={handleLogout} // Chame a função handleLogout
-          className="sidebar-menu-item w-full text-left" // Use w-full e text-left para ocupar todo o espaço
+          onClick={handleLogout}
+          className="sidebar-menu-item w-full text-left"
         >
           <LogOut size={20} className="sidebar-icon" />
           {!collapsed && <span>Sair</span>}

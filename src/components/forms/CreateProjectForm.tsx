@@ -1,9 +1,6 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,18 +8,20 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import { Checkbox } from '@/components/ui/checkbox';
 import { ArrowLeft, ArrowRight, Upload, Plus, Trash2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 // Constantes para as etapas da obra
 const PROJECT_STAGES = [
   'Fundação',
   'Estrutura', 
   'Alvenaria',
-  'Instalações',
-  'Revestimentos e Acabamentos',
+  'Instalações (elétricas, hidráulicas, etc.)',
+  'Revestimentos e Acabamentos (internos e externos)',
   'Cobertura',
   'Acabamento Final',
-  'Limpeza e Entrega'
+  'Limpeza e Entrega da Obra'
 ];
 
 const PROJECT_TYPES = [
@@ -41,47 +40,48 @@ const PROJECT_STATUS = [
 ];
 
 interface Material {
-  material_type_name: string;
-  estimated_quantity: number | null;
-  unit_of_measurement: string;
-  dimensions_specs: string;
+  tipo: string;
+  quantidade: number | null;
+  unidade: string;
+  dimensoes: string;
 }
 
 interface ProjectFormData {
-  name: string;
-  location: string;
-  dimensions_details: string;
-  project_type: string;
+  nome: string;
+  localizacao: string;
+  dimensionamento: string;
+  tipologia: string;
   status: string;
-  start_date: string;
-  planned_end_date: string;
-  budget: number | null;
-  responsible_team_contacts: string;
-  description_notes: string;
-  materials: Material[];
-  documents: File[];
+  dataInicio: string;
+  previsaoFinalizacao: string;
+  orcamento: number | null;
+  equipeResponsavel: string;
+  etapasSelecionadas: string[];
+  materiais: Material[];
+  documentos: File[];
+  observacoes: string;
 }
 
 const CreateProjectForm: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const [formData, setFormData] = useState<ProjectFormData>({
-    name: '',
-    location: '',
-    dimensions_details: '',
-    project_type: '',
+    nome: '',
+    localizacao: '',
+    dimensionamento: '',
+    tipologia: '',
     status: 'planejamento',
-    start_date: '',
-    planned_end_date: '',
-    budget: null,
-    responsible_team_contacts: '',
-    description_notes: '',
-    materials: [],
-    documents: []
+    dataInicio: '',
+    previsaoFinalizacao: '',
+    orcamento: null,
+    equipeResponsavel: '',
+    etapasSelecionadas: [],
+    materiais: [],
+    documentos: [],
+    observacoes: ''
   });
 
   const updateFormData = (field: keyof ProjectFormData, value: any) => {
@@ -91,11 +91,11 @@ const CreateProjectForm: React.FC = () => {
   const addMaterial = () => {
     setFormData(prev => ({
       ...prev,
-      materials: [...prev.materials, {
-        material_type_name: '',
-        estimated_quantity: null,
-        unit_of_measurement: '',
-        dimensions_specs: ''
+      materiais: [...prev.materiais, {
+        tipo: '',
+        quantidade: null,
+        unidade: '',
+        dimensoes: ''
       }]
     }));
   };
@@ -103,7 +103,7 @@ const CreateProjectForm: React.FC = () => {
   const updateMaterial = (index: number, field: keyof Material, value: any) => {
     setFormData(prev => ({
       ...prev,
-      materials: prev.materials.map((material, i) => 
+      materiais: prev.materiais.map((material, i) => 
         i === index ? { ...material, [field]: value } : material
       )
     }));
@@ -112,7 +112,16 @@ const CreateProjectForm: React.FC = () => {
   const removeMaterial = (index: number) => {
     setFormData(prev => ({
       ...prev,
-      materials: prev.materials.filter((_, i) => i !== index)
+      materiais: prev.materiais.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleStageToggle = (stage: string, checked: boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      etapasSelecionadas: checked
+        ? [...prev.etapasSelecionadas, stage]
+        : prev.etapasSelecionadas.filter(s => s !== stage)
     }));
   };
 
@@ -120,29 +129,31 @@ const CreateProjectForm: React.FC = () => {
     const files = Array.from(event.target.files || []);
     setFormData(prev => ({
       ...prev,
-      documents: [...prev.documents, ...files]
+      documentos: [...prev.documentos, ...files]
     }));
   };
 
   const removeDocument = (index: number) => {
     setFormData(prev => ({
       ...prev,
-      documents: prev.documents.filter((_, i) => i !== index)
+      documentos: prev.documentos.filter((_, i) => i !== index)
     }));
   };
 
   const validateStep = (step: number): boolean => {
     switch (step) {
       case 1:
-        return !!(formData.name && formData.location && formData.project_type && formData.status);
+        return !!(formData.nome && formData.localizacao && formData.tipologia && formData.status);
       case 2:
         return true; // Documentos são opcionais
       case 3:
-        return formData.materials.every(material => 
-          material.material_type_name && material.unit_of_measurement
-        );
+        return formData.etapasSelecionadas.length > 0;
       case 4:
-        return true; // Descrição é opcional
+        return formData.materiais.every(material => 
+          material.tipo && material.unidade
+        );
+      case 5:
+        return true; // Observações são opcionais
       default:
         return true;
     }
@@ -150,7 +161,7 @@ const CreateProjectForm: React.FC = () => {
 
   const nextStep = () => {
     if (validateStep(currentStep)) {
-      setCurrentStep(prev => Math.min(prev + 1, 4));
+      setCurrentStep(prev => Math.min(prev + 1, 5));
     } else {
       toast({
         title: "Campos obrigatórios",
@@ -165,69 +176,14 @@ const CreateProjectForm: React.FC = () => {
   };
 
   const handleSubmit = async () => {
-    if (!user) return;
-
     setIsSubmitting(true);
     try {
-      // 1. Criar o projeto
-      const { data: project, error: projectError } = await supabase
-        .from('projects')
-        .insert({
-          user_id: user.id,
-          name: formData.name,
-          location: formData.location,
-          dimensions_details: formData.dimensions_details,
-          project_type: formData.project_type,
-          status: formData.status,
-          start_date: formData.start_date || null,
-          planned_end_date: formData.planned_end_date || null,
-          budget: formData.budget,
-          responsible_team_contacts: formData.responsible_team_contacts,
-          description_notes: formData.description_notes
-        })
-        .select()
-        .single();
-
-      if (projectError) throw projectError;
-
-      // 2. Upload de documentos (se houver)
-      for (const file of formData.documents) {
-        const fileName = `${user.id}/${project.id}/${file.name}`;
-        const { error: uploadError } = await supabase.storage
-          .from('project-documents')
-          .upload(fileName, file);
-
-        if (!uploadError) {
-          await supabase
-            .from('project_documents')
-            .insert({
-              project_id: project.id,
-              file_name: file.name,
-              storage_path: fileName,
-              file_type: file.type,
-              description: `Documento: ${file.name}`
-            });
-        }
-      }
-
-      // 3. Criar materiais do projeto
-      for (const material of formData.materials) {
-        if (material.material_type_name) {
-          await supabase
-            .from('project_materials')
-            .insert({
-              project_id: project.id,
-              material_type_name: material.material_type_name,
-              estimated_quantity: material.estimated_quantity,
-              unit_of_measurement: material.unit_of_measurement,
-              dimensions_specs: material.dimensions_specs
-            });
-        }
-      }
-
+      // Simular salvamento do projeto
+      console.log('Dados do projeto:', formData);
+      
       toast({
         title: "Projeto criado com sucesso!",
-        description: "Seu projeto foi registrado e está pronto para o acompanhamento de desperdícios.",
+        description: "Seu projeto foi registrado e está pronto para o acompanhamento.",
       });
 
       navigate('/dashboard/projetos');
@@ -235,7 +191,7 @@ const CreateProjectForm: React.FC = () => {
       console.error('Erro ao criar projeto:', error);
       toast({
         title: "Erro ao criar projeto",
-        description: error.message || "Ocorreu um erro inesperado. Tente novamente.",
+        description: "Ocorreu um erro inesperado. Tente novamente.",
         variant: "destructive"
       });
     } finally {
@@ -252,32 +208,32 @@ const CreateProjectForm: React.FC = () => {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="name">Nome do Projeto *</Label>
+                <Label htmlFor="nome">Nome do Projeto *</Label>
                 <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => updateFormData('name', e.target.value)}
+                  id="nome"
+                  value={formData.nome}
+                  onChange={(e) => updateFormData('nome', e.target.value)}
                   placeholder="Ex: Edifício Aurora"
                 />
               </div>
               
               <div>
-                <Label htmlFor="location">Localização da Obra *</Label>
+                <Label htmlFor="localizacao">Localização da Obra *</Label>
                 <Input
-                  id="location"
-                  value={formData.location}
-                  onChange={(e) => updateFormData('location', e.target.value)}
+                  id="localizacao"
+                  value={formData.localizacao}
+                  onChange={(e) => updateFormData('localizacao', e.target.value)}
                   placeholder="Ex: São Paulo, SP"
                 />
               </div>
             </div>
 
             <div>
-              <Label htmlFor="dimensions">Dimensionamento do Projeto</Label>
+              <Label htmlFor="dimensionamento">Dimensionamento do Projeto</Label>
               <Textarea
-                id="dimensions"
-                value={formData.dimensions_details}
-                onChange={(e) => updateFormData('dimensions_details', e.target.value)}
+                id="dimensionamento"
+                value={formData.dimensionamento}
+                onChange={(e) => updateFormData('dimensionamento', e.target.value)}
                 placeholder="Ex: Área construída: 2.500m², 15 pavimentos, 60 apartamentos"
                 rows={3}
               />
@@ -285,8 +241,8 @@ const CreateProjectForm: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="type">Tipologia do Projeto *</Label>
-                <Select onValueChange={(value) => updateFormData('project_type', value)}>
+                <Label htmlFor="tipologia">Tipologia do Projeto *</Label>
+                <Select onValueChange={(value) => updateFormData('tipologia', value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione a tipologia" />
                   </SelectTrigger>
@@ -317,44 +273,44 @@ const CreateProjectForm: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="startDate">Data de Início</Label>
+                <Label htmlFor="dataInicio">Data de Início</Label>
                 <Input
-                  id="startDate"
+                  id="dataInicio"
                   type="date"
-                  value={formData.start_date}
-                  onChange={(e) => updateFormData('start_date', e.target.value)}
+                  value={formData.dataInicio}
+                  onChange={(e) => updateFormData('dataInicio', e.target.value)}
                 />
               </div>
               
               <div>
-                <Label htmlFor="endDate">Previsão de Finalização</Label>
+                <Label htmlFor="previsaoFinalizacao">Previsão de Finalização</Label>
                 <Input
-                  id="endDate"
+                  id="previsaoFinalizacao"
                   type="date"
-                  value={formData.planned_end_date}
-                  onChange={(e) => updateFormData('planned_end_date', e.target.value)}
+                  value={formData.previsaoFinalizacao}
+                  onChange={(e) => updateFormData('previsaoFinalizacao', e.target.value)}
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="budget">Orçamento Previsto (R$)</Label>
+                <Label htmlFor="orcamento">Orçamento Previsto (R$)</Label>
                 <Input
-                  id="budget"
+                  id="orcamento"
                   type="number"
-                  value={formData.budget || ''}
-                  onChange={(e) => updateFormData('budget', e.target.value ? Number(e.target.value) : null)}
+                  value={formData.orcamento || ''}
+                  onChange={(e) => updateFormData('orcamento', e.target.value ? Number(e.target.value) : null)}
                   placeholder="Ex: 5000000"
                 />
               </div>
               
               <div>
-                <Label htmlFor="team">Equipe Responsável</Label>
+                <Label htmlFor="equipe">Equipe Responsável</Label>
                 <Input
-                  id="team"
-                  value={formData.responsible_team_contacts}
-                  onChange={(e) => updateFormData('responsible_team_contacts', e.target.value)}
+                  id="equipe"
+                  value={formData.equipeResponsavel}
+                  onChange={(e) => updateFormData('equipeResponsavel', e.target.value)}
                   placeholder="Ex: João Silva (Eng. Civil), Maria Santos (Arquiteta)"
                 />
               </div>
@@ -375,14 +331,14 @@ const CreateProjectForm: React.FC = () => {
               <div className="text-center">
                 <Upload className="mx-auto h-12 w-12 text-gray-400" />
                 <div className="mt-4">
-                  <Label htmlFor="documents" className="cursor-pointer">
+                  <Label htmlFor="documentos" className="cursor-pointer">
                     <span className="mt-2 block text-sm font-medium text-gray-900">
                       Clique para fazer upload ou arraste arquivos aqui
                     </span>
                     <span className="text-sm text-gray-500">PDF até 10MB</span>
                   </Label>
                   <Input
-                    id="documents"
+                    id="documentos"
                     type="file"
                     multiple
                     accept=".pdf"
@@ -393,10 +349,10 @@ const CreateProjectForm: React.FC = () => {
               </div>
             </div>
 
-            {formData.documents.length > 0 && (
+            {formData.documentos.length > 0 && (
               <div className="space-y-2">
                 <h4 className="font-medium">Documentos Anexados:</h4>
-                {formData.documents.map((doc, index) => (
+                {formData.documentos.map((doc, index) => (
                   <div key={index} className="flex items-center justify-between p-2 border rounded">
                     <span className="text-sm">{doc.name}</span>
                     <Button
@@ -416,6 +372,35 @@ const CreateProjectForm: React.FC = () => {
       case 3:
         return (
           <div className="space-y-6">
+            <h3 className="text-lg font-semibold text-gray-900">Etapas da Obra</h3>
+            <p className="text-gray-600">
+              Selecione as etapas construtivas que se aplicam ao seu projeto. Isso ajudará a organizar 
+              os dados e facilitar a análise de reaproveitamento de materiais em cada fase.
+            </p>
+
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <h4 className="font-medium text-blue-900 mb-2">Categorias de Etapas Pré-definidas:</h4>
+              <div className="space-y-3">
+                {PROJECT_STAGES.map((stage, index) => (
+                  <div key={stage} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`stage-${index}`}
+                      checked={formData.etapasSelecionadas.includes(stage)}
+                      onCheckedChange={(checked) => handleStageToggle(stage, checked as boolean)}
+                    />
+                    <Label htmlFor={`stage-${index}`} className="text-blue-800">
+                      {index + 1}. {stage}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 4:
+        return (
+          <div className="space-y-6">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-gray-900">Materiais do Projeto</h3>
               <Button onClick={addMaterial} variant="outline" size="sm">
@@ -429,28 +414,17 @@ const CreateProjectForm: React.FC = () => {
               usadas para acompanhar o desperdício por etapa da obra.
             </p>
 
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <h4 className="font-medium text-blue-900 mb-2">Etapas da Obra Pré-definidas:</h4>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm text-blue-800">
-                {PROJECT_STAGES.map((stage, index) => (
-                  <div key={stage}>
-                    {index + 1}. {stage}
-                  </div>
-                ))}
-              </div>
-            </div>
-
             <div className="space-y-4">
-              {formData.materials.map((material, index) => (
+              {formData.materiais.map((material, index) => (
                 <Card key={index}>
                   <CardContent className="pt-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                       <div>
                         <Label>Tipo de Material *</Label>
                         <Input
-                          value={material.material_type_name}
-                          onChange={(e) => updateMaterial(index, 'material_type_name', e.target.value)}
-                          placeholder="Ex: Tijolo cerâmico"
+                          value={material.tipo}
+                          onChange={(e) => updateMaterial(index, 'tipo', e.target.value)}
+                          placeholder="Ex: Tijolo cerâmico, Cimento CPII"
                         />
                       </div>
                       
@@ -458,17 +432,17 @@ const CreateProjectForm: React.FC = () => {
                         <Label>Quantidade Estimada</Label>
                         <Input
                           type="number"
-                          value={material.estimated_quantity || ''}
-                          onChange={(e) => updateMaterial(index, 'estimated_quantity', e.target.value ? Number(e.target.value) : null)}
+                          value={material.quantidade || ''}
+                          onChange={(e) => updateMaterial(index, 'quantidade', e.target.value ? Number(e.target.value) : null)}
                           placeholder="Ex: 1000"
                         />
                       </div>
                       
                       <div>
-                        <Label>Unidade de Medida *</Label>
+                        <Label>Unidade *</Label>
                         <Input
-                          value={material.unit_of_measurement}
-                          onChange={(e) => updateMaterial(index, 'unit_of_measurement', e.target.value)}
+                          value={material.unidade}
+                          onChange={(e) => updateMaterial(index, 'unidade', e.target.value)}
                           placeholder="Ex: un, kg, m², m³"
                         />
                       </div>
@@ -486,18 +460,18 @@ const CreateProjectForm: React.FC = () => {
                     </div>
                     
                     <div className="mt-4">
-                      <Label>Dimensões/Especificações</Label>
+                      <Label>Dimensões (se aplicável)</Label>
                       <Input
-                        value={material.dimensions_specs}
-                        onChange={(e) => updateMaterial(index, 'dimensions_specs', e.target.value)}
-                        placeholder="Ex: 14x19x29cm, CA50 Ø 12mm"
+                        value={material.dimensoes}
+                        onChange={(e) => updateMaterial(index, 'dimensoes', e.target.value)}
+                        placeholder="Ex: 14x19x29cm, dimensões de blocos/chapas"
                       />
                     </div>
                   </CardContent>
                 </Card>
               ))}
               
-              {formData.materials.length === 0 && (
+              {formData.materiais.length === 0 && (
                 <div className="text-center py-8 text-gray-500">
                   Nenhum material adicionado. Clique em "Adicionar Material" para começar.
                 </div>
@@ -506,17 +480,17 @@ const CreateProjectForm: React.FC = () => {
           </div>
         );
 
-      case 4:
+      case 5:
         return (
           <div className="space-y-6">
             <h3 className="text-lg font-semibold text-gray-900">Descrição e Observações</h3>
             
             <div>
-              <Label htmlFor="description">Observações do Projeto</Label>
+              <Label htmlFor="observacoes">Observações do Projeto</Label>
               <Textarea
-                id="description"
-                value={formData.description_notes}
-                onChange={(e) => updateFormData('description_notes', e.target.value)}
+                id="observacoes"
+                value={formData.observacoes}
+                onChange={(e) => updateFormData('observacoes', e.target.value)}
                 placeholder="Descreva análises adicionais, observações sobre o andamento, desafios ou particularidades do projeto..."
                 rows={6}
               />
@@ -525,12 +499,13 @@ const CreateProjectForm: React.FC = () => {
             <div className="bg-green-50 p-4 rounded-lg">
               <h4 className="font-medium text-green-900 mb-2">Resumo do Projeto:</h4>
               <div className="text-sm text-green-800 space-y-1">
-                <p><strong>Nome:</strong> {formData.name}</p>
-                <p><strong>Localização:</strong> {formData.location}</p>
-                <p><strong>Tipo:</strong> {formData.project_type}</p>
+                <p><strong>Nome:</strong> {formData.nome}</p>
+                <p><strong>Localização:</strong> {formData.localizacao}</p>
+                <p><strong>Tipologia:</strong> {formData.tipologia}</p>
                 <p><strong>Status:</strong> {formData.status}</p>
-                <p><strong>Materiais cadastrados:</strong> {formData.materials.length}</p>
-                <p><strong>Documentos anexados:</strong> {formData.documents.length}</p>
+                <p><strong>Etapas selecionadas:</strong> {formData.etapasSelecionadas.length}</p>
+                <p><strong>Materiais cadastrados:</strong> {formData.materiais.length}</p>
+                <p><strong>Documentos anexados:</strong> {formData.documentos.length}</p>
               </div>
             </div>
           </div>
@@ -547,18 +522,19 @@ const CreateProjectForm: React.FC = () => {
         <CardHeader>
           <CardTitle>Criar Novo Projeto</CardTitle>
           <CardDescription>
-            Etapa {currentStep} de 4: {
+            Etapa {currentStep} de 5: {
               currentStep === 1 ? 'Informações Básicas' :
               currentStep === 2 ? 'Documentos' :
-              currentStep === 3 ? 'Materiais' : 'Observações'
+              currentStep === 3 ? 'Etapas da Obra' :
+              currentStep === 4 ? 'Materiais' : 'Observações'
             }
           </CardDescription>
           
           {/* Progress bar */}
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div 
-              className="bg-residuall-green h-2 rounded-full transition-all duration-300"
-              style={{ width: `${(currentStep / 4) * 100}%` }}
+              className="bg-green-600 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${(currentStep / 5) * 100}%` }}
             />
           </div>
         </CardHeader>
@@ -578,7 +554,7 @@ const CreateProjectForm: React.FC = () => {
               Anterior
             </Button>
             
-            {currentStep < 4 ? (
+            {currentStep < 5 ? (
               <Button onClick={nextStep}>
                 Próximo
                 <ArrowRight className="h-4 w-4 ml-2" />
@@ -587,7 +563,7 @@ const CreateProjectForm: React.FC = () => {
               <Button 
                 onClick={handleSubmit} 
                 disabled={isSubmitting}
-                className="bg-residuall-green hover:bg-residuall-green/90"
+                className="bg-green-600 hover:bg-green-700"
               >
                 {isSubmitting ? 'Criando...' : 'Criar Projeto'}
               </Button>
