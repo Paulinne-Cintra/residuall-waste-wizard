@@ -19,7 +19,12 @@ const Header = () => {
     <header className="fixed top-0 w-full z-50 header-glass">
       <div className="container mx-auto px-4 flex items-center justify-between h-16 md:h-20">
         {/* Logo */}
-        <Link to="/" className="logo-hover">
+        <Link to="/" className="logo-hover flex items-center">
+          <img
+            src="/lovable-uploads/97cfa9a1-97a5-40dd-8412-f0c969634261.png"
+            alt="Logo Residuall"
+            className="h-8 md:h-10 w-auto mr-3"
+          />
           <span className="brand-text text-2xl md:text-3xl text-residuall-green">
             RESIDUALL
           </span>

@@ -67,17 +67,19 @@ const SidebarDashboard = () => {
             <>
               <img
                 alt="Logo Residuall"
-                style={{
-                  maxHeight: '32px',
-                  width: 'auto'
-                }}
-                src="/lovable-uploads/d4826481-6237-4186-8ced-b0b927c45423.png"
-                className="h-8 mr-2 block object-scale-down"
+                src="/lovable-uploads/97cfa9a1-97a5-40dd-8412-f0c969634261.png"
+                className="h-8 w-auto mr-2"
               />
               <span className="text-white dark:text-white">RESIDUALL</span>
             </>
           )}
-          {collapsed && <span className="text-white dark:text-white">R</span>}
+          {collapsed && (
+            <img
+              alt="Logo Residuall"
+              src="/lovable-uploads/97cfa9a1-97a5-40dd-8412-f0c969634261.png"
+              className="h-8 w-auto"
+            />
+          )}
         </Link>
         <button
           onClick={toggleSidebar}
