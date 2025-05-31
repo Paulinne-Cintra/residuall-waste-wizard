@@ -7,10 +7,17 @@ interface Project {
   id: string;
   user_id: string;
   name: string;
-  description: string | null;
+  location: string | null;
+  dimensions_details: string | null;
+  project_type: string | null;
   status: string;
-  progress: number;
+  start_date: string | null;
+  planned_end_date: string | null;
+  budget: number | null;
+  responsible_team_contacts: string | null;
+  description_notes: string | null;
   created_at: string;
+  updated_at: string;
 }
 
 interface UseProjectsResult {

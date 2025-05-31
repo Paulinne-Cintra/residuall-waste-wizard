@@ -4,29 +4,32 @@ import { Search, Bell, ChevronDown, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useProjects } from '@/hooks/useProjects';
-import { useMaterials } from '@/hooks/useMaterials';
-import { useReports } from '@/hooks/useReports';
+import { useProjectMaterials } from '@/hooks/useProjectMaterials';
+import { useWasteEntries } from '@/hooks/useWasteEntries';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { signOut, user } = useAuth();
   const { projects, loading: loadingProjects, error: errorProjects } = useProjects();
-  const { materials, loading: loadingMaterials, error: errorMaterials } = useMaterials();
-  const { reports, loading: loadingReports, error: errorReports } = useReports();
+  const { materials, loading: loadingMaterials, error: errorMaterials } = useProjectMaterials();
+  const { wasteEntries, loading: loadingWasteEntries, error: errorWasteEntries } = useWasteEntries();
 
   // Calcula o número de projetos ativos
-  const activeProjectsCount = projects.filter(p => p.status === 'active').length;
+  const activeProjectsCount = projects.filter(p => p.status === 'execução' || p.status === 'planejamento').length;
   
-  // Calcula total de materiais reaproveitados (baseado na porcentagem de reuso)
-  const totalMaterialsReused = materials.reduce((sum, m) => {
-    const quantity = m.quantity || 0;
-    const reusedPercentage = m.reused_percentage || 0;
-    return sum + (quantity * reusedPercentage / 100);
-  }, 0);
+  // Calcula total de materiais cadastrados
+  const totalMaterialsCount = materials.length;
 
-  // Calcula economia total dos relatórios
-  const totalEconomy = reports.reduce((sum, r) => sum + (r.economy_generated || 0), 0);
+  // Calcula total de desperdício evitado (baseado nas entradas de desperdício)
+  const totalWasteAvoided = wasteEntries.reduce((sum, entry) => sum + entry.wasted_quantity, 0);
+
+  // Calcula economia estimada (baseado no custo dos materiais desperdiçados)
+  const totalEconomyGenerated = materials.reduce((sum, material) => {
+    const materialWaste = wasteEntries.filter(entry => entry.project_material_id === material.id);
+    const wastedQuantity = materialWaste.reduce((wasteSum, entry) => wasteSum + entry.wasted_quantity, 0);
+    return sum + (wastedQuantity * (material.cost_per_unit || 0));
+  }, 0);
 
   // Projetos recentes (ordenados por data de criação, limitados a 3)
   const recentProjects = projects
@@ -41,6 +44,22 @@ const Dashboard: React.FC = () => {
       console.log('Dashboard - Navegando para /login após logout');
     } catch (error) {
       console.error('Dashboard - Erro ao fazer logout:', error);
+    }
+  };
+
+  // Função para calcular o progresso de um projeto (simulado baseado no status)
+  const getProjectProgress = (status: string) => {
+    switch (status) {
+      case 'planejamento':
+        return 25;
+      case 'execução':
+        return 60;
+      case 'finalização':
+        return 90;
+      case 'concluído':
+        return 100;
+      default:
+        return 0;
     }
   };
 
@@ -70,7 +89,7 @@ const Dashboard: React.FC = () => {
                   className="w-8 h-8 rounded-full mr-2"
                 />
                 <span className="text-gray-700 font-medium hidden md:block">
-                  {user?.user_metadata?.name || user?.email || 'Usuário'}
+                  {user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email || 'Usuário'}
                 </span>
                 <ChevronDown size={16} className="text-gray-500 ml-1 hidden md:block" />
               </div>
@@ -119,46 +138,48 @@ const Dashboard: React.FC = () => {
 
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h3 className="text-lg font-semibold text-gray-700">Economia Gerada</h3>
-          {loadingReports ? (
+          {loadingMaterials || loadingWasteEntries ? (
             <p className="text-4xl font-bold text-gray-900">...</p>
-          ) : errorReports ? (
-            <p className="text-red-500">Erro: {errorReports}</p>
+          ) : errorMaterials || errorWasteEntries ? (
+            <p className="text-red-500">Erro ao calcular</p>
           ) : (
             <p className="text-4xl font-bold text-gray-900">
-              R$ {totalEconomy.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              R$ {totalEconomyGenerated.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </p>
           )}
-          <p className="text-sm text-green-500 mt-2">Baseado nos relatórios</p>
+          <p className="text-sm text-green-500 mt-2">Baseado no desperdício evitado</p>
         </div>
 
         <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-lg font-semibold text-gray-700">Materiais Reaproveitados</h3>
+          <h3 className="text-lg font-semibold text-gray-700">Materiais Cadastrados</h3>
           {loadingMaterials ? (
             <p className="text-4xl font-bold text-gray-900">...</p>
           ) : errorMaterials ? (
             <p className="text-red-500">Erro: {errorMaterials}</p>
           ) : (
-            <p className="text-4xl font-bold text-gray-900">{Math.round(totalMaterialsReused)}</p>
+            <p className="text-4xl font-bold text-gray-900">{totalMaterialsCount}</p>
           )}
           <p className="text-sm text-green-500 mt-2">
-            {materials.length > 0 ? `${materials.length} materiais cadastrados` : 'Nenhum material cadastrado'}
+            {totalMaterialsCount > 0 ? `${totalMaterialsCount} tipos de materiais` : 'Nenhum material cadastrado'}
           </p>
         </div>
 
         <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-lg font-semibold text-gray-700">Relatórios Gerados</h3>
-          {loadingReports ? (
+          <h3 className="text-lg font-semibold text-gray-700">Desperdício Monitorado</h3>
+          {loadingWasteEntries ? (
             <p className="text-4xl font-bold text-gray-900">...</p>
-          ) : errorReports ? (
-            <p className="text-red-500">Erro: {errorReports}</p>
+          ) : errorWasteEntries ? (
+            <p className="text-red-500">Erro: {errorWasteEntries}</p>
           ) : (
-            <p className="text-4xl font-bold text-gray-900">{reports.length}</p>
+            <p className="text-4xl font-bold text-gray-900">{Math.round(totalWasteAvoided)}</p>
           )}
-          <p className="text-sm text-gray-500 mt-2">Total de relatórios</p>
+          <p className="text-sm text-gray-500 mt-2">
+            {wasteEntries.length > 0 ? `${wasteEntries.length} registros de desperdício` : 'Nenhum registro'}
+          </p>
         </div>
       </div>
 
-      {/* NOVA SEÇÃO: Projetos Recentes com Barra de Progresso */}
+      {/* SEÇÃO: Projetos Recentes com Barra de Progresso */}
       <div className="bg-white p-6 rounded-lg shadow-md mb-6 mx-6">
         <h3 className="text-lg font-semibold text-gray-700 mb-4">Projetos Recentes</h3>
         {loadingProjects ? (
@@ -169,21 +190,27 @@ const Dashboard: React.FC = () => {
           <p className="text-gray-500">Nenhum projeto recente para exibir.</p>
         ) : (
           <div className="space-y-4">
-            {recentProjects.map((project) => (
-              <div key={project.id} className="border-b border-gray-200 pb-4 last:border-b-0 last:pb-0">
-                <div className="flex justify-between items-center mb-2">
-                  <h4 className="font-medium text-gray-800">{project.name}</h4>
-                  <span className="text-sm text-gray-600">{project.progress}%</span>
+            {recentProjects.map((project) => {
+              const progress = getProjectProgress(project.status);
+              return (
+                <div key={project.id} className="border-b border-gray-200 pb-4 last:border-b-0 last:pb-0">
+                  <div className="flex justify-between items-center mb-2">
+                    <h4 className="font-medium text-gray-800">{project.name}</h4>
+                    <span className="text-sm text-gray-600">{progress}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2.5">
+                    <div
+                      className="bg-residuall-green h-2.5 rounded-full transition-all duration-300"
+                      style={{ width: `${progress}%` }}
+                    ></div>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Status: {project.status}</p>
+                  {project.location && (
+                    <p className="text-xs text-gray-500">Local: {project.location}</p>
+                  )}
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2.5">
-                  <div
-                    className="bg-residuall-green h-2.5 rounded-full transition-all duration-300"
-                    style={{ width: `${project.progress}%` }}
-                  ></div>
-                </div>
-                <p className="text-xs text-gray-500 mt-1">Status: {project.status}</p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

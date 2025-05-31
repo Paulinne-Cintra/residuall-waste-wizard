@@ -9,195 +9,79 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      materials: {
-        Row: {
-          cost_per_unit: number | null
-          created_at: string
-          id: string
-          name: string
-          project_id: string
-          quantity: number | null
-          reuse_rate: number | null
-          reused_percentage: number | null
-          status: string | null
-          type: string | null
-          unit: string | null
-          user_id: string | null
-        }
-        Insert: {
-          cost_per_unit?: number | null
-          created_at?: string
-          id?: string
-          name: string
-          project_id: string
-          quantity?: number | null
-          reuse_rate?: number | null
-          reused_percentage?: number | null
-          status?: string | null
-          type?: string | null
-          unit?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          cost_per_unit?: number | null
-          created_at?: string
-          id?: string
-          name?: string
-          project_id?: string
-          quantity?: number | null
-          reuse_rate?: number | null
-          reused_percentage?: number | null
-          status?: string | null
-          type?: string | null
-          unit?: string | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "materials_project_id_fkey"
-            columns: ["project_id"]
-            isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       profiles: {
         Row: {
           avatar_url: string | null
+          company_name: string | null
           created_at: string
+          email: string | null
+          full_name: string | null
           id: string
-          name: string | null
+          phone_number: string | null
+          professional_role: string | null
+          profile_picture_url: string | null
           role: string | null
+          updated_at: string | null
         }
         Insert: {
           avatar_url?: string | null
+          company_name?: string | null
           created_at?: string
+          email?: string | null
+          full_name?: string | null
           id: string
-          name?: string | null
+          phone_number?: string | null
+          professional_role?: string | null
+          profile_picture_url?: string | null
           role?: string | null
+          updated_at?: string | null
         }
         Update: {
           avatar_url?: string | null
+          company_name?: string | null
           created_at?: string
+          email?: string | null
+          full_name?: string | null
           id?: string
-          name?: string | null
+          phone_number?: string | null
+          professional_role?: string | null
+          profile_picture_url?: string | null
           role?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
-      projects: {
+      project_documents: {
         Row: {
-          created_at: string
           description: string | null
+          file_name: string
+          file_type: string | null
           id: string
-          name: string
-          progress: number
-          status: string
-          user_id: string
+          project_id: string
+          storage_path: string
+          uploaded_at: string | null
         }
         Insert: {
-          created_at?: string
           description?: string | null
+          file_name: string
+          file_type?: string | null
           id?: string
-          name: string
-          progress?: number
-          status?: string
-          user_id: string
+          project_id: string
+          storage_path: string
+          uploaded_at?: string | null
         }
         Update: {
-          created_at?: string
           description?: string | null
+          file_name?: string
+          file_type?: string | null
           id?: string
-          name?: string
-          progress?: number
-          status?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      recommendations: {
-        Row: {
-          category: string
-          created_at: string
-          description: string | null
-          id: string
-          impact_level: string
-          status: string
-          title: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          category: string
-          created_at?: string
-          description?: string | null
-          id?: string
-          impact_level?: string
-          status?: string
-          title: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          category?: string
-          created_at?: string
-          description?: string | null
-          id?: string
-          impact_level?: string
-          status?: string
-          title?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      reports: {
-        Row: {
-          created_at: string
-          description: string | null
-          economy_generated: number | null
-          id: string
-          location: string | null
-          project_id: string | null
-          report_date: string
-          responsible: string | null
-          status: string
-          title: string | null
-          user_id: string
-          waste_avoided_tons: number | null
-        }
-        Insert: {
-          created_at?: string
-          description?: string | null
-          economy_generated?: number | null
-          id?: string
-          location?: string | null
-          project_id?: string | null
-          report_date?: string
-          responsible?: string | null
-          status?: string
-          title?: string | null
-          user_id: string
-          waste_avoided_tons?: number | null
-        }
-        Update: {
-          created_at?: string
-          description?: string | null
-          economy_generated?: number | null
-          id?: string
-          location?: string | null
-          project_id?: string | null
-          report_date?: string
-          responsible?: string | null
-          status?: string
-          title?: string | null
-          user_id?: string
-          waste_avoided_tons?: number | null
+          project_id?: string
+          storage_path?: string
+          uploaded_at?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "reports_project_id_fkey"
+            foreignKeyName: "project_documents_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
@@ -205,41 +89,144 @@ export type Database = {
           },
         ]
       }
-      team_members: {
+      project_materials: {
         Row: {
-          avatar_url: string | null
-          created_at: string
-          email: string
+          cost_per_unit: number | null
+          created_at: string | null
+          dimensions_specs: string | null
+          estimated_quantity: number | null
           id: string
+          material_type_name: string
+          project_id: string
+          unit_of_measurement: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          cost_per_unit?: number | null
+          created_at?: string | null
+          dimensions_specs?: string | null
+          estimated_quantity?: number | null
+          id?: string
+          material_type_name: string
+          project_id: string
+          unit_of_measurement?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          cost_per_unit?: number | null
+          created_at?: string | null
+          dimensions_specs?: string | null
+          estimated_quantity?: number | null
+          id?: string
+          material_type_name?: string
+          project_id?: string
+          unit_of_measurement?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_materials_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      projects: {
+        Row: {
+          budget: number | null
+          created_at: string | null
+          description_notes: string | null
+          dimensions_details: string | null
+          id: string
+          location: string | null
           name: string
-          role: string
+          planned_end_date: string | null
+          project_type: string | null
+          responsible_team_contacts: string | null
+          start_date: string | null
           status: string
-          updated_at: string
+          updated_at: string | null
           user_id: string
         }
         Insert: {
-          avatar_url?: string | null
-          created_at?: string
-          email: string
+          budget?: number | null
+          created_at?: string | null
+          description_notes?: string | null
+          dimensions_details?: string | null
           id?: string
+          location?: string | null
           name: string
-          role: string
+          planned_end_date?: string | null
+          project_type?: string | null
+          responsible_team_contacts?: string | null
+          start_date?: string | null
           status?: string
-          updated_at?: string
+          updated_at?: string | null
           user_id: string
         }
         Update: {
-          avatar_url?: string | null
-          created_at?: string
-          email?: string
+          budget?: number | null
+          created_at?: string | null
+          description_notes?: string | null
+          dimensions_details?: string | null
           id?: string
+          location?: string | null
           name?: string
-          role?: string
+          planned_end_date?: string | null
+          project_type?: string | null
+          responsible_team_contacts?: string | null
+          start_date?: string | null
           status?: string
-          updated_at?: string
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: []
+      }
+      waste_entries: {
+        Row: {
+          created_at: string | null
+          entry_date: string
+          id: string
+          notes: string | null
+          project_material_id: string
+          project_stage: string
+          updated_at: string | null
+          waste_cause_category: string | null
+          wasted_quantity: number
+        }
+        Insert: {
+          created_at?: string | null
+          entry_date?: string
+          id?: string
+          notes?: string | null
+          project_material_id: string
+          project_stage: string
+          updated_at?: string | null
+          waste_cause_category?: string | null
+          wasted_quantity: number
+        }
+        Update: {
+          created_at?: string | null
+          entry_date?: string
+          id?: string
+          notes?: string | null
+          project_material_id?: string
+          project_stage?: string
+          updated_at?: string | null
+          waste_cause_category?: string | null
+          wasted_quantity?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "waste_entries_project_material_id_fkey"
+            columns: ["project_material_id"]
+            isOneToOne: false
+            referencedRelation: "project_materials"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
