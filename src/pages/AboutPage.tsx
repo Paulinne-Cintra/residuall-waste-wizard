@@ -1,11 +1,8 @@
-
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { Link } from 'react-router-dom';
-
 const AboutPage = () => {
-  return (
-    <div className="min-h-screen flex flex-col">
+  return <div className="min-h-screen flex flex-col">
       <Header />
       
       <main className="flex-grow">
@@ -22,7 +19,7 @@ const AboutPage = () => {
         </section>
         
         {/* Nossa História */}
-        <section className="section-padding">
+        <section className="section-padding bg-[sidebar-item-active-text] bg-sidebar-ring">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto">
               <h2 className="heading-lg mb-8 text-center">Nossa História</h2>
@@ -144,8 +141,6 @@ const AboutPage = () => {
       </main>
       
       <Footer />
-    </div>
-  );
+    </div>;
 };
-
 export default AboutPage;
