@@ -75,12 +75,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signUp = async (email: string, password: string, metadata?: any) => {
     try {
       console.log('Starting sign up process for:', email);
+      console.log('Metadata being sent:', metadata);
+      
+      // Validar dados obrigatórios
+      if (!email || !password) {
+        throw new Error('Email e senha são obrigatórios');
+      }
+
+      if (password.length < 6) {
+        throw new Error('A senha deve ter pelo menos 6 caracteres');
+      }
+
+      // Preparar metadata com validação
+      const userMetadata = {
+        full_name: metadata?.full_name || '',
+        phone_number: metadata?.phone_number || '',
+        professional_role: metadata?.professional_role || '',
+        ...metadata
+      };
+
+      console.log('Final metadata:', userMetadata);
       
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          data: metadata || {},
+          data: userMetadata,
           emailRedirectTo: `${window.location.origin}/dashboard`
         },
       });
@@ -122,6 +142,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         errorMessage = 'Email inválido. Por favor, verifique o formato.';
       } else if (authError.message.includes('Password should be')) {
         errorMessage = 'A senha deve ter pelo menos 6 caracteres.';
+      } else if (authError.message.includes('Unable to validate email address')) {
+        errorMessage = 'Não foi possível validar o endereço de email. Verifique se está correto.';
+      } else if (authError.message.includes('Database error')) {
+        errorMessage = 'Erro interno do sistema. Tente novamente em alguns instantes.';
       }
       
       toast({
@@ -136,6 +160,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signIn = async (email: string, password: string) => {
     try {
       console.log('Starting sign in process for:', email);
+      
+      // Validar dados obrigatórios
+      if (!email || !password) {
+        throw new Error('Email e senha são obrigatórios');
+      }
       
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -166,6 +195,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         errorMessage = 'Seu email ainda não foi confirmado. Verifique sua caixa de entrada e clique no link de confirmação.';
       } else if (authError.message.includes('Too many requests')) {
         errorMessage = 'Muitas tentativas de login. Aguarde alguns minutos e tente novamente.';
+      } else if (authError.message.includes('Invalid email')) {
+        errorMessage = 'Email inválido. Verifique o formato do email.';
       }
       
       toast({

@@ -18,6 +18,7 @@ const ProfilePage = () => {
     full_name: "",
     phone_number: "",
     cargo: "",
+    professional_role: "",
     biografia: ""
   });
 
@@ -33,7 +34,8 @@ const ProfilePage = () => {
       setEditData({
         full_name: profile.full_name || "",
         phone_number: profile.phone_number || "",
-        cargo: profile.cargo || "",
+        cargo: profile.cargo || profile.professional_role || "",
+        professional_role: profile.professional_role || profile.cargo || "",
         biografia: profile.biografia || ""
       });
     }
@@ -49,7 +51,8 @@ const ProfilePage = () => {
       setEditData({
         full_name: profile.full_name || "",
         phone_number: profile.phone_number || "",
-        cargo: profile.cargo || "",
+        cargo: profile.cargo || profile.professional_role || "",
+        professional_role: profile.professional_role || profile.cargo || "",
         biografia: profile.biografia || ""
       });
     }
@@ -242,16 +245,16 @@ const ProfilePage = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <label htmlFor="cargo" className="block text-sm font-medium text-residuall-gray-tableText">
-                    Cargo/Função
+                  <label htmlFor="professional_role" className="block text-sm font-medium text-residuall-gray-tableText">
+                    Função Profissional
                   </label>
                   {isEditing ? (
                     <Select 
-                      value={editData.cargo} 
-                      onValueChange={(value) => setEditData(prev => ({ ...prev, cargo: value }))}
+                      value={editData.professional_role} 
+                      onValueChange={(value) => setEditData(prev => ({ ...prev, professional_role: value, cargo: value }))}
                     >
                       <SelectTrigger className="input-field">
-                        <SelectValue placeholder="Selecione seu cargo" />
+                        <SelectValue placeholder="Selecione sua função profissional" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="arquiteto">Arquiteto(a)</SelectItem>
@@ -265,9 +268,9 @@ const ProfilePage = () => {
                     </Select>
                   ) : (
                     <Input
-                      id="cargo"
+                      id="professional_role"
                       type="text"
-                      value={profile?.cargo || ''}
+                      value={profile?.professional_role || profile?.cargo || ''}
                       readOnly
                       className="bg-gray-50 input-field"
                     />

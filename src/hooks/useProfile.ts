@@ -10,6 +10,7 @@ interface Profile {
   email?: string;
   phone_number?: string;
   cargo?: string;
+  professional_role?: string;
   biografia?: string;
   avatar_url?: string;
   created_at: string;
@@ -54,6 +55,7 @@ export const useProfile = () => {
           email: user.email || '',
           phone_number: user.user_metadata?.phone_number || '',
           cargo: user.user_metadata?.cargo || '',
+          professional_role: user.user_metadata?.professional_role || '',
           biografia: '',
           avatar_url: user.user_metadata?.avatar_url || '',
         };

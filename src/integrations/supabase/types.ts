@@ -53,6 +53,7 @@ export type Database = {
           full_name: string | null
           id: string
           phone_number: string | null
+          professional_role: string | null
           profile_picture_url: string | null
           role: string | null
           updated_at: string | null
@@ -67,6 +68,7 @@ export type Database = {
           full_name?: string | null
           id: string
           phone_number?: string | null
+          professional_role?: string | null
           profile_picture_url?: string | null
           role?: string | null
           updated_at?: string | null
@@ -81,6 +83,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           phone_number?: string | null
+          professional_role?: string | null
           profile_picture_url?: string | null
           role?: string | null
           updated_at?: string | null
