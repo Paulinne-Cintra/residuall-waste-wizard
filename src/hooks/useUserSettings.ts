@@ -9,6 +9,7 @@ interface UserSettings {
   user_id: string;
   language: string;
   theme: string;
+  timezone: string;
   email_notifications: boolean;
   system_alerts: boolean;
   project_updates: boolean;
@@ -70,6 +71,7 @@ export const useUserSettings = () => {
           user_id: user.id,
           language: 'pt-br',
           theme: 'sistema',
+          timezone: 'America/Sao_Paulo',
           email_notifications: false,
           system_alerts: false,
           project_updates: true,

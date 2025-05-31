@@ -45,39 +45,42 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          biografia: string | null
+          cargo: string | null
           company_name: string | null
           created_at: string
           email: string | null
           full_name: string | null
           id: string
           phone_number: string | null
-          professional_role: string | null
           profile_picture_url: string | null
           role: string | null
           updated_at: string | null
         }
         Insert: {
           avatar_url?: string | null
+          biografia?: string | null
+          cargo?: string | null
           company_name?: string | null
           created_at?: string
           email?: string | null
           full_name?: string | null
           id: string
           phone_number?: string | null
-          professional_role?: string | null
           profile_picture_url?: string | null
           role?: string | null
           updated_at?: string | null
         }
         Update: {
           avatar_url?: string | null
+          biografia?: string | null
+          cargo?: string | null
           company_name?: string | null
           created_at?: string
           email?: string | null
           full_name?: string | null
           id?: string
           phone_number?: string | null
-          professional_role?: string | null
           profile_picture_url?: string | null
           role?: string | null
           updated_at?: string | null
