@@ -1,8 +1,7 @@
-// src/pages/LoginPage.tsx
-import { useState, useEffect } from 'react';
+
+import { useState } from 'react';
 import { Link, Navigate, useLocation } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
-import Header from '../components/Header';
 import { useAuth } from '@/hooks/useAuth';
 
 const LoginPage = () => {
@@ -20,11 +19,7 @@ const LoginPage = () => {
     general?: string;
   }>({});
 
-  console.log('LoginPage - user:', !!user, 'authLoading:', authLoading);
-
-  // Redirecionar se já estiver logado (sem loading)
   if (!authLoading && user) {
-    console.log('LoginPage - redirecting authenticated user to:', from);
     return <Navigate to={from} replace />;
   }
 
@@ -65,101 +60,125 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col relative overflow-hidden login-animated-bg">
-      <Header />
+    <div className="min-h-screen login-animated-bg flex items-center justify-center relative overflow-hidden">
+      {/* Elementos geométricos animados */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-20 left-20 w-16 h-16 border-2 border-white opacity-20 rotate-45 animate-pulse"></div>
+        <div className="absolute top-40 right-32 w-12 h-12 border-2 border-white opacity-20 rounded-full animate-pulse"></div>
+        <div className="absolute bottom-32 left-1/4 w-20 h-20 border-2 border-white opacity-20 animate-pulse"></div>
+        <div className="absolute bottom-20 right-1/4 w-24 h-24 border-2 border-white opacity-20 rotate-12 animate-pulse"></div>
+        
+        {/* Formas de construção */}
+        <div className="absolute top-1/4 left-10 opacity-10">
+          <svg width="60" height="60" viewBox="0 0 60 60" fill="none" className="text-white">
+            <path d="M30 5L5 25H15V55H45V25H55L30 5Z" stroke="currentColor" strokeWidth="2"/>
+          </svg>
+        </div>
+        
+        <div className="absolute bottom-1/4 right-10 opacity-10">
+          <svg width="50" height="80" viewBox="0 0 50 80" fill="none" className="text-white">
+            <rect x="5" y="20" width="40" height="60" stroke="currentColor" strokeWidth="2"/>
+            <rect x="10" y="25" width="8" height="12" stroke="currentColor" strokeWidth="1"/>
+            <rect x="20" y="25" width="8" height="12" stroke="currentColor" strokeWidth="1"/>
+            <rect x="32" y="25" width="8" height="12" stroke="currentColor" strokeWidth="1"/>
+          </svg>
+        </div>
+      </div>
       
-      <main className="flex-grow flex items-center justify-center py-12 relative z-10 px-4">
-        <div className="w-full max-w-md bg-residuall-white rounded-3xl shadow-sm overflow-hidden">
+      <main className="w-full max-w-md mx-4 relative z-10">
+        <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
           <div className="p-8">
-            <p className="text-center text-sm font-semibold text-residuall-orange-burnt mb-2">
+            <div className="text-center mb-8">
+              <p className="text-sm font-montserrat font-semibold text-residuall-orange mb-2 uppercase tracking-wide">
                 RESIDUALL Login
-            </p>
-            <h1 className="text-4xl font-bold text-residuall-gray-dark text-center mb-6">
+              </p>
+              <h1 className="text-4xl font-montserrat font-bold text-residuall-green mb-2">
                 Bem-vindo(a)!
-            </h1>
+              </h1>
+              <p className="text-residuall-gray font-lato">
+                Acesse sua conta e continue transformando a construção
+              </p>
+            </div>
             
-            <form onSubmit={handleSubmit}>
-              
-              <div className="mb-6">
-                <label htmlFor="email" className="block text-sm font-medium text-residuall-gray-dark mb-2">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <label htmlFor="email" className="block text-sm font-montserrat font-medium text-residuall-green mb-2">
                   E-mail
                 </label>
                 <input 
                   id="email" 
                   type="email" 
-                  className={`w-full p-3 border border-residuall-gray-default rounded-md 
-                              focus:outline-none focus:ring-1 focus:ring-residuall-green-default 
-                              ${errors.email ? 'border-red-500' : ''}`} 
+                  className={`input-modern ${errors.email ? 'border-red-500 focus:ring-red-500' : ''}`}
                   placeholder="seu@email.com" 
                   value={email} 
                   onChange={e => setEmail(e.target.value)} 
                 />
-                {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
+                {errors.email && <p className="mt-1 text-sm text-red-500 font-lato">{errors.email}</p>}
               </div>
               
-              <div className="mb-6">
-                <label htmlFor="password" className="block text-sm font-medium text-residuall-gray-dark mb-2">
+              <div>
+                <label htmlFor="password" className="block text-sm font-montserrat font-medium text-residuall-green mb-2">
                   Senha
                 </label>
                 <div className="relative">
                   <input 
                     id="password" 
                     type={showPassword ? "text" : "password"} 
-                    className={`w-full p-3 pr-10 border border-residuall-gray-default rounded-md 
-                                focus:outline-none focus:ring-1 focus:ring-residuall-green-default 
-                                ${errors.password ? 'border-red-500' : ''}`} 
+                    className={`input-modern pr-12 ${errors.password ? 'border-red-500 focus:ring-red-500' : ''}`}
                     placeholder="••••••••" 
                     value={password} 
                     onChange={e => setPassword(e.target.value)} 
                   />
                   <button 
                     type="button" 
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-residuall-gray-dark" 
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-residuall-gray hover:text-residuall-green transition-colors" 
                     onClick={toggleShowPassword}
                   >
                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
                 </div>
-                {errors.password && <p className="mt-1 text-sm text-red-500">{errors.password}</p>}
+                {errors.password && <p className="mt-1 text-sm text-red-500 font-lato">{errors.password}</p>}
               </div>
               
-              <div className="flex items-center justify-between mb-6 text-residuall-gray-dark">
+              <div className="flex items-center justify-between">
                 <div className="flex items-center">
                   <input 
                     id="remember-me" 
                     type="checkbox" 
-                    className="h-4 w-4 text-residuall-green-default border-residuall-gray-default rounded focus:ring-residuall-green-default" 
+                    className="h-4 w-4 text-residuall-green border-gray-300 rounded focus:ring-residuall-green" 
                     checked={rememberMe} 
                     onChange={() => setRememberMe(!rememberMe)} 
                   />
-                  <label htmlFor="remember-me" className="ml-2 block text-sm">
-                    Lembre-se
+                  <label htmlFor="remember-me" className="ml-2 block text-sm font-lato text-residuall-gray">
+                    Lembre-se de mim
                   </label>
                 </div>
                 
                 <div className="text-sm">
-                  <a href="#" className="text-residuall-gray-dark hover:text-residuall-orange-burnt transition-colors">
+                  <a href="#" className="text-residuall-orange hover:text-residuall-orange-light font-lato transition-colors">
                     Esqueceu a senha?
                   </a>
                 </div>
               </div>
               
               {errors.general && (
-                <p className="mt-1 mb-4 text-sm text-red-500 text-center">{errors.general}</p>
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                  <p className="text-sm text-red-700 font-lato text-center">{errors.general}</p>
+                </div>
               )}
 
               <button 
                 type="submit"
                 disabled={authLoading} 
-                className="w-full bg-residuall-green-default hover:bg-residuall-gray-dark text-white font-medium py-3 px-4 rounded-lg transition-colors bg-orange-700 hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {authLoading ? 'Entrando...' : 'Acessar'}
+                {authLoading ? 'Entrando...' : 'ACESSAR'}
               </button>
             </form>
             
-            <div className="text-center mt-6">
-              <span className="text-residuall-gray-dark">Não tem uma conta?</span>{" "}
-              <Link to="/cadastro" className="text-residuall-orange-burnt hover:text-residuall-green-default font-semibold transition-colors">
+            <div className="mt-8 text-center">
+              <span className="text-residuall-gray font-lato">Não tem uma conta?</span>{" "}
+              <Link to="/cadastro" className="text-residuall-orange hover:text-residuall-orange-light font-montserrat font-semibold transition-colors">
                 Cadastrar-se
               </Link>
             </div>
