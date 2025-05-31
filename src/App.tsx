@@ -1,4 +1,3 @@
-
 // src/App.tsx
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -34,8 +33,24 @@ import AjudaPage from "./pages/AjudaPage";
 
 import DashboardLayout from "./components/DashboardLayout";
 import NotFound from "./pages/NotFound";
+import PaymentPage from "./pages/PaymentPage";
+import ConfirmationPage from "./pages/ConfirmationPage";
 
 const queryClient = new QueryClient();
+
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <AuthProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AppRoutes />
+        </BrowserRouter>
+      </AuthProvider>
+    </TooltipProvider>
+  </QueryClientProvider>
+);
 
 // Componente auxiliar para a lógica de roteamento principal
 const AppRoutes = () => {
@@ -57,6 +72,8 @@ const AppRoutes = () => {
       <Route path="/planos" element={<PlansPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/cadastro" element={<RegisterPage />} />
+      <Route path="/pagamento" element={<PaymentPage />} />
+      <Route path="/confirmacao" element={<ConfirmationPage />} />
       
       {/* Rotas do dashboard (protegidas) */}
       <Route path="/dashboard" element={
@@ -83,19 +100,5 @@ const AppRoutes = () => {
     </Routes>
   );
 };
-
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <AuthProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <AppRoutes />
-        </BrowserRouter>
-      </AuthProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
 
 export default App;

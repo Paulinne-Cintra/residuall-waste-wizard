@@ -1,7 +1,8 @@
 
 import { ReactNode } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Check } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 interface PlanCardProps {
   title: string;
@@ -22,6 +23,26 @@ const PlanCard = ({
   highlighted = false,
   image
 }: PlanCardProps) => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const handlePlanSelection = () => {
+    const planData = {
+      id: title.toLowerCase().replace(' ', '-'),
+      name: title,
+      price: price,
+      features: features
+    };
+
+    if (user) {
+      // Se já estiver logado, vai direto para pagamento
+      navigate('/pagamento', { state: { plan: planData } });
+    } else {
+      // Se não estiver logado, vai para cadastro com o plano selecionado
+      navigate('/cadastro', { state: { plan: planData } });
+    }
+  };
+
   return (
     <div 
       className={`relative bg-white rounded-2xl shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-2 border-2 ${
@@ -72,8 +93,8 @@ const PlanCard = ({
           ))}
         </ul>
         
-        <Link
-          to="/cadastro" 
+        <button
+          onClick={handlePlanSelection}
           className={`block w-full text-center py-4 px-6 rounded-lg font-montserrat font-semibold transition-all duration-300 hover:scale-105 ${
             highlighted
               ? 'bg-residuall-orange hover:bg-residuall-orange-light text-white shadow-lg'
@@ -81,7 +102,7 @@ const PlanCard = ({
           }`}
         >
           {buttonText}
-        </Link>
+        </button>
       </div>
     </div>
   );

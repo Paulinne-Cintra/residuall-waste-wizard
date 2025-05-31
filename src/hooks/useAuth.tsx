@@ -8,7 +8,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signUp: (email: string, password: string, name?: string) => Promise<void>;
+  signUp: (email: string, password: string, metadata?: any) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   updateProfile: (updates: { name?: string; avatar_url?: string }) => Promise<void>;
@@ -72,27 +72,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const signUp = async (email: string, password: string, name?: string) => {
+  const signUp = async (email: string, password: string, metadata?: any) => {
     try {
       setLoading(true);
-      const { error } = await supabase.auth.signUp({
+      console.log('Starting sign up process for:', email);
+      
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          data: {
-            name: name || '',
-          },
+          data: metadata || {},
+          emailRedirectTo: `${window.location.origin}/`
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Sign up error:', error);
+        throw error;
+      }
+
+      console.log('Sign up successful:', data);
 
       toast({
         title: "Conta criada com sucesso!",
-        description: "Verifique seu email para confirmar a conta.",
+        description: "Bem-vindo à RESIDUALL!",
       });
     } catch (error) {
       const authError = error as AuthError;
+      console.error('Error in signUp:', authError);
       toast({
         title: "Erro ao criar conta",
         description: authError.message,
@@ -107,12 +114,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signIn = async (email: string, password: string) => {
     try {
       setLoading(true);
-      const { error } = await supabase.auth.signInWithPassword({
+      console.log('Starting sign in process for:', email);
+      
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Sign in error:', error);
+        throw error;
+      }
+
+      console.log('Sign in successful:', data);
 
       toast({
         title: "Login realizado com sucesso!",
@@ -120,6 +134,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
     } catch (error) {
       const authError = error as AuthError;
+      console.error('Error in signIn:', authError);
       toast({
         title: "Erro no login",
         description: authError.message,
