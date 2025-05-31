@@ -3,7 +3,10 @@ import React from 'react';
 import DashboardHeader from '../components/DashboardHeader';
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { MessageSquare, Info } from "lucide-react";
+import { MessageSquare, Info, HelpCircle } from "lucide-react";
+import ExpandableFAQs from '../components/support/ExpandableFAQs';
+import SupportTicketForm from '../components/support/SupportTicketForm';
+import SupportTicketsList from '../components/support/SupportTicketsList';
 
 const AjudaPage = () => {
   const { toast } = useToast();
@@ -12,14 +15,6 @@ const AjudaPage = () => {
     toast({
       title: "Informação",
       description: "Ainda estamos compilando as FAQs!",
-      duration: 3000,
-    });
-  };
-
-  const handleOpenTicket = () => {
-    toast({
-      title: "Suporte",
-      description: "Formulário de contato em breve!",
       duration: 3000,
     });
   };
@@ -48,9 +43,8 @@ const AjudaPage = () => {
               <p className="text-residuall-gray text-sm">Acesse a página 'Time' e clique no botão "Adicionar Membro" para convidar novos usuários.</p>
             </div>
           </div>
-          <Button onClick={handleViewFAQs} className="mt-6">
-            Ver Todas as FAQs
-          </Button>
+          
+          <ExpandableFAQs />
         </div>
 
         {/* Seção de Suporte Direto */}
@@ -59,9 +53,15 @@ const AjudaPage = () => {
             <MessageSquare size={20} className="mr-2 text-residuall-green" /> Precisa de Ajuda Direta?
           </h2>
           <p className="text-residuall-gray mb-4">Se você não encontrou a resposta, nossa equipe de suporte está pronta para ajudar.</p>
-          <Button onClick={handleOpenTicket}>
-            Abrir um Chamado
-          </Button>
+          <SupportTicketForm />
+        </div>
+
+        {/* Seção de Registros de Chamados */}
+        <div className="bg-white p-6 rounded-lg shadow">
+          <h2 className="text-xl font-semibold mb-4 flex items-center text-residuall-gray-dark">
+            <HelpCircle size={20} className="mr-2 text-residuall-green" /> Seus Chamados de Suporte
+          </h2>
+          <SupportTicketsList />
         </div>
       </div>
     </div>
