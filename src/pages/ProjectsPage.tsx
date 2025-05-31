@@ -1,6 +1,8 @@
+
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Filter, Calendar, BarChart, TrendingUp, TrendingDown, Eye, Plus, ChevronDown, Building2, Droplet, Anchor, CheckCircle, AlertTriangle } from 'lucide-react';
+import { useProjects } from '@/hooks/useProjects';
 import AnimatedButton from '@/components/ui/AnimatedButton';
 import Chart from '../components/Chart';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,79 +18,20 @@ import AnimatedCardWrapper from '@/components/ui/AnimatedCardWrapper';
 import AnimatedNumber from '@/components/ui/AnimatedNumber';
 import { motion } from 'framer-motion';
 
-interface Project {
-  id: string;
-  name: string;
-  location: string;
-  status: 'Em andamento' | 'Iniciando' | 'Finalizado' | 'Pausado';
-  progress: number;
-}
-
 const ProjectsPage = () => {
   const { toast } = useToast();
+  const { projects, loading, error } = useProjects();
   
-  const projectsData: Project[] = [
-    {
-      id: '1',
-      name: 'Edifício Aurora',
-      location: 'São Paulo, SP',
-      status: 'Em andamento',
-      progress: 75,
-    },
-    {
-      id: '2',
-      name: 'Residencial Parque Verde',
-      location: 'Curitiba, PR',
-      status: 'Iniciando',
-      progress: 25,
-    },
-    {
-      id: '3',
-      name: 'Torre Corporativa Horizonte',
-      location: 'Rio de Janeiro, RJ',
-      status: 'Finalizado',
-      progress: 92,
-    },
-    {
-      id: '4',
-      name: 'Condomínio Vista Mar',
-      location: 'Salvador, BA',
-      status: 'Em andamento',
-      progress: 68,
-    },
-    {
-      id: '5',
-      name: 'Centro Empresarial Inovação',
-      location: 'Belo Horizonte, MG',
-      status: 'Pausado',
-      progress: 45,
-    },
-    {
-      id: '6',
-      name: 'Residencial Montanhas',
-      location: 'Gramado, RS',
-      status: 'Iniciando',
-      progress: 30,
-    },
-  ];
-
   const reuseMetricsData = [
     { name: 'Tijolos', value: 2.5, unit: 'toneladas', description: 'Desperdício mensal médio', icon: Building2 },
     { name: 'Cimento', value: 3.2, unit: 'toneladas', description: 'Desperdício mensal médio', icon: Droplet },
     { name: 'Aço', value: 1.3, unit: 'toneladas', description: 'Desperdício mensal médio', icon: Anchor },
   ];
 
-  const [filteredProjects, setFilteredProjects] = useState<Project[]>(projectsData);
-  const [isCreatingProject, setIsCreatingProject] = useState(false);
+  const [filteredProjects, setFilteredProjects] = useState(projects);
   const [statusFilter, setStatusFilter] = useState('Status');
   const [dateFilter, setDateFilter] = useState('Data');
   const [searchQuery, setSearchQuery] = useState('');
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newProject, setNewProject] = useState({
-    name: '',
-    location: '',
-    status: ''
-  });
 
   // Dados de exemplo para recomendações
   const [recommendations, setRecommendations] = useState([
@@ -99,16 +42,31 @@ const ProjectsPage = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Em andamento':
+      case 'execução':
         return 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800';
-      case 'Iniciando':
+      case 'planejamento':
         return 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800';
-      case 'Finalizado':
+      case 'concluído':
         return 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-800';
-      case 'Pausado':
+      case 'finalização':
         return 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800';
       default:
         return 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getProjectProgress = (status: string) => {
+    switch (status) {
+      case 'planejamento':
+        return 25;
+      case 'execução':
+        return 60;
+      case 'finalização':
+        return 90;
+      case 'concluído':
+        return 100;
+      default:
+        return 0;
     }
   };
 
@@ -120,22 +78,31 @@ const ProjectsPage = () => {
     );
   };
 
-  const handleCreateProject = () => {
-    console.log('Criando projeto:', newProject);
-    setIsModalOpen(false);
-    setNewProject({ name: '', location: '', status: '' });
-    toast({
-      title: "Sucesso!",
-      description: "Projeto criado com sucesso!",
-      duration: 3000,
-    });
-  };
-
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchQuery(value);
     console.log('Busca:', value);
   };
+
+  if (loading) {
+    return (
+      <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-residuall-green"></div>
+        </div>
+      </main>
+    );
+  }
+
+  if (error) {
+    return (
+      <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
+        <div className="text-center text-red-600">
+          Erro ao carregar projetos: {error}
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
@@ -146,45 +113,12 @@ const ProjectsPage = () => {
           <p className="text-base text-gray-600">Gerencie todos os seus projetos em um só lugar</p>
         </div>
         <div className="mt-4 md:mt-0 flex space-x-2">
-          <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-            <DialogTrigger asChild>
-              <Button className="flex items-center gap-2">
-                <Plus size={18} />
-                Novo Projeto
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Criar Novo Projeto</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <Input
-                  placeholder="Nome do Projeto"
-                  value={newProject.name}
-                  onChange={(e) => setNewProject({...newProject, name: e.target.value})}
-                />
-                <Input
-                  placeholder="Localização"
-                  value={newProject.location}
-                  onChange={(e) => setNewProject({...newProject, location: e.target.value})}
-                />
-                <Select onValueChange={(value) => setNewProject({...newProject, status: value})}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Em andamento">Em andamento</SelectItem>
-                    <SelectItem value="Iniciando">Iniciando</SelectItem>
-                    <SelectItem value="Finalizado">Finalizado</SelectItem>
-                    <SelectItem value="Pausado">Pausado</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <DialogFooter>
-                <Button onClick={handleCreateProject}>Criar Projeto</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+          <Link to="/dashboard/projetos/novo">
+            <Button className="flex items-center gap-2">
+              <Plus size={18} />
+              Novo Projeto
+            </Button>
+          </Link>
         </div>
       </div>
 
@@ -202,10 +136,10 @@ const ProjectsPage = () => {
               </DropdownMenuTrigger>
               <DropdownMenuContent>
                 <DropdownMenuItem onClick={() => setStatusFilter('Todos')}>Todos</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setStatusFilter('Em andamento')}>Em andamento</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setStatusFilter('Iniciando')}>Iniciando</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setStatusFilter('Finalizado')}>Finalizado</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setStatusFilter('Pausado')}>Pausado</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setStatusFilter('planejamento')}>Planejamento</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setStatusFilter('execução')}>Execução</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setStatusFilter('finalização')}>Finalização</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setStatusFilter('concluído')}>Concluído</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             
@@ -265,48 +199,65 @@ const ProjectsPage = () => {
       {/* Seção de Projetos Ativos (Cards de Projeto) */}
       <Card className="mb-6 shadow-sm border-none">
         <CardHeader className="pb-4">
-          <CardTitle className="text-2xl font-bold text-gray-900">Projetos Ativos</CardTitle>
+          <CardTitle className="text-2xl font-bold text-gray-900">Seus Projetos</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProjects.map((project, index) => (
-              <AnimatedCardWrapper key={project.id} delay={0.1 + (index * 0.1)} animateOnView={true}>
-                <Card className="shadow-md hover:shadow-lg transition-shadow duration-200 border-none">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-lg font-semibold text-gray-800">{project.name}</CardTitle>
-                    <CardDescription className="text-sm text-gray-500">{project.location}</CardDescription>
-                  </CardHeader>
-                  <CardContent className="pb-4">
-                    <div className="flex items-center justify-between text-sm mb-2">
-                      <span className={getStatusColor(project.status)}>
-                        {project.status}
-                      </span>
-                      <span className="text-base font-semibold text-gray-700">{project.progress}%</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <motion.div
-                        className="bg-residuall-green h-2 rounded-full"
-                        initial={{ width: "0%" }}
-                        animate={{ width: `${project.progress}%` }}
-                        transition={{
-                          duration: 1.5,
-                          delay: 0.5 + (index * 0.1),
-                          ease: "easeOut"
-                        }}
-                      ></motion.div>
-                    </div>
-                  </CardContent>
-                  <CardFooter className="pt-0">
-                    <Link to={`/dashboard/projetos/${project.id}`}>
-                      <Button variant="outline" className="text-residuall-green-secondary hover:bg-residuall-green-secondary/10 font-medium px-4 py-2">
-                        Ver detalhes
-                      </Button>
-                    </Link>
-                  </CardFooter>
-                </Card>
-              </AnimatedCardWrapper>
-            ))}
-          </div>
+          {projects.length === 0 ? (
+            <div className="text-center py-12">
+              <Building2 className="mx-auto h-16 w-16 text-gray-400 mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum projeto encontrado</h3>
+              <p className="text-gray-500 mb-6">Comece criando seu primeiro projeto para acompanhar desperdícios.</p>
+              <Link to="/dashboard/projetos/novo">
+                <Button className="bg-residuall-green hover:bg-residuall-green/90">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Criar Primeiro Projeto
+                </Button>
+              </Link>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {projects.map((project, index) => {
+                const progress = getProjectProgress(project.status);
+                return (
+                  <AnimatedCardWrapper key={project.id} delay={0.1 + (index * 0.1)} animateOnView={true}>
+                    <Card className="shadow-md hover:shadow-lg transition-shadow duration-200 border-none">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-lg font-semibold text-gray-800">{project.name}</CardTitle>
+                        <CardDescription className="text-sm text-gray-500">{project.location}</CardDescription>
+                      </CardHeader>
+                      <CardContent className="pb-4">
+                        <div className="flex items-center justify-between text-sm mb-2">
+                          <span className={getStatusColor(project.status)}>
+                            {project.status.charAt(0).toUpperCase() + project.status.slice(1)}
+                          </span>
+                          <span className="text-base font-semibold text-gray-700">{progress}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <motion.div
+                            className="bg-residuall-green h-2 rounded-full"
+                            initial={{ width: "0%" }}
+                            animate={{ width: `${progress}%` }}
+                            transition={{
+                              duration: 1.5,
+                              delay: 0.5 + (index * 0.1),
+                              ease: "easeOut"
+                            }}
+                          ></motion.div>
+                        </div>
+                      </CardContent>
+                      <CardFooter className="pt-0">
+                        <Link to={`/dashboard/projetos/${project.id}`}>
+                          <Button variant="outline" className="text-residuall-green-secondary hover:bg-residuall-green-secondary/10 font-medium px-4 py-2">
+                            Ver detalhes
+                          </Button>
+                        </Link>
+                      </CardFooter>
+                    </Card>
+                  </AnimatedCardWrapper>
+                );
+              })}
+            </div>
+          )}
         </CardContent>
       </Card>
 
