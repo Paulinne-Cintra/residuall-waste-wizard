@@ -36,7 +36,16 @@ export const useTeamInvitations = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setInvitations(data || []);
+      
+      // Garantir que o status seja um dos valores válidos
+      const validatedData = (data || []).map(invitation => ({
+        ...invitation,
+        status: ['pending', 'accepted', 'declined'].includes(invitation.status) 
+          ? invitation.status as 'pending' | 'accepted' | 'declined'
+          : 'pending' as const
+      }));
+      
+      setInvitations(validatedData);
     } catch (error) {
       console.error('Erro ao buscar convites:', error);
       toast({
