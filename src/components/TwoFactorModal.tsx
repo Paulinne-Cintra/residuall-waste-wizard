@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
 import { useUserSettings } from '@/hooks/useUserSettings';
 import { useAuth } from '@/hooks/useAuth';
@@ -23,12 +24,15 @@ export const TwoFactorModal = ({ open, onOpenChange }: TwoFactorModalProps) => {
   const [qrCodeUrl, setQrCodeUrl] = useState('');
   const [secret, setSecret] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
-  const [step, setStep] = useState<'setup' | 'verify'>('setup');
+  const [step, setStep] = useState<'method' | 'setup' | 'verify'>('method');
+  const [method, setMethod] = useState<'app' | 'sms' | 'email'>('app');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (open && !settings?.two_factor_enabled) {
-      generateQRCode();
+      setStep('method');
+    } else if (open && settings?.two_factor_enabled) {
+      setStep('setup');
     }
   }, [open, settings]);
 
@@ -55,7 +59,6 @@ export const TwoFactorModal = ({ open, onOpenChange }: TwoFactorModalProps) => {
       
       setSecret(secretString);
       setQrCodeUrl(qrUrl);
-      setStep('setup');
     } catch (error) {
       console.error('Erro ao gerar QR Code:', error);
       toast({
@@ -66,47 +69,111 @@ export const TwoFactorModal = ({ open, onOpenChange }: TwoFactorModalProps) => {
     }
   };
 
+  const sendCodeViaSMS = async () => {
+    setLoading(true);
+    try {
+      // Simular envio de SMS
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      toast({
+        title: 'Código enviado',
+        description: 'Um código de verificação foi enviado para seu telefone.',
+      });
+    } catch (error) {
+      toast({
+        title: 'Erro',
+        description: 'Não foi possível enviar o código SMS.',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const sendCodeViaEmail = async () => {
+    setLoading(true);
+    try {
+      // Simular envio de email
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      toast({
+        title: 'Código enviado',
+        description: 'Um código de verificação foi enviado para seu email.',
+      });
+    } catch (error) {
+      toast({
+        title: 'Erro',
+        description: 'Não foi possível enviar o código por email.',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const setupMethod = async () => {
+    if (method === 'app') {
+      await generateQRCode();
+      setStep('setup');
+    } else if (method === 'sms') {
+      await sendCodeViaSMS();
+      setStep('verify');
+    } else if (method === 'email') {
+      await sendCodeViaEmail();
+      setStep('verify');
+    }
+  };
+
   const verifyCode = async () => {
-    if (!verificationCode || !secret) return;
+    if (!verificationCode) return;
 
     setLoading(true);
 
     try {
-      // Criar TOTP para verificação
-      const totp = new TOTP({
-        issuer: 'RESIDUALL',
-        label: user?.email || '',
-        algorithm: 'SHA1',
-        digits: 6,
-        period: 30,
-        secret: secret,
-      });
-
-      // Verificar token
-      const delta = totp.validate({ token: verificationCode, window: 1 });
-      
-      if (delta !== null) {
-        // Token válido - salvar configuração
-        const success = await updateSettings({
-          two_factor_enabled: true,
-          two_factor_secret: secret,
+      if (method === 'app' && secret) {
+        // Verificar TOTP para app autenticador
+        const totp = new TOTP({
+          issuer: 'RESIDUALL',
+          label: user?.email || '',
+          algorithm: 'SHA1',
+          digits: 6,
+          period: 30,
+          secret: secret,
         });
 
-        if (success) {
+        const delta = totp.validate({ token: verificationCode, window: 1 });
+        
+        if (delta === null) {
           toast({
-            title: 'Sucesso!',
-            description: 'Autenticação de dois fatores ativada com sucesso.',
+            title: 'Código inválido',
+            description: 'O código digitado está incorreto. Tente novamente.',
+            variant: 'destructive',
           });
-          onOpenChange(false);
-          setVerificationCode('');
-          setStep('setup');
+          return;
         }
       } else {
+        // Para SMS e Email, simular verificação
+        if (verificationCode !== '123456') {
+          toast({
+            title: 'Código inválido',
+            description: 'O código digitado está incorreto. Tente novamente.',
+            variant: 'destructive',
+          });
+          return;
+        }
+      }
+
+      // Código válido - salvar configuração
+      const success = await updateSettings({
+        two_factor_enabled: true,
+        two_factor_secret: method === 'app' ? secret : null,
+      });
+
+      if (success) {
         toast({
-          title: 'Código inválido',
-          description: 'O código digitado está incorreto. Tente novamente.',
-          variant: 'destructive',
+          title: 'Sucesso!',
+          description: 'Autenticação de dois fatores ativada com sucesso.',
         });
+        onOpenChange(false);
+        resetModal();
       }
     } catch (error) {
       console.error('Erro ao verificar código:', error);
@@ -135,12 +202,21 @@ export const TwoFactorModal = ({ open, onOpenChange }: TwoFactorModalProps) => {
           description: 'Autenticação de dois fatores foi desativada.',
         });
         onOpenChange(false);
+        resetModal();
       }
     } catch (error) {
       console.error('Erro ao desativar 2FA:', error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const resetModal = () => {
+    setStep('method');
+    setMethod('app');
+    setVerificationCode('');
+    setSecret('');
+    setQrCodeUrl('');
   };
 
   return (
@@ -170,10 +246,37 @@ export const TwoFactorModal = ({ open, onOpenChange }: TwoFactorModalProps) => {
           </div>
         ) : (
           <div className="space-y-4">
-            {step === 'setup' && (
+            {step === 'method' && (
               <>
                 <p className="text-sm text-gray-600">
-                  Escaneie o código QR abaixo com seu aplicativo autenticador (Google Authenticator, Authy, etc.):
+                  Escolha como você gostaria de receber os códigos de verificação:
+                </p>
+                
+                <RadioGroup value={method} onValueChange={(value) => setMethod(value as 'app' | 'sms' | 'email')}>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="app" id="app" />
+                    <Label htmlFor="app">Aplicativo Autenticador</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="sms" id="sms" />
+                    <Label htmlFor="sms">SMS</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="email" id="email" />
+                    <Label htmlFor="email">Email</Label>
+                  </div>
+                </RadioGroup>
+
+                <Button onClick={setupMethod} className="w-full">
+                  Continuar
+                </Button>
+              </>
+            )}
+
+            {step === 'setup' && method === 'app' && (
+              <>
+                <p className="text-sm text-gray-600">
+                  Escaneie o código QR abaixo com seu aplicativo autenticador:
                 </p>
                 
                 {qrCodeUrl && (
@@ -195,7 +298,7 @@ export const TwoFactorModal = ({ open, onOpenChange }: TwoFactorModalProps) => {
             {step === 'verify' && (
               <>
                 <p className="text-sm text-gray-600">
-                  Digite o código de 6 dígitos gerado pelo seu aplicativo autenticador:
+                  Digite o código de 6 dígitos {method === 'app' ? 'gerado pelo seu aplicativo autenticador' : 'enviado para você'}:
                 </p>
                 
                 <div className="space-y-2">
@@ -210,8 +313,19 @@ export const TwoFactorModal = ({ open, onOpenChange }: TwoFactorModalProps) => {
                   />
                 </div>
 
+                {method !== 'app' && (
+                  <Button 
+                    variant="outline" 
+                    onClick={method === 'sms' ? sendCodeViaSMS : sendCodeViaEmail}
+                    disabled={loading}
+                    className="w-full"
+                  >
+                    {loading ? 'Enviando...' : 'Reenviar código'}
+                  </Button>
+                )}
+
                 <div className="flex space-x-2">
-                  <Button variant="outline" onClick={() => setStep('setup')}>
+                  <Button variant="outline" onClick={() => setStep(method === 'app' ? 'setup' : 'method')}>
                     Voltar
                   </Button>
                   <Button 

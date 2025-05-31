@@ -8,7 +8,6 @@ interface UserSettings {
   id?: string;
   user_id: string;
   language: string;
-  timezone: string;
   theme: string;
   email_notifications: boolean;
   system_alerts: boolean;
@@ -35,6 +34,7 @@ export const useUserSettings = () => {
   const [settings, setSettings] = useState<UserSettings | null>(null);
   const [loginHistory, setLoginHistory] = useState<LoginHistoryEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Carregar configurações do usuário
@@ -60,12 +60,15 @@ export const useUserSettings = () => {
       if (data) {
         setSettings(data);
         console.log('Configurações carregadas:', data);
+        
+        // Aplicar configurações ao localStorage
+        localStorage.setItem('user-language', data.language);
+        localStorage.setItem('user-theme', data.theme);
       } else {
         // Criar configurações padrão se não existirem
         const defaultSettings: Omit<UserSettings, 'id'> = {
           user_id: user.id,
           language: 'pt-br',
-          timezone: 'America/Sao_Paulo',
           theme: 'sistema',
           email_notifications: false,
           system_alerts: false,
@@ -117,7 +120,7 @@ export const useUserSettings = () => {
     }
   };
 
-  // Atualizar configurações
+  // Atualizar configurações individuais
   const updateSettings = async (updates: Partial<UserSettings>) => {
     if (!user || !settings) return false;
 
@@ -135,11 +138,13 @@ export const useUserSettings = () => {
 
       setSettings(data);
       
-      toast({
-        title: "Configurações salvas",
-        description: "Suas configurações foram atualizadas com sucesso.",
-        variant: "default",
-      });
+      // Atualizar localStorage se necessário
+      if (updates.language) {
+        localStorage.setItem('user-language', updates.language);
+      }
+      if (updates.theme) {
+        localStorage.setItem('user-theme', updates.theme);
+      }
 
       return true;
     } catch (err: any) {
@@ -150,6 +155,53 @@ export const useUserSettings = () => {
         variant: "destructive",
       });
       return false;
+    }
+  };
+
+  // Salvar todas as configurações de uma vez
+  const saveAllSettings = async (newSettings: Partial<UserSettings>) => {
+    if (!user || !settings) return false;
+
+    setSaving(true);
+    try {
+      console.log('Salvando todas as configurações:', newSettings);
+      
+      const { data, error } = await supabase
+        .from('user_settings')
+        .update(newSettings)
+        .eq('user_id', user.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setSettings(data);
+      
+      // Atualizar localStorage
+      if (newSettings.language) {
+        localStorage.setItem('user-language', newSettings.language);
+      }
+      if (newSettings.theme) {
+        localStorage.setItem('user-theme', newSettings.theme);
+      }
+      
+      toast({
+        title: "Configurações salvas",
+        description: "Suas configurações foram atualizadas com sucesso.",
+        variant: "default",
+      });
+
+      return true;
+    } catch (err: any) {
+      console.error('Erro ao salvar configurações:', err);
+      toast({
+        title: "Erro ao salvar",
+        description: "Não foi possível salvar suas configurações. Tente novamente.",
+        variant: "destructive",
+      });
+      return false;
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -168,8 +220,10 @@ export const useUserSettings = () => {
     settings,
     loginHistory,
     loading,
+    saving,
     error,
     updateSettings,
+    saveAllSettings,
     refetch: loadSettings,
   };
 };

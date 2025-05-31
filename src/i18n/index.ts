@@ -101,6 +101,72 @@ const resources = {
       'Europe/Madrid': 'Europa/Madrid (GMT+1)',
       'Asia/Tokyo': 'Asia/Tokio (GMT+9)',
     }
+  },
+  'fr': {
+    translation: {
+      // Dashboard
+      dashboard: 'Tableau de bord',
+      projects: 'Projets',
+      settings: 'Paramètres',
+      profile: 'Profil',
+      archived: 'Archivés',
+      
+      // Settings
+      general: 'Général',
+      notifications: 'Notifications',
+      security: 'Sécurité',
+      language: 'Langue',
+      timezone: 'Fuseau horaire',
+      theme: 'Thème de l\'interface',
+      lightMode: 'Clair',
+      darkMode: 'Sombre',
+      systemMode: 'Système',
+      saveChanges: 'Enregistrer les modifications',
+      
+      // Success messages
+      settingsSaved: 'Paramètres sauvegardés',
+      settingsUpdated: 'Vos paramètres ont été mis à jour avec succès.',
+      
+      // Time zones
+      'America/Sao_Paulo': 'Amérique/São Paulo (GMT-3)',
+      'America/New_York': 'Amérique/New York (GMT-5)',
+      'Europe/London': 'Europe/Londres (GMT+0)',
+      'Europe/Madrid': 'Europe/Madrid (GMT+1)',
+      'Asia/Tokyo': 'Asie/Tokyo (GMT+9)',
+    }
+  },
+  'de': {
+    translation: {
+      // Dashboard
+      dashboard: 'Dashboard',
+      projects: 'Projekte',
+      settings: 'Einstellungen',
+      profile: 'Profil',
+      archived: 'Archiviert',
+      
+      // Settings
+      general: 'Allgemein',
+      notifications: 'Benachrichtigungen',
+      security: 'Sicherheit',
+      language: 'Sprache',
+      timezone: 'Zeitzone',
+      theme: 'Oberflächenthema',
+      lightMode: 'Hell',
+      darkMode: 'Dunkel',
+      systemMode: 'System',
+      saveChanges: 'Änderungen speichern',
+      
+      // Success messages
+      settingsSaved: 'Einstellungen gespeichert',
+      settingsUpdated: 'Ihre Einstellungen wurden erfolgreich aktualisiert.',
+      
+      // Time zones
+      'America/Sao_Paulo': 'Amerika/São Paulo (GMT-3)',
+      'America/New_York': 'Amerika/New York (GMT-5)',
+      'Europe/London': 'Europa/London (GMT+0)',
+      'Europe/Madrid': 'Europa/Madrid (GMT+1)',
+      'Asia/Tokyo': 'Asien/Tokio (GMT+9)',
+    }
   }
 };
 
