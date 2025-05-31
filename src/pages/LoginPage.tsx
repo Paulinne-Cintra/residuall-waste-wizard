@@ -19,6 +19,7 @@ const LoginPage = () => {
     password?: string;
     general?: string;
   }>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   console.log('LoginPage - user:', !!user, 'authLoading:', authLoading);
 
@@ -30,6 +31,8 @@ const LoginPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
+    
     setErrors({});
 
     const newErrors: {
@@ -52,17 +55,30 @@ const LoginPage = () => {
       return;
     }
 
+    setIsSubmitting(true);
+
     try {
       await signIn(email, password);
     } catch (error: any) {
       setErrors(prev => ({ ...prev, general: error.message || 'Ocorreu um erro desconhecido.' }));
       console.error('Erro no login:', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);
   };
+
+  // Mostrar loading enquanto a autenticação está sendo verificada
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-residuall-green-default"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden login-animated-bg">
@@ -161,10 +177,10 @@ const LoginPage = () => {
                 {/* Botão de login */}
                 <button 
                   type="submit"
-                  disabled={authLoading} 
+                  disabled={isSubmitting} 
                   className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed font-montserrat font-semibold text-lg py-4"
                 >
-                  {authLoading ? 'Entrando...' : 'ACESSAR PLATAFORMA'}
+                  {isSubmitting ? 'Entrando...' : 'ACESSAR PLATAFORMA'}
                 </button>
               </form>
               

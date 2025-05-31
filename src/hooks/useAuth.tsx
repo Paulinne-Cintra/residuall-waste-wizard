@@ -37,7 +37,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(session?.user ?? null);
         
         // Garantir que loading seja false após qualquer mudança de estado
-        if (event === 'SIGNED_OUT' || event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        if (event === 'SIGNED_OUT' || event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
           setLoading(false);
         }
       }
@@ -74,7 +74,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signUp = async (email: string, password: string, metadata?: any) => {
     try {
-      setLoading(true);
       console.log('Starting sign up process for:', email);
       
       const { data, error } = await supabase.auth.signUp({
@@ -82,7 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         password,
         options: {
           data: metadata || {},
-          emailRedirectTo: `${window.location.origin}/`
+          emailRedirectTo: `${window.location.origin}/dashboard`
         },
       });
 
@@ -93,27 +92,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       console.log('Sign up successful:', data);
 
-      toast({
-        title: "Conta criada com sucesso!",
-        description: "Bem-vindo à RESIDUALL!",
-      });
+      // Se o usuário foi criado mas precisa confirmar email
+      if (data.user && !data.session) {
+        toast({
+          title: "Verifique seu email",
+          description: "Enviamos um link de confirmação para seu email. Clique no link para ativar sua conta.",
+          variant: "default",
+        });
+        return;
+      }
+
+      // Se o usuário foi criado e logado automaticamente
+      if (data.user && data.session) {
+        toast({
+          title: "Conta criada com sucesso!",
+          description: "Bem-vindo à RESIDUALL!",
+        });
+      }
     } catch (error) {
       const authError = error as AuthError;
       console.error('Error in signUp:', authError);
+      
+      let errorMessage = authError.message;
+      
+      // Traduzir mensagens de erro comuns
+      if (authError.message.includes('User already registered')) {
+        errorMessage = 'Este email já está cadastrado. Tente fazer login ou use outro email.';
+      } else if (authError.message.includes('Invalid email')) {
+        errorMessage = 'Email inválido. Por favor, verifique o formato.';
+      } else if (authError.message.includes('Password should be')) {
+        errorMessage = 'A senha deve ter pelo menos 6 caracteres.';
+      }
+      
       toast({
         title: "Erro ao criar conta",
-        description: authError.message,
+        description: errorMessage,
         variant: "destructive",
       });
       throw error;
-    } finally {
-      setLoading(false);
     }
   };
 
   const signIn = async (email: string, password: string) => {
     try {
-      setLoading(true);
       console.log('Starting sign in process for:', email);
       
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -135,21 +156,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       const authError = error as AuthError;
       console.error('Error in signIn:', authError);
+      
+      let errorMessage = authError.message;
+      
+      // Traduzir mensagens de erro comuns
+      if (authError.message.includes('Invalid login credentials')) {
+        errorMessage = 'Email ou senha incorretos. Verifique seus dados e tente novamente.';
+      } else if (authError.message.includes('Email not confirmed')) {
+        errorMessage = 'Seu email ainda não foi confirmado. Verifique sua caixa de entrada e clique no link de confirmação.';
+      } else if (authError.message.includes('Too many requests')) {
+        errorMessage = 'Muitas tentativas de login. Aguarde alguns minutos e tente novamente.';
+      }
+      
       toast({
         title: "Erro no login",
-        description: authError.message,
+        description: errorMessage,
         variant: "destructive",
       });
       throw error;
-    } finally {
-      setLoading(false);
     }
   };
 
   const signOut = async () => {
     try {
-      setLoading(true);
-      
       // Limpar estados imediatamente ANTES do signOut do Supabase
       setUser(null);
       setSession(null);
@@ -168,8 +197,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         description: authError.message,
         variant: "destructive",
       });
-    } finally {
-      setLoading(false);
     }
   };
 

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, User, Building, Phone } from 'lucide-react';
@@ -24,19 +23,23 @@ const RegisterPage = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [errors, setErrors] = useState<{[key: string]: string}>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  console.log('RegisterPage - user:', !!user, 'authLoading:', authLoading);
+  console.log('RegisterPage - user:', !!user, 'authLoading:', authLoading, 'selectedPlan:', selectedPlan);
 
   // Redirecionar se já estiver logado
-  if (!authLoading && user) {
-    if (selectedPlan) {
-      console.log('RegisterPage - redirecting to payment with plan:', selectedPlan);
-      return <Navigate to="/pagamento" state={{ plan: selectedPlan }} replace />;
-    } else {
-      console.log('RegisterPage - redirecting to dashboard');
-      return <Navigate to="/dashboard" replace />;
+  useEffect(() => {
+    if (!authLoading && user) {
+      console.log('RegisterPage - User is authenticated, redirecting...');
+      if (selectedPlan) {
+        console.log('RegisterPage - Redirecting to payment with plan:', selectedPlan);
+        navigate('/pagamento', { state: { plan: selectedPlan }, replace: true });
+      } else {
+        console.log('RegisterPage - No plan selected, redirecting to dashboard');
+        navigate('/dashboard', { replace: true });
+      }
     }
-  }
+  }, [user, authLoading, selectedPlan, navigate]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -92,6 +95,8 @@ const RegisterPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
+    
     setErrors({});
 
     const newErrors = validateForm();
@@ -99,6 +104,8 @@ const RegisterPage = () => {
       setErrors(newErrors);
       return;
     }
+
+    setIsSubmitting(true);
 
     try {
       console.log('RegisterPage - Starting registration process...');
@@ -113,21 +120,30 @@ const RegisterPage = () => {
         }
       );
       
-      console.log('RegisterPage - Registration successful, checking plan...');
+      console.log('RegisterPage - Registration completed');
       
-      // Após cadastro bem-sucedido, redirecionar baseado no plano
-      if (selectedPlan) {
-        console.log('RegisterPage - Redirecting to payment with plan:', selectedPlan);
-        navigate('/pagamento', { state: { plan: selectedPlan } });
-      } else {
-        console.log('RegisterPage - No plan selected, redirecting to dashboard');
-        navigate('/dashboard');
-      }
+      // O redirecionamento será feito pelo useEffect quando o user for atualizado
     } catch (error: any) {
       console.error('RegisterPage - Registration error:', error);
       setErrors({ general: error.message || 'Erro ao criar conta. Tente novamente.' });
+    } finally {
+      setIsSubmitting(false);
     }
   };
+
+  // Mostrar loading enquanto a autenticação está sendo verificada
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-residuall-green-default"></div>
+      </div>
+    );
+  }
+
+  // Se já estiver autenticado, não renderizar nada (useEffect cuidará do redirect)
+  if (user) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden login-animated-bg">
@@ -154,6 +170,7 @@ const RegisterPage = () => {
               </div>
               
               <form onSubmit={handleSubmit} className="space-y-6">
+                
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label htmlFor="name" className="block text-sm font-montserrat font-medium text-residuall-gray mb-2">
@@ -339,10 +356,10 @@ const RegisterPage = () => {
 
                 <button 
                   type="submit"
-                  disabled={authLoading} 
+                  disabled={isSubmitting} 
                   className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed font-montserrat font-semibold text-lg py-4"
                 >
-                  {authLoading ? 'Criando conta...' : 'CRIAR CONTA'}
+                  {isSubmitting ? 'Criando conta...' : 'CRIAR CONTA'}
                 </button>
               </form>
               
