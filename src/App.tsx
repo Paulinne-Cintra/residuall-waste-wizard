@@ -1,103 +1,78 @@
 
-// src/App.tsx
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"; // Importe Navigate
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Toaster } from '@/components/ui/toaster';
+import { ThemeProvider } from '@/components/theme-provider';
 
-// Auth Provider
-import { AuthProvider, useAuth } from "@/hooks/useAuth"; // Importa useAuth para o componente AppRouter
-import { ProtectedRoute } from "@/components/ProtectedRoute";
+// Pages
+import Index from './pages/Index';
+import HomePage from './pages/HomePage';
+import AboutPage from './pages/AboutPage';
+import PlansPage from './pages/PlansPage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import Dashboard from './pages/Dashboard';
+import OverviewPage from './pages/OverviewPage';
+import ProjectsPage from './pages/ProjectsPage';
+import CreateProjectPage from './pages/CreateProjectPage';
+import ProjectDetailPage from './pages/ProjectDetailPage';
+import MaterialsPage from './pages/MaterialsPage';
+import ReportsPage from './pages/ReportsPage';
+import ReportDetailPage from './pages/ReportDetailPage';
+import RecommendationsPage from './pages/RecommendationsPage';
+import TeamPage from './pages/TeamPage';
+import SettingsPage from './pages/SettingsPage';
+import ProfilePage from './pages/ProfilePage';
+import AjudaPage from './pages/AjudaPage';
+import ArquivadosPage from './pages/ArquivadosPage';
+import NotFound from './pages/NotFound';
 
-// Páginas principais do site
-import HomePage from "./pages/HomePage";
-import AboutPage from "./pages/AboutPage";
-import PlansPage from "./pages/PlansPage";
-import LoginPage from "./pages/LoginPage";
-import RegisterPage from "./pages/RegisterPage"; // Assumindo que você tem essa página
-
-// Páginas do dashboard
-import Dashboard from "./pages/Dashboard"; // Página inicial do dashboard
-import ProjectsPage from "./pages/ProjectsPage";
-import ProjectDetailPage from "./pages/ProjectDetailPage";
-import ReportDetailPage from "./pages/ReportDetailPage";
-import MaterialsPage from "./pages/MaterialsPage";
-import ReportsPage from "./pages/ReportsPage";
-import TeamPage from "./pages/TeamPage";
-import ProfilePage from "./pages/ProfilePage";
-import RecommendationsPage from "./pages/RecommendationsPage";
-import SettingsPage from "./pages/SettingsPage";
-import ArquivadosPage from "./pages/ArquivadosPage";
-import AjudaPage from "./pages/AjudaPage";
-
-import DashboardLayout from "./components/DashboardLayout";
-import NotFound from "./pages/NotFound";
+// Components
+import ProtectedRoute from './components/ProtectedRoute';
 
 const queryClient = new QueryClient();
 
-// Componente auxiliar para a lógica de roteamento principal
-const AppRoutes = () => {
-  const { user, loading } = useAuth(); // Usar o useAuth aqui para decidir o redirecionamento inicial
-
-  // Opcional: Um carregamento global enquanto a sessão inicial é verificada
-  // Se o useAuth já exibe um spinner em ProtectedRoute, talvez não precise duplicar
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-residuall-green-default"></div>
-      </div>
-    );
-  }
-
+function App() {
   return (
-    <Routes>
-      {/* Rotas públicas */}
-      <Route path="/" element={user ? <Navigate to="/dashboard" replace /> : <HomePage />} /> {/* Ajuste aqui: se logado, vai para dashboard */}
-      <Route path="/sobre" element={<AboutPage />} />
-      <Route path="/planos" element={<PlansPage />} />
-      <Route path="/login" element={<LoginPage />} /> {/* LoginPage já redireciona se o usuário estiver logado */}
-      <Route path="/cadastro" element={<RegisterPage />} />
-      
-      {/* Rotas do dashboard (protegidas) */}
-      {/* A rota pai é protegida e usa DashboardLayout para todas as rotas filhas */}
-      <Route path="/dashboard" element={
-        <ProtectedRoute>
-          <DashboardLayout />
-        </ProtectedRoute>
-      }>
-        <Route index element={<Dashboard />} /> {/* Rota padrão para /dashboard */}
-        <Route path="projetos" element={<ProjectsPage />} />
-        <Route path="projetos/:projectId" element={<ProjectDetailPage />} />
-        <Route path="materiais" element={<MaterialsPage />} />
-        <Route path="relatorios" element={<ReportsPage />} />
-        <Route path="relatorios/:reportId" element={<ReportDetailPage />} />
-        <Route path="time" element={<TeamPage />} />
-        <Route path="perfil" element={<ProfilePage />} />
-        <Route path="recomendacoes" element={<RecommendationsPage />} />
-        <Route path="configuracoes" element={<SettingsPage />} />
-        <Route path="arquivados" element={<ArquivadosPage />} />
-        <Route path="ajuda" element={<AjudaPage />} />
-      </Route>
-      
-      {/* Rota 404 para URLs não correspondentes */}
-      <Route path="*" element={<NotFound />} />
-    </Routes>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+        <Router>
+          <div className="min-h-screen bg-background">
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/" element={<Index />} />
+              <Route path="/home" element={<HomePage />} />
+              <Route path="/sobre" element={<AboutPage />} />
+              <Route path="/planos" element={<PlansPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/cadastro" element={<RegisterPage />} />
+              
+              {/* Protected Dashboard Routes */}
+              <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>}>
+                <Route index element={<OverviewPage />} />
+                <Route path="projetos" element={<ProjectsPage />} />
+                <Route path="projetos/novo" element={<CreateProjectPage />} />
+                <Route path="projetos/:id" element={<ProjectDetailPage />} />
+                <Route path="materiais" element={<MaterialsPage />} />
+                <Route path="relatorios" element={<ReportsPage />} />
+                <Route path="relatorios/:id" element={<ReportDetailPage />} />
+                <Route path="recomendacoes" element={<RecommendationsPage />} />
+                <Route path="equipe" element={<TeamPage />} />
+                <Route path="configuracoes" element={<SettingsPage />} />
+                <Route path="perfil" element={<ProfilePage />} />
+                <Route path="ajuda" element={<AjudaPage />} />
+                <Route path="arquivados" element={<ArquivadosPage />} />
+              </Route>
+              
+              {/* 404 Route */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </div>
+          <Toaster />
+        </Router>
+      </ThemeProvider>
+    </QueryClientProvider>
   );
-};
-
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <AuthProvider> {/* AuthProvider deve envolver TODO o Router */}
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <AppRoutes /> {/* O componente AppRoutes que contém as rotas */}
-        </BrowserRouter>
-      </AuthProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+}
 
 export default App;
