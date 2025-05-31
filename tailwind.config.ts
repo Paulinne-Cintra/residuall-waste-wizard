@@ -112,6 +112,7 @@ export default {
 			},
 			fontFamily: {
 				sans: ['Lato', 'sans-serif'],
+				lato: ['Lato', 'sans-serif'],
 				montserrat: ['Montserrat', 'sans-serif'],
 				quicksand: ['Quicksand', 'sans-serif'],
 			},
