@@ -123,28 +123,43 @@ export const useProfile = () => {
   const uploadAvatar = async (file: File) => {
     if (!user) return false;
 
+    // Validar tipo de arquivo
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      toast({
+        title: "Tipo de arquivo inválido",
+        description: "Por favor, selecione uma imagem JPEG, PNG ou WebP.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    // Validar tamanho (2MB máximo)
+    if (file.size > 2 * 1024 * 1024) {
+      toast({
+        title: "Arquivo muito grande",
+        description: "A imagem deve ter no máximo 2MB.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
     setUploadingAvatar(true);
     try {
       console.log('Fazendo upload do avatar:', file.name);
 
-      // Remover avatar anterior se existir
-      if (profile?.avatar_url) {
-        const oldFileName = profile.avatar_url.split('/').pop();
-        if (oldFileName) {
-          await supabase.storage
-            .from('avatars')
-            .remove([`${user.id}/${oldFileName}`]);
-        }
-      }
-
-      // Upload do novo arquivo
+      // Obter extensão do arquivo
       const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+      const fileName = `avatar.${fileExt}`;
       const filePath = `${user.id}/${fileName}`;
 
+      // Upload do arquivo com upsert para substituir arquivo anterior
       const { error: uploadError } = await supabase.storage
         .from('avatars')
-        .upload(filePath, file);
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: true // Substitui arquivo existente
+        });
 
       if (uploadError) throw uploadError;
 
@@ -152,6 +167,8 @@ export const useProfile = () => {
       const { data: { publicUrl } } = supabase.storage
         .from('avatars')
         .getPublicUrl(filePath);
+
+      console.log('URL pública gerada:', publicUrl);
 
       // Atualizar perfil com nova URL
       const success = await updateProfile({ avatar_url: publicUrl });
@@ -168,7 +185,7 @@ export const useProfile = () => {
       console.error('Erro ao fazer upload do avatar:', err);
       toast({
         title: "Erro no upload",
-        description: "Não foi possível fazer upload da foto. Tente novamente.",
+        description: `Não foi possível fazer upload da foto: ${err.message}`,
         variant: "destructive",
       });
       return false;

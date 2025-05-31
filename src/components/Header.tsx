@@ -1,11 +1,16 @@
 
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, User } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { useProfile } from '@/hooks/useProfile';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
+  const { user } = useAuth();
+  const { profile } = useProfile();
     
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -50,12 +55,25 @@ const Header = () => {
           >
             PLANOS
           </Link>
-          <Link 
-            to="/login" 
-            className="btn-secondary text-sm px-6 py-2"
-          >
-            ENTRAR
-          </Link>
+          
+          {/* Avatar ou botão de login */}
+          {user ? (
+            <Link to="/dashboard/perfil" className="flex items-center">
+              <Avatar className="h-8 w-8">
+                <AvatarImage src={profile?.avatar_url} alt={profile?.full_name || 'Avatar'} />
+                <AvatarFallback className="bg-residuall-green text-white">
+                  <User size={16} />
+                </AvatarFallback>
+              </Avatar>
+            </Link>
+          ) : (
+            <Link 
+              to="/login" 
+              className="btn-secondary text-sm px-6 py-2"
+            >
+              ENTRAR
+            </Link>
+          )}
         </nav>
 
         {/* Mobile Menu Button */}
@@ -93,13 +111,31 @@ const Header = () => {
             >
               PLANOS
             </Link>
-            <Link 
-              to="/login" 
-              className="btn-secondary text-sm px-6 py-2 text-center"
-              onClick={toggleMenu}
-            >
-              ENTRAR
-            </Link>
+            
+            {/* Avatar ou botão de login no mobile */}
+            {user ? (
+              <Link 
+                to="/dashboard/perfil" 
+                className="flex items-center py-2 text-residuall-gray hover:text-residuall-green"
+                onClick={toggleMenu}
+              >
+                <Avatar className="h-6 w-6 mr-3">
+                  <AvatarImage src={profile?.avatar_url} alt={profile?.full_name || 'Avatar'} />
+                  <AvatarFallback className="bg-residuall-green text-white">
+                    <User size={12} />
+                  </AvatarFallback>
+                </Avatar>
+                PERFIL
+              </Link>
+            ) : (
+              <Link 
+                to="/login" 
+                className="btn-secondary text-sm px-6 py-2 text-center"
+                onClick={toggleMenu}
+              >
+                ENTRAR
+              </Link>
+            )}
           </div>
         </div>
       )}
