@@ -28,7 +28,7 @@ import ArquivadosPage from './pages/ArquivadosPage';
 import NotFound from './pages/NotFound';
 
 // Components
-import ProtectedRoute from './components/ProtectedRoute';
+import { ProtectedRoute } from './components/ProtectedRoute';
 
 const queryClient = new QueryClient();
 
