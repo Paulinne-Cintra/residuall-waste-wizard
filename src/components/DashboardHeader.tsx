@@ -1,7 +1,18 @@
 
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Search, Bell, User } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Search, Bell, User, Settings, LogOut } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { useProfile } from '@/hooks/useProfile';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface DashboardHeaderProps {
   pageTitle?: string;
@@ -10,7 +21,9 @@ interface DashboardHeaderProps {
 const DashboardHeader = ({ pageTitle }: DashboardHeaderProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const { user, signOut } = useAuth();
+  const { profile } = useProfile();
+  const navigate = useNavigate();
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -23,13 +36,15 @@ const DashboardHeader = ({ pageTitle }: DashboardHeaderProps) => {
 
   const toggleNotifications = () => {
     setIsNotificationsOpen(!isNotificationsOpen);
-    if (isProfileOpen) setIsProfileOpen(false);
   };
 
-  const toggleProfile = () => {
-    setIsProfileOpen(!isProfileOpen);
-    if (isNotificationsOpen) setIsNotificationsOpen(false);
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
   };
+
+  const userDisplayName = profile?.full_name || user?.email || 'Usuário';
+  const userEmail = profile?.email || user?.email || '';
 
   return (
     <header className="bg-white border-b border-gray-200 py-3 px-4 md:px-6 flex items-center justify-between">
@@ -99,51 +114,49 @@ const DashboardHeader = ({ pageTitle }: DashboardHeaderProps) => {
           )}
         </div>
 
-        {/* Perfil */}
-        <div className="relative">
-          <button
-            className="flex items-center space-x-2 p-2 rounded-lg text-residuall-gray-username hover:bg-gray-100 transition-colors"
-            onClick={toggleProfile}
-          >
-            <div className="w-8 h-8 rounded-full bg-residuall-green flex items-center justify-center text-white">
-              <User size={16} />
-            </div>
-            <div className="hidden md:flex flex-col items-start">
-              <span className="text-sm font-medium">Engª. Cristiana Soares</span>
-              <span className="admin-tag">Administrador</span>
-            </div>
-          </button>
-          
-          {/* Dropdown de Perfil */}
-          {isProfileOpen && (
-            <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-residuall border border-gray-200 z-50 animate-fade-in">
-              <div className="p-3 border-b border-gray-200">
-                <p className="text-sm font-medium">Engª. Cristiana Soares</p>
-                <p className="text-xs text-residuall-gray">cristiana@residuall.com</p>
+        {/* Menu do Perfil */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="flex items-center space-x-2 p-2 rounded-lg text-residuall-gray-username hover:bg-gray-100 transition-colors focus:outline-none">
+              <Avatar className="h-8 w-8">
+                <AvatarImage src={profile?.avatar_url} alt={userDisplayName} />
+                <AvatarFallback className="bg-residuall-green text-white">
+                  <User size={16} />
+                </AvatarFallback>
+              </Avatar>
+              <div className="hidden md:flex flex-col items-start">
+                <span className="text-sm font-medium">{userDisplayName}</span>
+                <span className="admin-tag">Administrador</span>
               </div>
-              <div className="py-1">
-                <Link 
-                  to="/dashboard/perfil" 
-                  className="block px-4 py-2 text-sm text-residuall-gray-tableText hover:bg-gray-100"
-                >
-                  Meu Perfil
-                </Link>
-                <Link 
-                  to="/dashboard/configuracoes" 
-                  className="block px-4 py-2 text-sm text-residuall-gray-tableText hover:bg-gray-100"
-                >
-                  Configurações
-                </Link>
-                <Link 
-                  to="/" 
-                  className="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-                >
-                  Sair
-                </Link>
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-56 z-50" align="end">
+            <DropdownMenuLabel className="font-normal">
+              <div className="flex flex-col space-y-1">
+                <p className="text-sm font-medium leading-none">{userDisplayName}</p>
+                <p className="text-xs leading-none text-muted-foreground">{userEmail}</p>
               </div>
-            </div>
-          )}
-        </div>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link to="/dashboard/perfil" className="flex items-center cursor-pointer">
+                <User className="mr-2 h-4 w-4" />
+                <span>Ver perfil</span>
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link to="/dashboard/configuracoes" className="flex items-center cursor-pointer">
+                <Settings className="mr-2 h-4 w-4" />
+                <span>Configurações</span>
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleSignOut} className="text-red-600 cursor-pointer">
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>Sair</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </header>
   );
