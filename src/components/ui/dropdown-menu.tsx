@@ -1,39 +1,13 @@
 
 import * as React from "react"
 import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu"
-import { Check, ChevronRight, Circle, ChevronDown } from "lucide-react"
+import { Check, ChevronRight, Circle } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
 const DropdownMenu = DropdownMenuPrimitive.Root
 
-const DropdownMenuTrigger = React.forwardRef<
-  React.ElementRef<typeof DropdownMenuPrimitive.Trigger>,
-  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Trigger> & {
-    showChevron?: boolean
-    isOpen?: boolean
-  }
->(({ className, children, showChevron = true, isOpen = false, ...props }, ref) => (
-  <DropdownMenuPrimitive.Trigger
-    ref={ref}
-    className={cn(
-      "flex items-center justify-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background transition-all duration-200 hover:bg-accent hover:text-accent-foreground hover:shadow-md focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&[data-state=open]]:bg-accent [&[data-state=open]]:text-accent-foreground [&[data-state=open]]:shadow-md",
-      className
-    )}
-    {...props}
-  >
-    {children}
-    {showChevron && (
-      <ChevronDown 
-        className={cn(
-          "h-4 w-4 transition-transform duration-200",
-          isOpen && "rotate-180"
-        )} 
-      />
-    )}
-  </DropdownMenuPrimitive.Trigger>
-))
-DropdownMenuTrigger.displayName = DropdownMenuPrimitive.Trigger.displayName
+const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger
 
 const DropdownMenuGroup = DropdownMenuPrimitive.Group
 
