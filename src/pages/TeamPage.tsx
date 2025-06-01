@@ -1,8 +1,8 @@
 
 import React, { useState } from 'react';
-import { Search, UserPlus, ChevronDown, User, ArrowLeft, Clock, CheckCircle, XCircle, Trash2 } from 'lucide-react';
+import { Search, UserPlus, ChevronDown, User, ArrowLeft, Trash2, Calendar, FolderOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -12,79 +12,28 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/hooks/useAuth";
 import { useTeamInvitations } from "@/hooks/useTeamInvitations";
 import { useTeamProjects } from "@/hooks/useTeamProjects";
+import { useTeamMembers } from "@/hooks/useTeamMembers";
+import MemberStatusBadge from "@/components/MemberStatusBadge";
 
-type TeamMember = {
-  id: number;
+interface TeamMember {
+  id: string;
   name: string;
-  role: string;
   email: string;
+  role: string;
   status: 'active' | 'away' | 'inactive';
-  avatarUrl: string;
-  projects?: string[];
-};
-
-const mockTeamMembers: TeamMember[] = [
-  {
-    id: 1,
-    name: 'Alfredo Silva',
-    role: 'Engenheiro Civil',
-    email: 'alfredo.silva@residuall.com.br',
-    status: 'active',
-    avatarUrl: 'https://i.pravatar.cc/150?img=11',
-    projects: ['Projeto A', 'Projeto B']
-  },
-  {
-    id: 2,
-    name: 'Maria Oliveira',
-    role: 'Analista de Dados',
-    email: 'maria.oliveira@residuall.com.br',
-    status: 'active',
-    avatarUrl: 'https://i.pravatar.cc/150?img=5',
-    projects: ['Projeto A']
-  },
-  {
-    id: 3,
-    name: 'Paulo Santos',
-    role: 'Engenheiro Ambiental',
-    email: 'paulo.santos@residuall.com.br',
-    status: 'away',
-    avatarUrl: 'https://i.pravatar.cc/150?img=12',
-    projects: ['Projeto C']
-  },
-  {
-    id: 4,
-    name: 'Carla Mendes',
-    role: 'Gerente de Projetos',
-    email: 'carla.mendes@residuall.com.br',
-    status: 'active',
-    avatarUrl: 'https://i.pravatar.cc/150?img=9',
-    projects: ['Projeto A', 'Projeto B', 'Projeto C']
-  },
-  {
-    id: 5,
-    name: 'Ricardo Almeida',
-    role: 'Arquiteto',
-    email: 'ricardo.almeida@residuall.com.br',
-    status: 'inactive',
-    avatarUrl: 'https://i.pravatar.cc/150?img=15',
-    projects: ['Projeto B']
-  },
-  {
-    id: 6,
-    name: 'Juliana Costa',
-    role: 'Engenheira de Materiais',
-    email: 'juliana.costa@residuall.com.br',
-    status: 'active',
-    avatarUrl: 'https://i.pravatar.cc/150?img=8',
-    projects: ['Projeto A', 'Projeto C']
-  }
-];
+  created_at: string;
+  profile_picture_url?: string;
+  has_account: boolean;
+  invitation_status?: 'pending' | 'accepted' | 'declined';
+}
 
 const TeamPage: React.FC = () => {
   const { toast } = useToast();
   const { user } = useAuth();
-  const { invitations, loading, sendInvitation, updateInvitationStatus } = useTeamInvitations();
-  const { projects, fetchMemberProjects, assignProjectsToMember, deleteMember } = useTeamProjects();
+  const { sendInvitation } = useTeamInvitations();
+  const { projects, fetchMemberProjects, assignProjectsToMember } = useTeamProjects();
+  const { members, loading, deleteMember, getMemberProjects } = useTeamMembers();
+
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState('Todos os Cargos');
   const [statusFilter, setStatusFilter] = useState('Todos os Status');
@@ -96,30 +45,11 @@ const TeamPage: React.FC = () => {
 
   // Estados para detalhes/edição de membros
   const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
   const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
   const [memberProjects, setMemberProjects] = useState<any[]>([]);
 
-  // Combinar membros existentes com convites pendentes/aceitos
-  const getAllMembers = () => {
-    const invitedMembers = invitations.map((invitation, index) => ({
-      id: 1000 + index,
-      name: invitation.name,
-      role: 'Convidado',
-      email: invitation.email,
-      status: invitation.status === 'accepted' ? 'active' as const : 
-              invitation.status === 'declined' ? 'inactive' as const : 'away' as const,
-      avatarUrl: `https://i.pravatar.cc/150?img=${20 + index}`,
-      projects: [],
-      invitationStatus: invitation.status,
-      invitationId: invitation.id
-    }));
-
-    return [...mockTeamMembers, ...invitedMembers];
-  };
-
   // Filter team members based on search query and filters
-  const filteredMembers = getAllMembers().filter(member => {
+  const filteredMembers = members.filter(member => {
     const matchesSearch = member.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           member.email.toLowerCase().includes(searchQuery.toLowerCase());
     
@@ -128,58 +58,6 @@ const TeamPage: React.FC = () => {
     
     return matchesSearch && matchesRole && matchesStatus;
   });
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'bg-green-500';
-      case 'away':
-        return 'bg-yellow-500';
-      case 'inactive':
-        return 'bg-gray-400';
-      default:
-        return 'bg-gray-400';
-    }
-  };
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'Ativo';
-      case 'away':
-        return 'Ausente';
-      case 'inactive':
-        return 'Inativo';
-      default:
-        return status;
-    }
-  };
-
-  const getInvitationStatusIcon = (invitationStatus: string) => {
-    switch (invitationStatus) {
-      case 'pending':
-        return <Clock size={16} className="text-yellow-600" />;
-      case 'accepted':
-        return <CheckCircle size={16} className="text-green-600" />;
-      case 'declined':
-        return <XCircle size={16} className="text-red-600" />;
-      default:
-        return null;
-    }
-  };
-
-  const getInvitationStatusText = (invitationStatus: string) => {
-    switch (invitationStatus) {
-      case 'pending':
-        return 'Pendente';
-      case 'accepted':
-        return 'Confirmado';
-      case 'declined':
-        return 'Recusado';
-      default:
-        return '';
-    }
-  };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -216,49 +94,20 @@ const TeamPage: React.FC = () => {
 
   const handleViewProfile = async (member: TeamMember) => {
     setSelectedMember(member);
-    setIsEditing(false);
 
-    // Buscar projetos do membro se for um membro real (não convidado)
-    if (member.id < 1000) {
-      const projects = await fetchMemberProjects(member.id.toString());
+    // Buscar projetos do membro se for um membro real (com conta)
+    if (member.has_account) {
+      const projects = await getMemberProjects(member.id);
       setMemberProjects(projects);
-    }
-  };
-
-  const handleEditMember = async (member: TeamMember) => {
-    setSelectedMember(member);
-    setIsEditing(true);
-
-    // Buscar projetos do membro e configurar seleção
-    if (member.id < 1000) {
-      const projects = await fetchMemberProjects(member.id.toString());
-      setMemberProjects(projects);
-      setSelectedProjects(projects.map((mp: any) => mp.project_id));
     } else {
       setMemberProjects([]);
-      setSelectedProjects([]);
-    }
-  };
-
-  const handleSaveChanges = async () => {
-    if (selectedMember) {
-      try {
-        await assignProjectsToMember(selectedMember.id.toString(), selectedProjects);
-        handleBack();
-      } catch (error) {
-        console.error('Erro ao salvar alterações:', error);
-      }
     }
   };
 
   const handleDeleteMember = async (member: TeamMember) => {
     try {
-      const success = await deleteMember(member.id.toString());
+      const success = await deleteMember(member.id, member.has_account);
       if (success) {
-        // Se for um convite, atualizar lista
-        if ((member as any).invitationId) {
-          await updateInvitationStatus((member as any).invitationId, 'declined');
-        }
         handleBack();
       }
     } catch (error) {
@@ -268,190 +117,181 @@ const TeamPage: React.FC = () => {
 
   const handleBack = () => {
     setSelectedMember(null);
-    setIsEditing(false);
     setSelectedProjects([]);
     setMemberProjects([]);
   };
 
-  const handleProjectToggle = (projectId: string) => {
-    setSelectedProjects(prev => 
-      prev.includes(projectId) 
-        ? prev.filter(p => p !== projectId)
-        : [...prev, projectId]
-    );
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
   };
 
-  // Se há um membro selecionado, mostrar detalhes/edição
+  // Se há um membro selecionado, mostrar detalhes
   if (selectedMember) {
     return (
       <main className="flex-1 overflow-y-auto bg-[#F8F8F8] p-6">
         <div className="max-w-4xl mx-auto">
-          <div className="flex items-center mb-6">
-            <Button onClick={handleBack} variant="outline" className="mr-4">
-              <ArrowLeft size={18} className="mr-2" />
-              Voltar
-            </Button>
-            <h1 className="text-2xl font-bold text-[#333333]">
-              {isEditing ? 'Editar Membro' : 'Detalhes do Membro'}
-            </h1>
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center">
+              <Button onClick={handleBack} variant="outline" className="mr-4">
+                <ArrowLeft size={18} className="mr-2" />
+                Voltar
+              </Button>
+              <h1 className="text-2xl font-bold text-[#333333]">Detalhes do Membro</h1>
+            </div>
+            
+            {/* Botão Excluir reposicionado */}
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button 
+                  variant="outline"
+                  className="border-red-300 text-red-600 hover:bg-red-50"
+                  size="sm"
+                >
+                  <Trash2 size={16} className="mr-1" />
+                  Excluir Membro
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Excluir Membro</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Tem certeza que deseja remover <strong>{selectedMember.name}</strong> da equipe? 
+                    Esta ação não pode ser desfeita e o membro perderá acesso a todos os projetos.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction 
+                    onClick={() => handleDeleteMember(selectedMember)}
+                    className="bg-red-600 hover:bg-red-700"
+                  >
+                    Excluir
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
 
-          <Card className="bg-white shadow-sm">
-            <CardContent className="p-8">
-              <div className="flex flex-col md:flex-row gap-8">
-                {/* Avatar */}
-                <div className="flex flex-col items-center">
-                  <div className="relative mb-4">
-                    <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-gray-100">
-                      <img 
-                        src={selectedMember.avatarUrl} 
-                        alt={selectedMember.name} 
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className={`absolute bottom-2 right-2 w-6 h-6 rounded-full ${getStatusColor(selectedMember.status)} border-2 border-white`}></div>
-                  </div>
-                  
-                  {/* Status do convite para membros convidados */}
-                  {(selectedMember as any).invitationStatus && (
-                    <div className="flex items-center gap-2 mb-4 px-3 py-1 bg-gray-100 rounded-full">
-                      {getInvitationStatusIcon((selectedMember as any).invitationStatus)}
-                      <span className="text-sm font-medium">
-                        {getInvitationStatusText((selectedMember as any).invitationStatus)}
-                      </span>
-                    </div>
-                  )}
-                  
-                  {/* Botões de ação */}
-                  {!isEditing && (
-                    <div className="flex gap-2">
-                      <Button 
-                        onClick={() => handleEditMember(selectedMember)}
-                        className="bg-[#FF8C42] hover:bg-[#E07C32] text-white"
-                        size="sm"
-                      >
-                        Editar
-                      </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button 
-                            variant="destructive"
-                            size="sm"
-                          >
-                            <Trash2 size={16} className="mr-1" />
-                            Excluir
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Excluir Membro</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Tem certeza que deseja remover {selectedMember.name} da equipe? 
-                              Esta ação não pode ser desfeita e o membro perderá acesso a todos os projetos.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                            <AlertDialogAction 
-                              onClick={() => handleDeleteMember(selectedMember)}
-                              className="bg-red-600 hover:bg-red-700"
-                            >
-                              Excluir
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  )}
-                </div>
-
-                {/* Detalhes */}
-                <div className="flex-1 space-y-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Nome</label>
-                    <p className="text-lg font-semibold text-[#333333]">{selectedMember.name}</p>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Cargo</label>
-                    <p className="text-gray-600">{selectedMember.role}</p>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                    <p className="text-gray-600">{selectedMember.email}</p>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                      selectedMember.status === 'active' ? 'bg-green-100 text-green-800' :
-                      selectedMember.status === 'away' ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-gray-100 text-gray-800'
-                    }`}>
-                      {getStatusText(selectedMember.status)}
-                    </span>
-                  </div>
-
-                  {/* Projetos - edição */}
-                  {isEditing && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-3">Projetos Associados</label>
-                      <div className="space-y-3">
-                        {projects.map((project) => (
-                          <div key={project.id} className="flex items-center space-x-2">
-                            <Checkbox
-                              id={`project-${project.id}`}
-                              checked={selectedProjects.includes(project.id)}
-                              onCheckedChange={() => handleProjectToggle(project.id)}
-                            />
-                            <label
-                              htmlFor={`project-${project.id}`}
-                              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                            >
-                              {project.name}
-                              {project.location && (
-                                <span className="text-gray-500 ml-2">({project.location})</span>
-                              )}
-                            </label>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Card Principal - Informações do Membro */}
+            <Card className="bg-white shadow-sm lg:col-span-2">
+              <CardContent className="p-8">
+                <div className="flex flex-col md:flex-row gap-8">
+                  {/* Avatar e Status */}
+                  <div className="flex flex-col items-center">
+                    <div className="relative mb-4">
+                      <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-gray-100">
+                        {selectedMember.profile_picture_url ? (
+                          <img 
+                            src={selectedMember.profile_picture_url} 
+                            alt={selectedMember.name} 
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                            <User size={48} className="text-gray-400" />
                           </div>
-                        ))}
+                        )}
                       </div>
                     </div>
-                  )}
+                    
+                    <MemberStatusBadge 
+                      status={selectedMember.status}
+                      invitationStatus={selectedMember.invitation_status}
+                      hasAccount={selectedMember.has_account}
+                    />
+                    
+                    {!selectedMember.has_account && (
+                      <div className="mt-2 text-center">
+                        <p className="text-sm text-amber-600 font-medium">
+                          ⚠️ Sem conta na plataforma
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Convite necessário para acesso completo
+                        </p>
+                      </div>
+                    )}
+                  </div>
 
-                  {/* Projetos - visualização */}
-                  {!isEditing && memberProjects.length > 0 && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Projetos Associados</label>
-                      <div className="flex flex-wrap gap-2">
-                        {memberProjects.map((mp: any) => (
-                          <span
-                            key={mp.id}
-                            className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800"
-                          >
-                            {mp.projects?.name || 'Projeto não encontrado'}
-                          </span>
-                        ))}
+                  {/* Informações do Membro */}
+                  <div className="flex-1 space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-500 mb-1">Nome Completo</h3>
+                        <p className="text-lg font-semibold text-[#333333]">{selectedMember.name}</p>
+                      </div>
+
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-500 mb-1">Cargo/Função</h3>
+                        <p className="text-gray-700">{selectedMember.role}</p>
+                      </div>
+
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-500 mb-1">E-mail</h3>
+                        <p className="text-gray-700">{selectedMember.email}</p>
+                      </div>
+
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-500 mb-1">Data de Entrada</h3>
+                        <div className="flex items-center text-gray-700">
+                          <Calendar size={16} className="mr-2" />
+                          {formatDate(selectedMember.created_at)}
+                        </div>
                       </div>
                     </div>
-                  )}
-
-                  {/* Botões de ação da edição */}
-                  {isEditing && (
-                    <div className="flex gap-3 pt-4">
-                      <Button onClick={handleSaveChanges} className="bg-[#004C4C] hover:bg-[#003B3B]">
-                        Salvar Alterações
-                      </Button>
-                      <Button onClick={handleBack} variant="outline">
-                        Cancelar
-                      </Button>
-                    </div>
-                  )}
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+
+            {/* Card de Projetos Vinculados */}
+            <Card className="bg-white shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center">
+                  <FolderOpen size={20} className="mr-2" />
+                  Projetos Vinculados
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {memberProjects.length > 0 ? (
+                  <div className="space-y-3">
+                    {memberProjects.map((mp: any) => (
+                      <div
+                        key={mp.id}
+                        className="p-3 bg-blue-50 rounded-lg border border-blue-100"
+                      >
+                        <h4 className="font-medium text-blue-900">
+                          {mp.projects?.name || 'Projeto não encontrado'}
+                        </h4>
+                        {mp.projects?.location && (
+                          <p className="text-sm text-blue-700 mt-1">
+                            📍 {mp.projects.location}
+                          </p>
+                        )}
+                        <span className="inline-block mt-2 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                          {mp.projects?.status || 'Status indefinido'}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <FolderOpen size={48} className="mx-auto mb-4 text-gray-300" />
+                    <p className="text-sm">
+                      {selectedMember.has_account 
+                        ? 'Nenhum projeto vinculado'
+                        : 'Projetos serão exibidos após criação da conta'
+                      }
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </main>
     );
@@ -559,65 +399,80 @@ const TeamPage: React.FC = () => {
         </div>
         
         {/* Team Members Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredMembers.map((member) => (
-            <Card key={member.id} className="bg-white shadow-sm hover:shadow-md transition-shadow">
-              <CardContent className="p-6 flex flex-col items-center">
-                {/* Avatar and Status */}
-                <div className="relative mb-4">
-                  <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-gray-100">
-                    <img 
-                      src={member.avatarUrl} 
-                      alt={member.name} 
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className={`absolute bottom-0 right-0 w-5 h-5 rounded-full ${getStatusColor(member.status)} border-2 border-white`}></div>
-                </div>
-                
-                {/* Member Info */}
-                <div className="text-center mb-4">
-                  <h3 className="text-xl font-bold text-[#333333]">{member.name}</h3>
-                  <p className="text-sm text-gray-600 mt-1">{member.role}</p>
-                  <p className="text-sm text-gray-500 mt-2">{member.email}</p>
-                  
-                  {/* Status do membro */}
-                  <div className="flex items-center justify-center mt-2">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      member.status === 'active' ? 'bg-green-100 text-green-800' :
-                      member.status === 'away' ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-gray-100 text-gray-800'
-                    }`}>
-                      {getStatusText(member.status)}
-                    </span>
-                  </div>
-
-                  {/* Status do convite para membros convidados */}
-                  {(member as any).invitationStatus && (
-                    <div className="flex items-center justify-center gap-2 mt-2 px-2 py-1 bg-gray-50 rounded-full">
-                      {getInvitationStatusIcon((member as any).invitationStatus)}
-                      <span className="text-xs font-medium text-gray-700">
-                        {getInvitationStatusText((member as any).invitationStatus)}
-                      </span>
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {Array.from({ length: 8 }).map((_, index) => (
+              <Card key={index} className="bg-white shadow-sm animate-pulse">
+                <CardContent className="p-6 flex flex-col items-center">
+                  <div className="w-24 h-24 bg-gray-200 rounded-full mb-4"></div>
+                  <div className="h-4 bg-gray-200 rounded w-32 mb-2"></div>
+                  <div className="h-3 bg-gray-200 rounded w-24 mb-4"></div>
+                  <div className="h-8 bg-gray-200 rounded w-20"></div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filteredMembers.map((member) => (
+              <Card key={member.id} className="bg-white shadow-sm hover:shadow-md transition-shadow">
+                <CardContent className="p-6 flex flex-col items-center">
+                  {/* Avatar */}
+                  <div className="relative mb-4">
+                    <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-gray-100">
+                      {member.profile_picture_url ? (
+                        <img 
+                          src={member.profile_picture_url} 
+                          alt={member.name} 
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                          <User size={32} className="text-gray-400" />
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-                
-                {/* Actions - apenas botão Ver Perfil */}
-                <div className="flex gap-2 w-full mt-auto">
-                  <Button 
-                    variant="outline" 
-                    className="flex-1 border-[#004C4C] text-[#004C4C] hover:bg-[#004C4C] hover:text-white"
-                    onClick={() => handleViewProfile(member)}
-                  >
-                    <User size={16} className="mr-1" />
-                    Ver Perfil
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                  </div>
+                  
+                  {/* Member Info */}
+                  <div className="text-center mb-4 w-full">
+                    <h3 className="text-xl font-bold text-[#333333] mb-1">{member.name}</h3>
+                    <p className="text-sm text-gray-600 mb-2">{member.role}</p>
+                    <p className="text-sm text-gray-500 mb-3 truncate">{member.email}</p>
+                    
+                    {/* Status Badge */}
+                    <div className="flex justify-center mb-3">
+                      <MemberStatusBadge 
+                        status={member.status}
+                        invitationStatus={member.invitation_status}
+                        hasAccount={member.has_account}
+                      />
+                    </div>
+
+                    {/* Alerta para membros sem conta */}
+                    {!member.has_account && (
+                      <div className="text-xs text-amber-600 mb-3 px-2 py-1 bg-amber-50 rounded">
+                        ⚠️ Aguardando criação de conta
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Actions */}
+                  <div className="flex gap-2 w-full mt-auto">
+                    <Button 
+                      variant="outline" 
+                      className="flex-1 border-[#004C4C] text-[#004C4C] hover:bg-[#004C4C] hover:text-white"
+                      onClick={() => handleViewProfile(member)}
+                    >
+                      <User size={16} className="mr-1" />
+                      Ver Perfil
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
     </main>
   );
