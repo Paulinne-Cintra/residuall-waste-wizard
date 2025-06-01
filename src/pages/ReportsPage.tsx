@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Filter, Calendar, BarChart, TrendingUp, Eye, FileText, ChevronDown } from 'lucide-react';
 import Chart from '../components/Chart';
@@ -21,7 +21,7 @@ const ReportsPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   // Atualizar relatórios filtrados quando os dados mudarem
-  useState(() => {
+  useEffect(() => {
     setFilteredReports(reports);
   }, [reports]);
 
