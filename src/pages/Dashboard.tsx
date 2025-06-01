@@ -95,18 +95,16 @@ const Dashboard: React.FC = () => {
           </button>
 
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <div className="flex items-center cursor-pointer">
-                <img
-                  src="https://via.placeholder.com/32"
-                  alt="User Avatar"
-                  className="w-8 h-8 rounded-full mr-2"
-                />
-                <span className="text-gray-700 font-medium hidden md:block">
-                  {user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email || 'Usuário'}
-                </span>
-                <ChevronDown size={16} className="text-gray-500 ml-1 hidden md:block" />
-              </div>
+            <DropdownMenuTrigger className="flex items-center cursor-pointer hover:bg-gray-50 rounded-md p-2 transition-colors">
+              <img
+                src="https://via.placeholder.com/32"
+                alt="User Avatar"
+                className="w-8 h-8 rounded-full mr-2"
+              />
+              <span className="text-gray-700 font-medium hidden md:block">
+                {user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email || 'Usuário'}
+              </span>
+              <ChevronDown size={16} className="text-gray-500 ml-1 hidden md:block" />
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-48">
               <DropdownMenuItem onClick={() => navigate('/dashboard/perfil')}>
