@@ -320,6 +320,50 @@ export type Database = {
         }
         Relationships: []
       }
+      recomendacoes: {
+        Row: {
+          aceita: boolean
+          created_at: string
+          data_criacao: string
+          descricao: string | null
+          id: string
+          projeto_id: string
+          titulo: string
+          updated_at: string
+          visualizada: boolean
+        }
+        Insert: {
+          aceita?: boolean
+          created_at?: string
+          data_criacao?: string
+          descricao?: string | null
+          id?: string
+          projeto_id: string
+          titulo: string
+          updated_at?: string
+          visualizada?: boolean
+        }
+        Update: {
+          aceita?: boolean
+          created_at?: string
+          data_criacao?: string
+          descricao?: string | null
+          id?: string
+          projeto_id?: string
+          titulo?: string
+          updated_at?: string
+          visualizada?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recomendacoes_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reports: {
         Row: {
           content: string | null
