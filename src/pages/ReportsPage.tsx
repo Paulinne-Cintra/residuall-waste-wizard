@@ -1,7 +1,6 @@
-
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Filter, Calendar, BarChart, TrendingUp, TrendingDown, Download, Share2, Plus, Eye, FileText, Check, ChevronDown } from 'lucide-react';
+import { Filter, Calendar, BarChart, TrendingUp, TrendingDown, Download, Share2, Plus, Eye, FileText } from 'lucide-react';
 import Chart from '../components/Chart';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -10,7 +9,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-
 interface Report {
   id: string;
   project: string;
@@ -19,53 +17,48 @@ interface Report {
   status: 'Finalizado' | 'Pendente';
   location: string;
 }
-
 const ReportsPage = () => {
-  const { toast } = useToast();
+  const {
+    toast
+  } = useToast();
 
   // Dados de exemplo para relatórios
-  const reportsData: Report[] = [
-    {
-      id: '1',
-      project: 'Edifício Aurora',
-      date: '15/05/2023',
-      responsible: 'Carlos Pereira',
-      status: 'Finalizado',
-      location: 'São Paulo, SP'
-    },
-    {
-      id: '2',
-      project: 'Residencial Parque Verde',
-      date: '10/05/2023',
-      responsible: 'Ana Silva',
-      status: 'Pendente',
-      location: 'Curitiba, PR'
-    },
-    {
-      id: '3',
-      project: 'Torre Corporativa Horizonte',
-      date: '01/05/2023',
-      responsible: 'Roberto Santos',
-      status: 'Finalizado',
-      location: 'Rio de Janeiro, RJ'
-    },
-    {
-      id: '4',
-      project: 'Condomínio Vista Mar',
-      date: '28/04/2023',
-      responsible: 'Fernanda Lima',
-      status: 'Finalizado',
-      location: 'Salvador, BA'
-    },
-    {
-      id: '5',
-      project: 'Centro Empresarial Inovação',
-      date: '20/04/2023',
-      responsible: 'Lucas Oliveira',
-      status: 'Pendente',
-      location: 'Belo Horizonte, MG'
-    }
-  ];
+  const reportsData: Report[] = [{
+    id: '1',
+    project: 'Edifício Aurora',
+    date: '15/05/2023',
+    responsible: 'Carlos Pereira',
+    status: 'Finalizado',
+    location: 'São Paulo, SP'
+  }, {
+    id: '2',
+    project: 'Residencial Parque Verde',
+    date: '10/05/2023',
+    responsible: 'Ana Silva',
+    status: 'Pendente',
+    location: 'Curitiba, PR'
+  }, {
+    id: '3',
+    project: 'Torre Corporativa Horizonte',
+    date: '01/05/2023',
+    responsible: 'Roberto Santos',
+    status: 'Finalizado',
+    location: 'Rio de Janeiro, RJ'
+  }, {
+    id: '4',
+    project: 'Condomínio Vista Mar',
+    date: '28/04/2023',
+    responsible: 'Fernanda Lima',
+    status: 'Finalizado',
+    location: 'Salvador, BA'
+  }, {
+    id: '5',
+    project: 'Centro Empresarial Inovação',
+    date: '20/04/2023',
+    responsible: 'Lucas Oliveira',
+    status: 'Pendente',
+    location: 'Belo Horizonte, MG'
+  }];
 
   // Dados para gráficos
   const reuseRateData = [{
@@ -108,7 +101,7 @@ const ReportsPage = () => {
     economia: 9800
   }];
 
-  // Estado para os filtros com controle de abertura
+  // Estado para os filtros
   const [filteredReports, setFilteredReports] = useState<Report[]>(reportsData);
   const [projectFilter, setProjectFilter] = useState('Projeto');
   const [periodFilter, setPeriodFilter] = useState('Período');
@@ -121,29 +114,22 @@ const ReportsPage = () => {
     period: ''
   });
 
-  // Estados para controlar dropdowns abertos
-  const [projectDropdownOpen, setProjectDropdownOpen] = useState(false);
-  const [periodDropdownOpen, setPeriodDropdownOpen] = useState(false);
-  const [statusDropdownOpen, setStatusDropdownOpen] = useState(false);
-
   // Função para obter a cor do status
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Finalizado':
-        return 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800';
+        return 'status-tag status-tag-completed';
       case 'Pendente':
-        return 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800';
+        return 'status-tag status-tag-ongoing';
       default:
-        return 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-800';
+        return 'status-tag';
     }
   };
-
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchQuery(value);
     console.log('Busca relatórios:', value);
   };
-
   const handleCreateReport = () => {
     console.log('Criando relatório:', newReport);
     setIsModalOpen(false);
@@ -158,27 +144,7 @@ const ReportsPage = () => {
       duration: 3000
     });
   };
-
-  const handleProjectFilterChange = (value: string) => {
-    setProjectFilter(value);
-    setProjectDropdownOpen(false);
-    console.log('Filtro de projeto alterado:', value);
-  };
-
-  const handlePeriodFilterChange = (value: string) => {
-    setPeriodFilter(value);
-    setPeriodDropdownOpen(false);
-    console.log('Filtro de período alterado:', value);
-  };
-
-  const handleStatusFilterChange = (value: string) => {
-    setStatusFilter(value);
-    setStatusDropdownOpen(false);
-    console.log('Filtro de status alterado:', value);
-  };
-
-  return (
-    <main className="flex-1 overflow-y-auto p-4 md:p-6">
+  return <main className="flex-1 overflow-y-auto p-4 md:p-6">
       {/* Cabeçalho da página */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
         <div>
@@ -202,135 +168,53 @@ const ReportsPage = () => {
       <Card className="mb-6">
         <CardContent className="flex flex-wrap gap-4 items-center justify-between p-4">
           <div className="flex flex-wrap gap-2">
-            <DropdownMenu open={projectDropdownOpen} onOpenChange={setProjectDropdownOpen}>
-              <DropdownMenuTrigger className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 hover:shadow-md transition-all duration-200 text-gray-700">
-                <Filter size={16} />
-                <span>{projectFilter}</span>
-                <ChevronDown 
-                  className={`h-4 w-4 transition-transform duration-200 ${
-                    projectDropdownOpen ? 'rotate-180' : ''
-                  }`} 
-                />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="flex items-center gap-2">
+                  <Filter size={16} />
+                  <span>{projectFilter}</span>
+                </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent 
-                align="start" 
-                sideOffset={5}
-                className="w-56"
-              >
-                <DropdownMenuItem 
-                  onClick={() => handleProjectFilterChange('Todos')}
-                  selected={projectFilter === 'Todos'}
-                >
-                  Todos
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => handleProjectFilterChange('Edifício Aurora')}
-                  selected={projectFilter === 'Edifício Aurora'}
-                >
-                  Edifício Aurora
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => handleProjectFilterChange('Residencial Parque Verde')}
-                  selected={projectFilter === 'Residencial Parque Verde'}
-                >
-                  Residencial Parque Verde
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => handleProjectFilterChange('Torre Corporativa')}
-                  selected={projectFilter === 'Torre Corporativa'}
-                >
-                  Torre Corporativa
-                </DropdownMenuItem>
+              <DropdownMenuContent className="rounded-md">
+                <DropdownMenuItem onClick={() => setProjectFilter('Todos')}>Todos</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setProjectFilter('Edifício Aurora')}>Edifício Aurora</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setProjectFilter('Residencial Parque Verde')}>Residencial Parque Verde</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setProjectFilter('Torre Corporativa')}>Torre Corporativa</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             
-            <DropdownMenu open={periodDropdownOpen} onOpenChange={setPeriodDropdownOpen}>
-              <DropdownMenuTrigger className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 hover:shadow-md transition-all duration-200 text-gray-700">
-                <Calendar size={16} />
-                <span>{periodFilter}</span>
-                <ChevronDown 
-                  className={`h-4 w-4 transition-transform duration-200 ${
-                    periodDropdownOpen ? 'rotate-180' : ''
-                  }`} 
-                />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="flex items-center gap-2">
+                  <Calendar size={16} />
+                  <span>{periodFilter}</span>
+                </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent 
-                align="start" 
-                sideOffset={5}
-                className="w-48"
-              >
-                <DropdownMenuItem 
-                  onClick={() => handlePeriodFilterChange('Última semana')}
-                  selected={periodFilter === 'Última semana'}
-                >
-                  Última semana
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => handlePeriodFilterChange('Último mês')}
-                  selected={periodFilter === 'Último mês'}
-                >
-                  Último mês
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => handlePeriodFilterChange('Último trimestre')}
-                  selected={periodFilter === 'Último trimestre'}
-                >
-                  Último trimestre
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => handlePeriodFilterChange('Último ano')}
-                  selected={periodFilter === 'Último ano'}
-                >
-                  Último ano
-                </DropdownMenuItem>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => setPeriodFilter('Última semana')}>Última semana</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setPeriodFilter('Último mês')}>Último mês</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setPeriodFilter('Último trimestre')}>Último trimestre</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setPeriodFilter('Último ano')}>Último ano</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             
-            <DropdownMenu open={statusDropdownOpen} onOpenChange={setStatusDropdownOpen}>
-              <DropdownMenuTrigger className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 hover:shadow-md transition-all duration-200 text-gray-700">
-                <Filter size={16} />
-                <span>{statusFilter}</span>
-                <ChevronDown 
-                  className={`h-4 w-4 transition-transform duration-200 ${
-                    statusDropdownOpen ? 'rotate-180' : ''
-                  }`} 
-                />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="flex items-center gap-2">
+                  <Filter size={16} />
+                  <span>{statusFilter}</span>
+                </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent 
-                align="start" 
-                sideOffset={5}
-                className="w-40"
-              >
-                <DropdownMenuItem 
-                  onClick={() => handleStatusFilterChange('Todos')}
-                  selected={statusFilter === 'Todos'}
-                >
-                  Todos
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => handleStatusFilterChange('Finalizado')}
-                  selected={statusFilter === 'Finalizado'}
-                >
-                  Finalizado
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => handleStatusFilterChange('Pendente')}
-                  selected={statusFilter === 'Pendente'}
-                >
-                  Pendente
-                </DropdownMenuItem>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => setStatusFilter('Todos')}>Todos</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setStatusFilter('Finalizado')}>Finalizado</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setStatusFilter('Pendente')}>Pendente</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
           
           <div>
-            <Input 
-              type="text" 
-              placeholder="Buscar relatórios..." 
-              value={searchQuery} 
-              onChange={handleSearchChange} 
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-residuall-green focus:border-transparent transition-all duration-200" 
-            />
+            <Input type="text" placeholder="Buscar relatórios..." value={searchQuery} onChange={handleSearchChange} className="input-field" />
           </div>
         </CardContent>
       </Card>
@@ -503,8 +387,6 @@ const ReportsPage = () => {
           </Table>
         </CardContent>
       </Card>
-    </main>
-  );
+    </main>;
 };
-
 export default ReportsPage;

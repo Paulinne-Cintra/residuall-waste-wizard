@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Filter, Calendar, BarChart, TrendingUp, TrendingDown, Eye, Plus, Building2, Droplet, Anchor, CheckCircle, AlertTriangle, ChevronDown } from 'lucide-react';
+import { Filter, Calendar, BarChart, TrendingUp, TrendingDown, Eye, Plus, ChevronDown, Building2, Droplet, Anchor, CheckCircle, AlertTriangle } from 'lucide-react';
 import { useProjects } from '@/hooks/useProjects';
 import AnimatedButton from '@/components/ui/AnimatedButton';
 import Chart from '../components/Chart';
@@ -32,10 +32,6 @@ const ProjectsPage = () => {
   const [statusFilter, setStatusFilter] = useState('Status');
   const [dateFilter, setDateFilter] = useState('Data');
   const [searchQuery, setSearchQuery] = useState('');
-
-  // Estados para controlar dropdowns abertos
-  const [statusDropdownOpen, setStatusDropdownOpen] = useState(false);
-  const [dateDropdownOpen, setDateDropdownOpen] = useState(false);
 
   // Dados de exemplo para recomendações
   const [recommendations, setRecommendations] = useState([
@@ -88,18 +84,6 @@ const ProjectsPage = () => {
     console.log('Busca:', value);
   };
 
-  const handleStatusFilterChange = (value: string) => {
-    setStatusFilter(value);
-    setStatusDropdownOpen(false);
-    console.log('Filtro de status alterado:', value);
-  };
-
-  const handleDateFilterChange = (value: string) => {
-    setDateFilter(value);
-    setDateDropdownOpen(false);
-    console.log('Filtro de data alterado:', value);
-  };
-
   if (loading) {
     return (
       <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
@@ -142,93 +126,36 @@ const ProjectsPage = () => {
       <Card className="mb-6 shadow-sm border-none">
         <CardContent className="flex flex-wrap gap-4 items-center justify-between p-4">
           <div className="flex flex-wrap gap-2">
-            <DropdownMenu open={statusDropdownOpen} onOpenChange={setStatusDropdownOpen}>
-              <DropdownMenuTrigger className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 hover:shadow-md transition-all duration-200 text-gray-700">
-                <Filter size={16} />
-                <span>{statusFilter}</span>
-                <ChevronDown 
-                  className={`h-4 w-4 transition-transform duration-200 ${
-                    statusDropdownOpen ? 'rotate-180' : ''
-                  }`} 
-                />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="flex items-center gap-2 text-gray-700 hover:bg-gray-100 border-gray-300">
+                  <Filter size={16} />
+                  <span>{statusFilter}</span>
+                  <ChevronDown size={16} />
+                </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent 
-                align="start" 
-                sideOffset={5}
-                className="w-48"
-              >
-                <DropdownMenuItem 
-                  onClick={() => handleStatusFilterChange('Todos')}
-                  selected={statusFilter === 'Todos'}
-                >
-                  Todos
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => handleStatusFilterChange('planejamento')}
-                  selected={statusFilter === 'planejamento'}
-                >
-                  Planejamento
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => handleStatusFilterChange('execução')}
-                  selected={statusFilter === 'execução'}
-                >
-                  Execução
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => handleStatusFilterChange('finalização')}
-                  selected={statusFilter === 'finalização'}
-                >
-                  Finalização
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => handleStatusFilterChange('concluído')}
-                  selected={statusFilter === 'concluído'}
-                >
-                  Concluído
-                </DropdownMenuItem>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => setStatusFilter('Todos')}>Todos</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setStatusFilter('planejamento')}>Planejamento</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setStatusFilter('execução')}>Execução</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setStatusFilter('finalização')}>Finalização</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setStatusFilter('concluído')}>Concluído</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             
-            <DropdownMenu open={dateDropdownOpen} onOpenChange={setDateDropdownOpen}>
-              <DropdownMenuTrigger className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 hover:shadow-md transition-all duration-200 text-gray-700">
-                <Calendar size={16} />
-                <span>{dateFilter}</span>
-                <ChevronDown 
-                  className={`h-4 w-4 transition-transform duration-200 ${
-                    dateDropdownOpen ? 'rotate-180' : ''
-                  }`} 
-                />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="flex items-center gap-2 text-gray-700 hover:bg-gray-100 border-gray-300">
+                  <Calendar size={16} />
+                  <span>{dateFilter}</span>
+                  <ChevronDown size={16} />
+                </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent 
-                align="start" 
-                sideOffset={5}
-                className="w-48"
-              >
-                <DropdownMenuItem 
-                  onClick={() => handleDateFilterChange('Última semana')}
-                  selected={dateFilter === 'Última semana'}
-                >
-                  Última semana
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => handleDateFilterChange('Último mês')}
-                  selected={dateFilter === 'Último mês'}
-                >
-                  Último mês
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => handleDateFilterChange('Último trimestre')}
-                  selected={dateFilter === 'Último trimestre'}
-                >
-                  Último trimestre
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => handleDateFilterChange('Último ano')}
-                  selected={dateFilter === 'Último ano'}
-                >
-                  Último ano
-                </DropdownMenuItem>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => setDateFilter('Última semana')}>Última semana</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setDateFilter('Último mês')}>Último mês</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setDateFilter('Último trimestre')}>Último trimestre</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setDateFilter('Último ano')}>Último ano</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
