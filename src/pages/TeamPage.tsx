@@ -14,6 +14,7 @@ import { useTeamInvitations } from "@/hooks/useTeamInvitations";
 import { useTeamProjects } from "@/hooks/useTeamProjects";
 import { useTeamMembers } from "@/hooks/useTeamMembers";
 import MemberStatusBadge from "@/components/MemberStatusBadge";
+import { useNavigate } from 'react-router-dom';
 
 interface TeamMember {
   id: string;
@@ -30,9 +31,10 @@ interface TeamMember {
 const TeamPage: React.FC = () => {
   const { toast } = useToast();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { sendInvitation } = useTeamInvitations();
   const { projects, fetchMemberProjects, assignProjectsToMember } = useTeamProjects();
-  const { members, loading, deleteMember, getMemberProjects } = useTeamMembers();
+  const { members, loading, deleteMember, getMemberProjects, refetch } = useTeamMembers();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState('Todos os Cargos');
@@ -106,12 +108,34 @@ const TeamPage: React.FC = () => {
 
   const handleDeleteMember = async (member: TeamMember) => {
     try {
+      console.log('Iniciando exclusão do membro:', member.name);
+      
       const success = await deleteMember(member.id, member.has_account);
+      
       if (success) {
+        console.log('Membro excluído com sucesso');
+        
+        // Atualizar a lista de membros
+        await refetch();
+        
+        // Voltar para a lista de membros
         handleBack();
+        
+        // Redirecionar para a página da equipe
+        navigate('/dashboard/time');
+        
+        toast({
+          title: "Sucesso!",
+          description: "Membro excluído com sucesso.",
+        });
       }
     } catch (error) {
       console.error('Erro ao excluir membro:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao excluir membro da equipe.",
+        variant: "destructive",
+      });
     }
   };
 
