@@ -1,8 +1,10 @@
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
-import SidebarDashboard from './SidebarDashboard';
 import DashboardHeader from './DashboardHeader';
+
+// Lazy load do sidebar para melhor performance
+const AnimatedSidebar = React.lazy(() => import('./AnimatedSidebar'));
 
 const DashboardLayout: React.FC = () => {
   const location = useLocation();
@@ -38,7 +40,19 @@ const DashboardLayout: React.FC = () => {
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      <SidebarDashboard /> 
+      <Suspense 
+        fallback={
+          <div className="w-64 bg-residuall-green animate-pulse">
+            <div className="p-4 space-y-2">
+              {Array.from({ length: 10 }).map((_, i) => (
+                <div key={i} className="h-10 bg-white/20 rounded"></div>
+              ))}
+            </div>
+          </div>
+        }
+      >
+        <AnimatedSidebar />
+      </Suspense>
       <div className="flex-1 flex flex-col">
         <DashboardHeader pageTitle={pageTitle} />
         <main className="flex-1 p-6 overflow-auto">

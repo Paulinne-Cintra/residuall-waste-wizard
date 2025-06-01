@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { Search, Bell, ChevronDown, LogOut } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -50,7 +49,6 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  // Função para calcular o progresso de um projeto (simulado baseado no status)
   const getProjectProgress = (status: string) => {
     switch (status) {
       case 'planejamento':
@@ -66,14 +64,12 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  // Mostrar mensagem de boas-vindas se veio do pagamento
   useEffect(() => {
     if (location.state?.welcomeMessage) {
       toast({
         title: "Bem-vindo!",
         description: location.state.welcomeMessage,
       });
-      // Limpar a mensagem do state
       navigate(location.pathname, { replace: true, state: {} });
     }
   }, [location.state, toast, navigate]);
@@ -91,6 +87,22 @@ const Dashboard: React.FC = () => {
           />
         </div>
         <div className="flex items-center space-x-4 ml-auto">
+          {/* Filtro de Projetos - Corrigido */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+                Filtrar Projetos
+                <ChevronDown size={16} />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-48" align="start" sideOffset={8}>
+              <DropdownMenuItem>Todos os Projetos</DropdownMenuItem>
+              <DropdownMenuItem>Em Andamento</DropdownMenuItem>
+              <DropdownMenuItem>Finalizados</DropdownMenuItem>
+              <DropdownMenuItem>Pausados</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           <button className="p-2 text-gray-600 hover:text-residuall-green transition-colors">
             <Bell size={20} />
           </button>
@@ -109,7 +121,7 @@ const Dashboard: React.FC = () => {
                 <ChevronDown size={16} className="text-gray-500 ml-1 hidden md:block" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-48" align="end">
+            <DropdownMenuContent className="w-48" align="end" sideOffset={8}>
               <DropdownMenuItem onClick={() => navigate('/dashboard/perfil')}>
                 Meu Perfil
               </DropdownMenuItem>

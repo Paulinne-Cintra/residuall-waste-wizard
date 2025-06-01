@@ -67,6 +67,8 @@ const DropdownMenuContent = React.forwardRef<
       )}
       avoidCollisions={true}
       collisionPadding={8}
+      align="start"
+      side="bottom"
       {...props}
     />
   </DropdownMenuPrimitive.Portal>

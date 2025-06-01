@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Edit, Save, MapPin, Calendar, User, BarChart } from 'lucide-react';
@@ -96,12 +95,9 @@ const ProjectDetailPage = () => {
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
 
-  // Find project by ID
   const project = mockProjects.find(p => p.id === projectId);
-  
   const [projectData, setProjectData] = useState(project || null);
 
-  // If project not found, show error message
   if (!project) {
     return (
       <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
@@ -217,25 +213,27 @@ const ProjectDetailPage = () => {
               )}
             </div>
 
-            <div>
+            <div className="relative">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Status
               </label>
               {isEditing ? (
-                <Select 
-                  value={projectData?.status || ''} 
-                  onValueChange={(value) => handleInputChange('status', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Em andamento">Em andamento</SelectItem>
-                    <SelectItem value="Iniciando">Iniciando</SelectItem>
-                    <SelectItem value="Finalizado">Finalizado</SelectItem>
-                    <SelectItem value="Pausado">Pausado</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="relative">
+                  <Select 
+                    value={projectData?.status || ''} 
+                    onValueChange={(value) => handleInputChange('status', value)}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Selecione o status" />
+                    </SelectTrigger>
+                    <SelectContent className="z-[9999]" sideOffset={4} align="start">
+                      <SelectItem value="Em andamento">Em andamento</SelectItem>
+                      <SelectItem value="Iniciando">Iniciando</SelectItem>
+                      <SelectItem value="Finalizado">Finalizado</SelectItem>
+                      <SelectItem value="Pausado">Pausado</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               ) : (
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800">
                   {projectData?.status}
