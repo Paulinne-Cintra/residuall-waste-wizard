@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, Bell, User, Settings, LogOut } from 'lucide-react';
+import { Search, Bell, User, Settings, LogOut, ChevronDown } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -128,9 +128,10 @@ const DashboardHeader = ({ pageTitle }: DashboardHeaderProps) => {
                 <span className="text-sm font-medium">{userDisplayName}</span>
                 <span className="admin-tag">Administrador</span>
               </div>
+              <ChevronDown size={16} className="text-gray-500 ml-1 hidden md:block" />
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56 z-50" align="end">
+          <DropdownMenuContent className="w-56" align="end" sideOffset={5}>
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
                 <p className="text-sm font-medium leading-none">{userDisplayName}</p>
