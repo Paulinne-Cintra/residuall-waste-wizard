@@ -66,7 +66,7 @@ const DropdownMenuContent = React.forwardRef<
         className
       )}
       avoidCollisions={true}
-      collisionPadding={8}
+      collisionPadding={16}
       align="start"
       side="bottom"
       {...props}

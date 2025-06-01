@@ -95,7 +95,13 @@ const Dashboard: React.FC = () => {
                 <ChevronDown size={16} />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-48" align="start" sideOffset={8}>
+            <DropdownMenuContent 
+              className="w-48 bg-white" 
+              align="start" 
+              sideOffset={8}
+              avoidCollisions={true}
+              collisionPadding={16}
+            >
               <DropdownMenuItem>Todos os Projetos</DropdownMenuItem>
               <DropdownMenuItem>Em Andamento</DropdownMenuItem>
               <DropdownMenuItem>Finalizados</DropdownMenuItem>
@@ -121,7 +127,13 @@ const Dashboard: React.FC = () => {
                 <ChevronDown size={16} className="text-gray-500 ml-1 hidden md:block" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-48" align="end" sideOffset={8}>
+            <DropdownMenuContent 
+              className="w-48 bg-white" 
+              align="end" 
+              sideOffset={8}
+              avoidCollisions={true}
+              collisionPadding={16}
+            >
               <DropdownMenuItem onClick={() => navigate('/dashboard/perfil')}>
                 Meu Perfil
               </DropdownMenuItem>

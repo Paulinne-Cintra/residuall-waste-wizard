@@ -114,7 +114,7 @@ const DashboardHeader = ({ pageTitle }: DashboardHeaderProps) => {
           )}
         </div>
 
-        {/* Menu do Perfil */}
+        {/* Menu do Perfil - CORRIGIDO */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="flex items-center space-x-2 p-2 rounded-lg text-residuall-gray-username hover:bg-gray-100 transition-colors focus:outline-none">
@@ -131,7 +131,13 @@ const DashboardHeader = ({ pageTitle }: DashboardHeaderProps) => {
               <ChevronDown size={16} className="text-gray-500 ml-1 hidden md:block" />
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56 bg-white" align="end" sideOffset={5} avoidCollisions={true} collisionPadding={8}>
+          <DropdownMenuContent 
+            className="w-56 bg-white" 
+            align="end" 
+            sideOffset={8} 
+            avoidCollisions={true} 
+            collisionPadding={16}
+          >
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
                 <p className="text-sm font-medium leading-none">{userDisplayName}</p>
