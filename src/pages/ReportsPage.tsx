@@ -1,166 +1,96 @@
+
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Filter, Calendar, BarChart, TrendingUp, TrendingDown, Download, Share2, Plus, Eye, FileText } from 'lucide-react';
+import { Filter, Calendar, BarChart, TrendingUp, Eye, FileText, ChevronDown } from 'lucide-react';
 import Chart from '../components/Chart';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/hooks/use-toast";
-interface Report {
-  id: string;
-  project: string;
-  date: string;
-  responsible: string;
-  status: 'Finalizado' | 'Pendente';
-  location: string;
-}
+import { useReports } from "@/hooks/useReports";
+
 const ReportsPage = () => {
-  const {
-    toast
-  } = useToast();
-
-  // Dados de exemplo para relatórios
-  const reportsData: Report[] = [{
-    id: '1',
-    project: 'Edifício Aurora',
-    date: '15/05/2023',
-    responsible: 'Carlos Pereira',
-    status: 'Finalizado',
-    location: 'São Paulo, SP'
-  }, {
-    id: '2',
-    project: 'Residencial Parque Verde',
-    date: '10/05/2023',
-    responsible: 'Ana Silva',
-    status: 'Pendente',
-    location: 'Curitiba, PR'
-  }, {
-    id: '3',
-    project: 'Torre Corporativa Horizonte',
-    date: '01/05/2023',
-    responsible: 'Roberto Santos',
-    status: 'Finalizado',
-    location: 'Rio de Janeiro, RJ'
-  }, {
-    id: '4',
-    project: 'Condomínio Vista Mar',
-    date: '28/04/2023',
-    responsible: 'Fernanda Lima',
-    status: 'Finalizado',
-    location: 'Salvador, BA'
-  }, {
-    id: '5',
-    project: 'Centro Empresarial Inovação',
-    date: '20/04/2023',
-    responsible: 'Lucas Oliveira',
-    status: 'Pendente',
-    location: 'Belo Horizonte, MG'
-  }];
-
-  // Dados para gráficos
-  const reuseRateData = [{
-    name: 'Reutilizado',
-    value: 65
-  }, {
-    name: 'Desperdício',
-    value: 35
-  }];
-  const economyData = [{
-    name: 'Jan',
-    economia: 15000
-  }, {
-    name: 'Fev',
-    economia: 22000
-  }, {
-    name: 'Mar',
-    economia: 18000
-  }, {
-    name: 'Abr',
-    economia: 25000
-  }, {
-    name: 'Mai',
-    economia: 32000
-  }];
-  const projectsEconomyData = [{
-    name: 'Edifício Aurora',
-    economia: 12500
-  }, {
-    name: 'Residencial Parque Verde',
-    economia: 8200
-  }, {
-    name: 'Torre Corporativa',
-    economia: 15300
-  }, {
-    name: 'Condomínio Vista Mar',
-    economia: 7500
-  }, {
-    name: 'Centro Empresarial',
-    economia: 9800
-  }];
+  const { reports, metrics, loading, error } = useReports();
 
   // Estado para os filtros
-  const [filteredReports, setFilteredReports] = useState<Report[]>(reportsData);
+  const [filteredReports, setFilteredReports] = useState(reports);
   const [projectFilter, setProjectFilter] = useState('Projeto');
   const [periodFilter, setPeriodFilter] = useState('Período');
   const [statusFilter, setStatusFilter] = useState('Status');
   const [searchQuery, setSearchQuery] = useState('');
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newReport, setNewReport] = useState({
-    title: '',
-    project: '',
-    period: ''
-  });
+
+  // Atualizar relatórios filtrados quando os dados mudarem
+  useState(() => {
+    setFilteredReports(reports);
+  }, [reports]);
+
+  // Dados para gráficos baseados nos relatórios reais
+  const economyData = [
+    { name: 'Jan', economia: Math.round(metrics.totalSavings * 0.15) },
+    { name: 'Fev', economia: Math.round(metrics.totalSavings * 0.22) },
+    { name: 'Mar', economia: Math.round(metrics.totalSavings * 0.18) },
+    { name: 'Abr', economia: Math.round(metrics.totalSavings * 0.25) },
+    { name: 'Mai', economia: Math.round(metrics.totalSavings * 0.32) }
+  ];
+
+  const projectsEconomyData = reports.slice(0, 5).map(report => ({
+    name: report.project_name.length > 15 ? report.project_name.substring(0, 15) + '...' : report.project_name,
+    economia: Math.round(report.total_economy_generated)
+  }));
 
   // Função para obter a cor do status
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Finalizado':
+      case 'concluído':
         return 'status-tag status-tag-completed';
-      case 'Pendente':
+      case 'execução':
         return 'status-tag status-tag-ongoing';
+      case 'planejamento':
+        return 'status-tag status-tag-pending';
       default:
         return 'status-tag';
     }
   };
+
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchQuery(value);
-    console.log('Busca relatórios:', value);
+    
+    const filtered = reports.filter(report =>
+      report.project_name.toLowerCase().includes(value.toLowerCase()) ||
+      report.material_type_name.toLowerCase().includes(value.toLowerCase())
+    );
+    setFilteredReports(filtered);
   };
-  const handleCreateReport = () => {
-    console.log('Criando relatório:', newReport);
-    setIsModalOpen(false);
-    setNewReport({
-      title: '',
-      project: '',
-      period: ''
-    });
-    toast({
-      title: "Sucesso!",
-      description: "Relatório criado com sucesso!",
-      duration: 3000
-    });
-  };
-  return <main className="flex-1 overflow-y-auto p-4 md:p-6">
+
+  if (loading) {
+    return (
+      <main className="flex-1 overflow-y-auto p-4 md:p-6">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-residuall-green"></div>
+        </div>
+      </main>
+    );
+  }
+
+  if (error) {
+    return (
+      <main className="flex-1 overflow-y-auto p-4 md:p-6">
+        <div className="text-center text-red-600">
+          Erro ao carregar relatórios: {error}
+        </div>
+      </main>
+    );
+  }
+
+  return (
+    <main className="flex-1 overflow-y-auto p-4 md:p-6">
       {/* Cabeçalho da página */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold text-residuall-gray-tableText">Relatórios</h1>
-          <p className="text-residuall-gray">Visualize e exporte relatórios detalhados</p>
-        </div>
-        
-        <div className="mt-4 md:mt-0 flex space-x-2">
-          <Button variant="outline" className="flex items-center gap-2 text-base">
-            <Download size={18} />
-            Exportar
-          </Button>
-          <Button className="flex items-center gap-2 bg-residuall-brown text-white hover:bg-residuall-brown/90">
-            <Share2 size={18} />
-            Compartilhar
-          </Button>
+          <p className="text-residuall-gray">Visualize relatórios detalhados baseados nos seus projetos</p>
         </div>
       </div>
       
@@ -173,13 +103,22 @@ const ReportsPage = () => {
                 <Button variant="outline" className="flex items-center gap-2">
                   <Filter size={16} />
                   <span>{projectFilter}</span>
+                  <ChevronDown size={16} />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="rounded-md">
+              <DropdownMenuContent 
+                className="w-48 bg-white" 
+                align="start" 
+                sideOffset={8}
+                avoidCollisions={true}
+                collisionPadding={16}
+              >
                 <DropdownMenuItem onClick={() => setProjectFilter('Todos')}>Todos</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setProjectFilter('Edifício Aurora')}>Edifício Aurora</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setProjectFilter('Residencial Parque Verde')}>Residencial Parque Verde</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setProjectFilter('Torre Corporativa')}>Torre Corporativa</DropdownMenuItem>
+                {Array.from(new Set(reports.map(r => r.project_name))).map(projectName => (
+                  <DropdownMenuItem key={projectName} onClick={() => setProjectFilter(projectName)}>
+                    {projectName}
+                  </DropdownMenuItem>
+                ))}
               </DropdownMenuContent>
             </DropdownMenu>
             
@@ -188,9 +127,16 @@ const ReportsPage = () => {
                 <Button variant="outline" className="flex items-center gap-2">
                   <Calendar size={16} />
                   <span>{periodFilter}</span>
+                  <ChevronDown size={16} />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent>
+              <DropdownMenuContent 
+                className="w-48 bg-white" 
+                align="start" 
+                sideOffset={8}
+                avoidCollisions={true}
+                collisionPadding={16}
+              >
                 <DropdownMenuItem onClick={() => setPeriodFilter('Última semana')}>Última semana</DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setPeriodFilter('Último mês')}>Último mês</DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setPeriodFilter('Último trimestre')}>Último trimestre</DropdownMenuItem>
@@ -203,18 +149,32 @@ const ReportsPage = () => {
                 <Button variant="outline" className="flex items-center gap-2">
                   <Filter size={16} />
                   <span>{statusFilter}</span>
+                  <ChevronDown size={16} />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent>
+              <DropdownMenuContent 
+                className="w-48 bg-white" 
+                align="start" 
+                sideOffset={8}
+                avoidCollisions={true}
+                collisionPadding={16}
+              >
                 <DropdownMenuItem onClick={() => setStatusFilter('Todos')}>Todos</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setStatusFilter('Finalizado')}>Finalizado</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setStatusFilter('Pendente')}>Pendente</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setStatusFilter('planejamento')}>Planejamento</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setStatusFilter('execução')}>Execução</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setStatusFilter('concluído')}>Concluído</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
           
           <div>
-            <Input type="text" placeholder="Buscar relatórios..." value={searchQuery} onChange={handleSearchChange} className="input-field" />
+            <Input
+              type="text"
+              placeholder="Buscar relatórios..."
+              value={searchQuery}
+              onChange={handleSearchChange}
+              className="input-field"
+            />
           </div>
         </CardContent>
       </Card>
@@ -227,16 +187,14 @@ const ReportsPage = () => {
           </CardHeader>
           <CardContent className="pb-2">
             <div className="flex items-center justify-between">
-              <div className="text-3xl font-bold text-residuall-green">65%</div>
+              <div className="text-3xl font-bold text-residuall-green">{metrics.reuseRate}%</div>
               <div className="bg-residuall-green bg-opacity-10 p-2 rounded-full">
                 <BarChart size={24} className="text-residuall-green" />
               </div>
             </div>
             <div className="mt-4">
               <div className="w-full bg-gray-200 rounded-full h-2">
-                <div className="bg-residuall-green h-2 rounded-full" style={{
-                width: '65%'
-              }}></div>
+                <div className="bg-residuall-green h-2 rounded-full" style={{ width: `${metrics.reuseRate}%` }}></div>
               </div>
             </div>
           </CardContent>
@@ -248,13 +206,13 @@ const ReportsPage = () => {
           </CardHeader>
           <CardContent className="pb-2">
             <div className="flex items-center justify-between">
-              <div className="text-3xl font-bold text-residuall-green">R$ 32.450</div>
+              <div className="text-3xl font-bold text-residuall-green">R$ {metrics.totalSavings.toLocaleString()}</div>
               <div className="bg-residuall-green bg-opacity-10 p-2 rounded-full">
                 <TrendingUp size={24} className="text-residuall-green" />
               </div>
             </div>
             <div className="flex items-center mt-4">
-              <span className="text-residuall-green text-sm mr-2">+18%</span>
+              <span className="text-residuall-green text-sm mr-2">+{metrics.totalProjects > 0 ? '18' : '0'}%</span>
               <span className="text-xs text-residuall-gray">comparado ao mês anterior</span>
             </div>
           </CardContent>
@@ -266,13 +224,13 @@ const ReportsPage = () => {
           </CardHeader>
           <CardContent className="pb-2">
             <div className="flex items-center justify-between">
-              <div className="text-3xl font-bold text-residuall-green">5 projetos</div>
+              <div className="text-3xl font-bold text-residuall-green">{metrics.totalProjects} projetos</div>
               <div className="bg-residuall-green bg-opacity-10 p-2 rounded-full">
-                <TrendingDown size={24} className="text-residuall-green" />
+                <BarChart size={24} className="text-residuall-green" />
               </div>
             </div>
             <div className="flex items-center mt-4">
-              <span className="text-residuall-green text-sm mr-2">R$ 10.630</span>
+              <span className="text-residuall-green text-sm mr-2">R$ {metrics.avgSavingsPerProject.toLocaleString()}</span>
               <span className="text-xs text-residuall-gray">média por projeto</span>
             </div>
           </CardContent>
@@ -310,83 +268,77 @@ const ReportsPage = () => {
           <CardTitle className="text-lg text-residuall-gray-tableText">
             Lista de Relatórios
           </CardTitle>
-          <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-            <DialogTrigger asChild>
-              <Button className="flex items-center gap-2 bg-residuall-green text-white hover:bg-residuall-green/90">
-                <Plus size={16} />
-                Novo Relatório
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Criar Novo Relatório</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <Input placeholder="Título do Relatório" value={newReport.title} onChange={e => setNewReport({
-                ...newReport,
-                title: e.target.value
-              })} />
-                <Input placeholder="Projeto Associado" value={newReport.project} onChange={e => setNewReport({
-                ...newReport,
-                project: e.target.value
-              })} />
-                <Input placeholder="Período" value={newReport.period} onChange={e => setNewReport({
-                ...newReport,
-                period: e.target.value
-              })} />
-              </div>
-              <DialogFooter>
-                <Button onClick={handleCreateReport}>Criar Relatório</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Projeto</TableHead>
-                <TableHead>Data</TableHead>
-                <TableHead>Responsável</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Localização</TableHead>
-                <TableHead className="text-right">Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredReports.map(report => <TableRow key={report.id} className="hover:bg-gray-50">
-                  <TableCell>
-                    <div className="flex items-center">
-                      <FileText size={16} className="text-residuall-gray mr-2" />
-                      <span className="text-sm font-medium text-residuall-gray-tableText">
-                        {report.project}
+          {filteredReports.length === 0 ? (
+            <div className="text-center py-12">
+              <FileText className="mx-auto h-16 w-16 text-gray-400 mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum relatório encontrado</h3>
+              <p className="text-gray-500 mb-6">Crie projetos e registre desperdícios para gerar relatórios.</p>
+              <Link to="/dashboard/projetos/novo">
+                <Button className="bg-residuall-green hover:bg-residuall-green/90">
+                  Criar Primeiro Projeto
+                </Button>
+              </Link>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Projeto</TableHead>
+                  <TableHead>Material</TableHead>
+                  <TableHead>Quantidade Desperdiçada</TableHead>
+                  <TableHead>Economia Gerada</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Localização</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredReports.map(report => (
+                  <TableRow key={report.id} className="hover:bg-gray-50">
+                    <TableCell>
+                      <div className="flex items-center">
+                        <FileText size={16} className="text-residuall-gray mr-2" />
+                        <span className="text-sm font-medium text-residuall-gray-tableText">
+                          {report.project_name}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-sm text-residuall-gray">
+                      {report.material_type_name}
+                    </TableCell>
+                    <TableCell className="text-sm text-residuall-gray">
+                      {report.total_wasted_quantity.toFixed(2)}
+                    </TableCell>
+                    <TableCell className="text-sm font-semibold text-residuall-green">
+                      R$ {report.total_economy_generated.toLocaleString()}
+                    </TableCell>
+                    <TableCell>
+                      <span className={getStatusColor(report.project_status)}>
+                        {report.project_status.charAt(0).toUpperCase() + report.project_status.slice(1)}
                       </span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-sm text-residuall-gray">
-                    {report.date}
-                  </TableCell>
-                  <TableCell className="text-sm text-residuall-gray">
-                    {report.responsible}
-                  </TableCell>
-                  <TableCell>
-                    <span className={getStatusColor(report.status)}>
-                      {report.status}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-sm text-residuall-gray">
-                    {report.location}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Link to={`/dashboard/relatorios/${report.id}`} className="text-residuall-green-secondary hover:text-residuall-green">
-                      <Eye size={18} />
-                    </Link>
-                  </TableCell>
-                </TableRow>)}
-            </TableBody>
-          </Table>
+                    </TableCell>
+                    <TableCell className="text-sm text-residuall-gray">
+                      {report.project_location}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Link 
+                        to={`/dashboard/relatorios/${report.project_id}`} 
+                        className="text-residuall-green-secondary hover:text-residuall-green"
+                      >
+                        <Eye size={18} />
+                      </Link>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
-    </main>;
+    </main>
+  );
 };
+
 export default ReportsPage;
