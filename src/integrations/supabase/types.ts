@@ -42,6 +42,81 @@ export type Database = {
         }
         Relationships: []
       }
+      materials: {
+        Row: {
+          cost_per_unit: number | null
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          supplier: string | null
+          type: string | null
+          unit_of_measurement: string | null
+          updated_at: string
+        }
+        Insert: {
+          cost_per_unit?: number | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          supplier?: string | null
+          type?: string | null
+          unit_of_measurement?: string | null
+          updated_at?: string
+        }
+        Update: {
+          cost_per_unit?: number | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          supplier?: string | null
+          type?: string | null
+          unit_of_measurement?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      payment_status: {
+        Row: {
+          created_at: string
+          id: string
+          payment_completed: boolean
+          payment_date: string | null
+          plan_id: string | null
+          plan_name: string | null
+          subscription_active: boolean
+          subscription_expires_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          payment_completed?: boolean
+          payment_date?: string | null
+          plan_id?: string | null
+          plan_name?: string | null
+          subscription_active?: boolean
+          subscription_expires_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          payment_completed?: boolean
+          payment_date?: string | null
+          plan_id?: string | null
+          plan_name?: string | null
+          subscription_active?: boolean
+          subscription_expires_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -225,6 +300,50 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      reports: {
+        Row: {
+          content: string | null
+          created_at: string
+          data: Json | null
+          generated_at: string
+          id: string
+          project_id: string
+          report_type: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          data?: Json | null
+          generated_at?: string
+          id?: string
+          project_id: string
+          report_type?: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          data?: Json | null
+          generated_at?: string
+          id?: string
+          project_id?: string
+          report_type?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reports_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       support_messages: {
         Row: {

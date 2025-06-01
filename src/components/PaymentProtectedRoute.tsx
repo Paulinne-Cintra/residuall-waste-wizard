@@ -10,10 +10,10 @@ interface PaymentProtectedRouteProps {
 
 export function PaymentProtectedRoute({ children }: PaymentProtectedRouteProps) {
   const { user, loading: authLoading } = useAuth();
-  const { hasActivePlan, loading: paymentLoading } = usePaymentStatus();
+  const { hasActivePlan, loading: paymentLoading, subscriptionActive, subscriptionExpiresAt } = usePaymentStatus();
   const location = useLocation();
 
-  console.log('PaymentProtectedRoute - user:', !!user, 'hasActivePlan:', hasActivePlan, 'loading:', authLoading || paymentLoading);
+  console.log('PaymentProtectedRoute - user:', !!user, 'hasActivePlan:', hasActivePlan, 'subscriptionActive:', subscriptionActive, 'loading:', authLoading || paymentLoading);
 
   if (authLoading || paymentLoading) {
     return (
@@ -32,10 +32,19 @@ export function PaymentProtectedRoute({ children }: PaymentProtectedRouteProps) 
   }
 
   if (!hasActivePlan) {
-    console.log('PaymentProtectedRoute - redirecting to payment');
+    console.log('PaymentProtectedRoute - redirecting to payment', {
+      hasActivePlan,
+      subscriptionActive,
+      subscriptionExpiresAt
+    });
+    
+    const message = subscriptionExpiresAt && new Date(subscriptionExpiresAt) < new Date()
+      ? 'Sua assinatura expirou. Renove seu plano para continuar acessando a plataforma.'
+      : 'Você precisa escolher um plano para acessar a plataforma.';
+    
     return <Navigate to="/pagamento" replace state={{ 
       from: location, 
-      message: 'Você precisa escolher um plano para acessar a plataforma.'
+      message
     }} />;
   }
 

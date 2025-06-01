@@ -1,8 +1,8 @@
-
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import { User, Session, AuthError } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { validatePassword } from '@/utils/passwordValidation';
 
 interface AuthContextType {
   user: User | null;
@@ -82,8 +82,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error('Email e senha são obrigatórios');
       }
 
-      if (password.length < 6) {
-        throw new Error('A senha deve ter pelo menos 6 caracteres');
+      // Validar força da senha
+      const passwordValidation = validatePassword(password);
+      if (!passwordValidation.isValid) {
+        throw new Error(`Senha não atende aos requisitos de segurança: ${passwordValidation.errors.join(', ')}`);
       }
 
       // Preparar metadata com validação
