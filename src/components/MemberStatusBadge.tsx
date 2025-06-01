@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { CheckCircle, Clock, XCircle, UserCheck, UserX, UserClock } from 'lucide-react';
+import { CheckCircle, Clock, XCircle, UserCheck, UserX } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface MemberStatusBadgeProps {
@@ -52,7 +52,7 @@ const MemberStatusBadge: React.FC<MemberStatusBadgeProps> = ({
         };
       case 'away':
         return {
-          icon: <UserClock size={16} />,
+          icon: <Clock size={16} />,
           text: 'Ausente',
           className: 'bg-yellow-100 text-yellow-800',
           tooltip: 'Membro temporariamente ausente'
