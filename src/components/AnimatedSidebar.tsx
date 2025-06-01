@@ -1,7 +1,7 @@
 
 import React, { useState, memo, useMemo, Suspense } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Home, FileText, Briefcase, Users, Layers, User, CheckCircle, Settings, File, LogOut, HelpCircle, Menu, X, ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { Home, FileText, Briefcase, Users, Layers, User, CheckCircle, Settings, File, LogOut, HelpCircle, Menu, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { useAuth } from '@/hooks/useAuth';
 
 // Componente memoizado para evitar re-renderizações desnecessárias
@@ -181,22 +181,6 @@ const AnimatedSidebar = memo(() => {
             />
           </div>
         ))}
-        
-        {/* Novo link para criar projeto */}
-        <div className="animate-fade-in" style={{ animationDelay: `${menuItems.length * 50}ms` }}>
-          <Link
-            to="/dashboard/projetos/novo"
-            className="sidebar-menu-item ml-6 text-sm hover:bg-residuall-green/10 hover:shadow-sm hover:transform hover:scale-105 transition-all duration-300 ease-out group"
-            onClick={closeMobileSidebar}
-          >
-            <Plus size={16} className="sidebar-icon transition-all duration-200 group-hover:text-residuall-green" />
-            {!collapsed && (
-              <span className="transition-all duration-200 group-hover:text-residuall-green">
-                Novo Projeto
-              </span>
-            )}
-          </Link>
-        </div>
       </div>
 
       <div className="p-4 border-t border-sidebar-border">

@@ -1,16 +1,17 @@
 
 import React, { useState } from 'react';
-import { Search, UserPlus, ChevronDown, User, Edit, ArrowLeft, Settings, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { Search, UserPlus, ChevronDown, User, ArrowLeft, Clock, CheckCircle, XCircle, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/hooks/useAuth";
 import { useTeamInvitations } from "@/hooks/useTeamInvitations";
+import { useTeamProjects } from "@/hooks/useTeamProjects";
 
 type TeamMember = {
   id: number;
@@ -79,16 +80,11 @@ const mockTeamMembers: TeamMember[] = [
   }
 ];
 
-const mockProjects = [
-  { id: '1', name: 'Projeto A' },
-  { id: '2', name: 'Projeto B' },
-  { id: '3', name: 'Projeto C' },
-];
-
 const TeamPage: React.FC = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   const { invitations, loading, sendInvitation, updateInvitationStatus } = useTeamInvitations();
+  const { projects, fetchMemberProjects, assignProjectsToMember, deleteMember } = useTeamProjects();
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState('Todos os Cargos');
   const [statusFilter, setStatusFilter] = useState('Todos os Status');
@@ -101,13 +97,13 @@ const TeamPage: React.FC = () => {
   // Estados para detalhes/edição de membros
   const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [editedMember, setEditedMember] = useState<TeamMember | null>(null);
   const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
+  const [memberProjects, setMemberProjects] = useState<any[]>([]);
 
   // Combinar membros existentes com convites pendentes/aceitos
   const getAllMembers = () => {
     const invitedMembers = invitations.map((invitation, index) => ({
-      id: 1000 + index, // ID único para membros convidados
+      id: 1000 + index,
       name: invitation.name,
       role: 'Convidado',
       email: invitation.email,
@@ -115,7 +111,8 @@ const TeamPage: React.FC = () => {
               invitation.status === 'declined' ? 'inactive' as const : 'away' as const,
       avatarUrl: `https://i.pravatar.cc/150?img=${20 + index}`,
       projects: [],
-      invitationStatus: invitation.status // Status do convite
+      invitationStatus: invitation.status,
+      invitationId: invitation.id
     }));
 
     return [...mockTeamMembers, ...invitedMembers];
@@ -214,57 +211,73 @@ const TeamPage: React.FC = () => {
       });
     } catch (error) {
       console.error('Erro ao enviar convite:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao enviar convite. Tente novamente.",
-        variant: "destructive",
-      });
     }
   };
 
-  const handleViewProfile = (member: TeamMember) => {
+  const handleViewProfile = async (member: TeamMember) => {
     setSelectedMember(member);
     setIsEditing(false);
+
+    // Buscar projetos do membro se for um membro real (não convidado)
+    if (member.id < 1000) {
+      const projects = await fetchMemberProjects(member.id.toString());
+      setMemberProjects(projects);
+    }
   };
 
-  const handleEditMember = (member: TeamMember) => {
+  const handleEditMember = async (member: TeamMember) => {
     setSelectedMember(member);
-    setEditedMember({ ...member });
-    setSelectedProjects(member.projects || []);
     setIsEditing(true);
+
+    // Buscar projetos do membro e configurar seleção
+    if (member.id < 1000) {
+      const projects = await fetchMemberProjects(member.id.toString());
+      setMemberProjects(projects);
+      setSelectedProjects(projects.map((mp: any) => mp.project_id));
+    } else {
+      setMemberProjects([]);
+      setSelectedProjects([]);
+    }
   };
 
-  const handleSaveChanges = () => {
-    if (editedMember) {
-      const updatedMember = {
-        ...editedMember,
-        projects: selectedProjects
-      };
-      console.log('Salvando alterações:', updatedMember);
-      toast({
-        title: "Sucesso!",
-        description: "Alterações salvas com sucesso!",
-        duration: 3000,
-      });
-      setSelectedMember(null);
-      setIsEditing(false);
-      setEditedMember(null);
-      setSelectedProjects([]);
+  const handleSaveChanges = async () => {
+    if (selectedMember) {
+      try {
+        await assignProjectsToMember(selectedMember.id.toString(), selectedProjects);
+        handleBack();
+      } catch (error) {
+        console.error('Erro ao salvar alterações:', error);
+      }
+    }
+  };
+
+  const handleDeleteMember = async (member: TeamMember) => {
+    try {
+      const success = await deleteMember(member.id.toString());
+      if (success) {
+        // Se for um convite, atualizar lista
+        if ((member as any).invitationId) {
+          await updateInvitationStatus((member as any).invitationId, 'declined');
+        }
+        handleBack();
+      }
+    } catch (error) {
+      console.error('Erro ao excluir membro:', error);
     }
   };
 
   const handleBack = () => {
     setSelectedMember(null);
     setIsEditing(false);
-    setEditedMember(null);
     setSelectedProjects([]);
+    setMemberProjects([]);
   };
 
-  const handleProjectToggle = (projectName: string) => {
+  const handleProjectToggle = (projectId: string) => {
     setSelectedProjects(prev => 
-      prev.includes(projectName) 
-        ? prev.filter(p => p !== projectName)
-        : [...prev, projectName]
+      prev.includes(projectId) 
+        ? prev.filter(p => p !== projectId)
+        : [...prev, projectId]
     );
   };
 
@@ -309,15 +322,46 @@ const TeamPage: React.FC = () => {
                     </div>
                   )}
                   
-                  {/* Botão Editar movido para baixo do avatar na visualização */}
+                  {/* Botões de ação */}
                   {!isEditing && (
-                    <Button 
-                      onClick={() => handleEditMember(selectedMember)}
-                      className="bg-[#FF8C42] hover:bg-[#E07C32] text-white"
-                    >
-                      <Edit size={16} className="mr-1" />
-                      Editar
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button 
+                        onClick={() => handleEditMember(selectedMember)}
+                        className="bg-[#FF8C42] hover:bg-[#E07C32] text-white"
+                        size="sm"
+                      >
+                        Editar
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button 
+                            variant="destructive"
+                            size="sm"
+                          >
+                            <Trash2 size={16} className="mr-1" />
+                            Excluir
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Excluir Membro</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Tem certeza que deseja remover {selectedMember.name} da equipe? 
+                              Esta ação não pode ser desfeita e o membro perderá acesso a todos os projetos.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction 
+                              onClick={() => handleDeleteMember(selectedMember)}
+                              className="bg-red-600 hover:bg-red-700"
+                            >
+                              Excluir
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
                   )}
                 </div>
 
@@ -325,41 +369,17 @@ const TeamPage: React.FC = () => {
                 <div className="flex-1 space-y-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Nome</label>
-                    {isEditing ? (
-                      <Input
-                        value={editedMember?.name || ''}
-                        onChange={(e) => setEditedMember(prev => prev ? {...prev, name: e.target.value} : null)}
-                        className="w-full"
-                      />
-                    ) : (
-                      <p className="text-lg font-semibold text-[#333333]">{selectedMember.name}</p>
-                    )}
+                    <p className="text-lg font-semibold text-[#333333]">{selectedMember.name}</p>
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Cargo</label>
-                    {isEditing ? (
-                      <Input
-                        value={editedMember?.role || ''}
-                        onChange={(e) => setEditedMember(prev => prev ? {...prev, role: e.target.value} : null)}
-                        className="w-full"
-                      />
-                    ) : (
-                      <p className="text-gray-600">{selectedMember.role}</p>
-                    )}
+                    <p className="text-gray-600">{selectedMember.role}</p>
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                    {isEditing ? (
-                      <Input
-                        value={editedMember?.email || ''}
-                        onChange={(e) => setEditedMember(prev => prev ? {...prev, email: e.target.value} : null)}
-                        className="w-full"
-                      />
-                    ) : (
-                      <p className="text-gray-600">{selectedMember.email}</p>
-                    )}
+                    <p className="text-gray-600">{selectedMember.email}</p>
                   </div>
 
                   <div>
@@ -373,23 +393,26 @@ const TeamPage: React.FC = () => {
                     </span>
                   </div>
 
-                  {/* Projetos - só aparece na edição */}
+                  {/* Projetos - edição */}
                   {isEditing && (
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-3">Projetos Associados</label>
                       <div className="space-y-3">
-                        {mockProjects.map((project) => (
+                        {projects.map((project) => (
                           <div key={project.id} className="flex items-center space-x-2">
                             <Checkbox
                               id={`project-${project.id}`}
-                              checked={selectedProjects.includes(project.name)}
-                              onCheckedChange={() => handleProjectToggle(project.name)}
+                              checked={selectedProjects.includes(project.id)}
+                              onCheckedChange={() => handleProjectToggle(project.id)}
                             />
                             <label
                               htmlFor={`project-${project.id}`}
-                              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
                             >
                               {project.name}
+                              {project.location && (
+                                <span className="text-gray-500 ml-2">({project.location})</span>
+                              )}
                             </label>
                           </div>
                         ))}
@@ -398,23 +421,23 @@ const TeamPage: React.FC = () => {
                   )}
 
                   {/* Projetos - visualização */}
-                  {!isEditing && selectedMember.projects && selectedMember.projects.length > 0 && (
+                  {!isEditing && memberProjects.length > 0 && (
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Projetos Associados</label>
                       <div className="flex flex-wrap gap-2">
-                        {selectedMember.projects.map((project, index) => (
+                        {memberProjects.map((mp: any) => (
                           <span
-                            key={index}
+                            key={mp.id}
                             className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800"
                           >
-                            {project}
+                            {mp.projects?.name || 'Projeto não encontrado'}
                           </span>
                         ))}
                       </div>
                     </div>
                   )}
 
-                  {/* Botões de ação */}
+                  {/* Botões de ação da edição */}
                   {isEditing && (
                     <div className="flex gap-3 pt-4">
                       <Button onClick={handleSaveChanges} className="bg-[#004C4C] hover:bg-[#003B3B]">
