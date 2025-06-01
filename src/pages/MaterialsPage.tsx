@@ -1,67 +1,55 @@
 
 import React, { useState } from 'react';
-import { Search, Filter, Plus, Edit, Trash2 } from 'lucide-react';
+import { Search, Filter, Plus, Edit, Trash2, Eye } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-
-// Mock data para materiais
-const mockMaterials = [
-  {
-    id: '1',
-    name: 'Tijolo Cerâmico',
-    type: 'Alvenaria',
-    unit: 'Unidade',
-    stock: 5000,
-    costPerUnit: 0.85,
-    supplier: 'Cerâmica São Paulo',
-    category: 'Estrutural'
-  },
-  {
-    id: '2',
-    name: 'Cimento Portland',
-    type: 'Argamassa',
-    unit: 'Saco 50kg',
-    stock: 200,
-    costPerUnit: 28.50,
-    supplier: 'Votorantim',
-    category: 'Básico'
-  },
-  {
-    id: '3',
-    name: 'Areia Média',
-    type: 'Agregado',
-    unit: 'm³',
-    stock: 150,
-    costPerUnit: 45.00,
-    supplier: 'Mineração Santos',
-    category: 'Agregado'
-  },
-  {
-    id: '4',
-    name: 'Brita 1',
-    type: 'Agregado',
-    unit: 'm³',
-    stock: 120,
-    costPerUnit: 52.00,
-    supplier: 'Pedreira Central',
-    category: 'Agregado'
-  },
-];
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import MaterialFormModal from "@/components/MaterialFormModal";
+import { useMaterialsManagement } from "@/hooks/useMaterialsManagement";
+import { useProjects } from "@/hooks/useProjects";
+import { useNavigate } from 'react-router-dom';
 
 const MaterialsPage = () => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState('Todos');
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const materialTypes = ['Todos', 'Alvenaria', 'Argamassa', 'Agregado', 'Acabamento'];
+  const { materials, stats, loading, createMaterial, deleteMaterial } = useMaterialsManagement();
+  const { projects } = useProjects();
 
-  const filteredMaterials = mockMaterials.filter(material => {
-    const matchesSearch = material.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         material.supplier.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = selectedType === 'Todos' || material.type === selectedType;
+  const materialTypes = ['Todos', 'Alvenaria', 'Argamassa', 'Agregado', 'Acabamento', 'Estrutural', 'Hidráulico', 'Elétrico', 'Madeira', 'Metal', 'Tintas', 'Outros'];
+
+  const filteredMaterials = materials.filter(material => {
+    const matchesSearch = material.material_type_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (material.suppliers?.name || '').toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesType = selectedType === 'Todos' || material.category === selectedType;
     return matchesSearch && matchesType;
   });
+
+  const handleViewProject = (projectId: string) => {
+    navigate(`/dashboard/projetos/${projectId}`);
+  };
+
+  const handleDeleteMaterial = async (materialId: string) => {
+    await deleteMaterial(materialId);
+  };
+
+  const handleCreateMaterial = async (data: any) => {
+    return await createMaterial(data);
+  };
+
+  if (loading) {
+    return (
+      <div className="p-0">
+        <div className="flex justify-center items-center h-64">
+          <div className="text-gray-500">Carregando materiais...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-0">
@@ -71,7 +59,10 @@ const MaterialsPage = () => {
           <h1 className="text-3xl font-bold text-gray-900">Materiais</h1>
           <p className="text-gray-600 mt-1">Gerencie o inventário de materiais de construção</p>
         </div>
-        <Button className="bg-residuall-green hover:bg-residuall-green/90">
+        <Button 
+          className="bg-residuall-green hover:bg-residuall-green/90"
+          onClick={() => setIsModalOpen(true)}
+        >
           <Plus size={20} className="mr-2" />
           Adicionar Material
         </Button>
@@ -91,7 +82,7 @@ const MaterialsPage = () => {
             />
           </div>
 
-          {/* Filtro por Tipo - Dropdown Corrigido */}
+          {/* Filtro por Tipo */}
           <div className="relative">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -123,7 +114,7 @@ const MaterialsPage = () => {
             <CardDescription>Total de Materiais</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">{mockMaterials.length}</div>
+            <div className="text-2xl font-bold text-gray-900">{stats.totalMaterials}</div>
             <p className="text-xs text-gray-500 mt-1">tipos cadastrados</p>
           </CardContent>
         </Card>
@@ -134,7 +125,7 @@ const MaterialsPage = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-gray-900">
-              R$ {mockMaterials.reduce((sum, material) => sum + (material.stock * material.costPerUnit), 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              R$ {stats.totalValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </div>
             <p className="text-xs text-gray-500 mt-1">valor total</p>
           </CardContent>
@@ -145,20 +136,18 @@ const MaterialsPage = () => {
             <CardDescription>Materiais em Falta</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">2</div>
+            <div className="text-2xl font-bold text-red-600">{stats.lowStockCount}</div>
             <p className="text-xs text-gray-500 mt-1">precisam reposição</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Fornecedores Ativos</CardDescription>
+            <CardDescription>Tipo Mais Utilizado</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">
-              {new Set(mockMaterials.map(m => m.supplier)).size}
-            </div>
-            <p className="text-xs text-gray-500 mt-1">fornecedores</p>
+            <div className="text-2xl font-bold text-gray-900">{stats.mostUsedType}</div>
+            <p className="text-xs text-gray-500 mt-1">categoria</p>
           </CardContent>
         </Card>
       </div>
@@ -182,7 +171,7 @@ const MaterialsPage = () => {
                   Tipo
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Estoque
+                  Quantidade
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Custo/Unidade
@@ -196,45 +185,81 @@ const MaterialsPage = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredMaterials.map((material) => (
-                <tr key={material.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div>
-                      <div className="text-sm font-medium text-gray-900">{material.name}</div>
-                      <div className="text-sm text-gray-500">{material.category}</div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                      {material.type}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      {material.stock.toLocaleString()} {material.unit}
-                    </div>
-                    <div className={`text-xs ${material.stock < 100 ? 'text-red-500' : 'text-gray-500'}`}>
-                      {material.stock < 100 ? 'Estoque baixo' : 'Estoque normal'}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    R$ {material.costPerUnit.toFixed(2)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {material.supplier}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex items-center space-x-2">
-                      <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-900">
-                        <Edit size={16} />
-                      </Button>
-                      <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-900">
-                        <Trash2 size={16} />
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              {filteredMaterials.map((material) => {
+                const project = projects.find(p => p.id === material.project_id);
+                const stock = material.stock_quantity || 0;
+                const minimum = material.minimum_quantity || 0;
+                const isLowStock = stock <= minimum;
+                
+                return (
+                  <tr key={material.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div>
+                        <div className="text-sm font-medium text-gray-900">{material.material_type_name}</div>
+                        <div className="text-sm text-gray-500">{project?.name || 'Projeto não encontrado'}</div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        {material.category || 'Outros'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        {(material.estimated_quantity || 0).toLocaleString()} {material.unit_of_measurement}
+                      </div>
+                      <div className={`text-xs ${isLowStock ? 'text-red-500' : 'text-gray-500'}`}>
+                        Estoque: {stock.toLocaleString()} {isLowStock ? '(Baixo)' : ''}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      R$ {(material.cost_per_unit || 0).toFixed(2)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {material.suppliers?.name || 'Não informado'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <div className="flex items-center space-x-2">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="text-blue-600 hover:text-blue-900"
+                          onClick={() => handleViewProject(material.project_id)}
+                          title="Ver projeto"
+                        >
+                          <Eye size={16} />
+                        </Button>
+                        
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-900">
+                              <Trash2 size={16} />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Tem certeza que deseja excluir o material "{material.material_type_name}"? 
+                                Esta ação não poderá ser desfeita.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                              <AlertDialogAction 
+                                className="bg-red-600 hover:bg-red-700"
+                                onClick={() => handleDeleteMaterial(material.id)}
+                              >
+                                Excluir
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -245,6 +270,13 @@ const MaterialsPage = () => {
           </div>
         )}
       </div>
+
+      {/* Modal de Cadastro */}
+      <MaterialFormModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleCreateMaterial}
+      />
     </div>
   );
 };

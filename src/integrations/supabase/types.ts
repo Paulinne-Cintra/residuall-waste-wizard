@@ -205,35 +205,47 @@ export type Database = {
       }
       project_materials: {
         Row: {
+          category: string | null
           cost_per_unit: number | null
           created_at: string | null
           dimensions_specs: string | null
           estimated_quantity: number | null
           id: string
           material_type_name: string
+          minimum_quantity: number | null
           project_id: string
+          stock_quantity: number | null
+          supplier_id: string | null
           unit_of_measurement: string | null
           updated_at: string | null
         }
         Insert: {
+          category?: string | null
           cost_per_unit?: number | null
           created_at?: string | null
           dimensions_specs?: string | null
           estimated_quantity?: number | null
           id?: string
           material_type_name: string
+          minimum_quantity?: number | null
           project_id: string
+          stock_quantity?: number | null
+          supplier_id?: string | null
           unit_of_measurement?: string | null
           updated_at?: string | null
         }
         Update: {
+          category?: string | null
           cost_per_unit?: number | null
           created_at?: string | null
           dimensions_specs?: string | null
           estimated_quantity?: number | null
           id?: string
           material_type_name?: string
+          minimum_quantity?: number | null
           project_id?: string
+          stock_quantity?: number | null
+          supplier_id?: string | null
           unit_of_measurement?: string | null
           updated_at?: string | null
         }
@@ -243,6 +255,13 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_materials_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
             referencedColumns: ["id"]
           },
         ]
@@ -344,6 +363,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      suppliers: {
+        Row: {
+          address: string | null
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       support_messages: {
         Row: {
