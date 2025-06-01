@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { CreditCard, Shield, ArrowLeft, Check, Home, Building, Building2 } from 'lucide-react';
@@ -67,14 +66,16 @@ const PaymentPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
-  const { markPaymentCompleted } = usePaymentStatus();
+  const { markPaymentCompleted, selectedPlan: currentPlan } = usePaymentStatus();
   const { toast } = useToast();
   
   const selectedPlan = location.state?.plan;
   const fromDashboard = location.state?.from?.pathname?.includes('/dashboard');
+  const isUpgrade = location.state?.isUpgrade || false;
+  const fromProfile = location.state?.fromProfile || false;
   const message = location.state?.message;
 
-  const [currentPlan, setCurrentPlan] = useState<Plan | null>(selectedPlan || null);
+  const [currentPlanData, setCurrentPlanData] = useState<Plan | null>(selectedPlan || null);
   const [showPaymentForm, setShowPaymentForm] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('credit-card');
   const [loading, setLoading] = useState(false);
@@ -97,7 +98,7 @@ const PaymentPage = () => {
   }, [user, navigate]);
 
   const handlePlanSelection = (plan: Plan) => {
-    setCurrentPlan(plan);
+    setCurrentPlanData(plan);
     if (plan.price === 'Grátis') {
       // Para plano gratuito, simular conclusão imediata
       handlePaymentCompletion(plan);
@@ -116,31 +117,43 @@ const PaymentPage = () => {
 
     markPaymentCompleted(plan.id);
     
+    const successMessage = isUpgrade 
+      ? `Plano atualizado com sucesso! Aproveite sua nova assinatura ${plan.name}.`
+      : `Pagamento realizado com sucesso! Bem-vindo ao ${plan.name}!`;
+    
     toast({
-      title: "Pagamento realizado com sucesso!",
-      description: `Bem-vindo ao ${plan.name}!`,
+      title: successMessage,
     });
 
-    // Redirecionar para o dashboard com mensagem de boas-vindas
+    // Redirecionar baseado na origem
     setTimeout(() => {
-      navigate('/dashboard', { 
-        replace: true,
-        state: { 
-          welcomeMessage: `Tudo pronto, ${user.user_metadata?.full_name || user.email}! Bem-vindo(a) ao seu painel.`
-        }
-      });
+      if (fromProfile || isUpgrade) {
+        navigate('/dashboard/perfil', { 
+          replace: true,
+          state: { 
+            successMessage
+          }
+        });
+      } else {
+        navigate('/dashboard', { 
+          replace: true,
+          state: { 
+            welcomeMessage: `Tudo pronto, ${user.user_metadata?.full_name || user.email}! Bem-vindo(a) ao seu painel.`
+          }
+        });
+      }
     }, 1500);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!currentPlan) return;
+    if (!currentPlanData) return;
     
     setLoading(true);
     
     // Simular processamento de pagamento
     setTimeout(() => {
-      handlePaymentCompletion(currentPlan);
+      handlePaymentCompletion(currentPlanData);
     }, 2000);
   };
 
@@ -161,6 +174,15 @@ const PaymentPage = () => {
           {/* Progress Steps */}
           <ProgressSteps currentStep={currentStep} steps={steps} />
 
+          {/* Mensagem específica para mudança de plano */}
+          {isUpgrade && (
+            <div className="bg-residuall-green/10 border border-residuall-green rounded-lg p-4 mb-6 text-center">
+              <p className="text-residuall-green font-medium">
+                Atualize seu plano atual ({currentPlan}) para acessar mais recursos
+              </p>
+            </div>
+          )}
+
           {/* Mensagem de redirecionamento se veio do dashboard */}
           {message && (
             <div className="bg-residuall-orange/10 border border-residuall-orange rounded-lg p-4 mb-6 text-center">
@@ -173,30 +195,47 @@ const PaymentPage = () => {
             <div>
               <div className="text-center mb-8">
                 <h1 className="font-montserrat font-bold text-3xl text-residuall-green mb-4">
-                  Escolha seu Plano
+                  {isUpgrade ? 'Escolha seu Novo Plano' : 'Escolha seu Plano'}
                 </h1>
                 <p className="text-residuall-gray">
-                  Selecione o plano ideal para suas necessidades
+                  {isUpgrade 
+                    ? 'Selecione o plano que melhor atende às suas necessidades'
+                    : 'Selecione o plano ideal para suas necessidades'
+                  }
                 </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {plans.map((plan) => {
                   const IconComponent = plan.icon;
+                  const isCurrentUserPlan = currentPlan && 
+                    (currentPlan.toLowerCase() === plan.id.toLowerCase() || 
+                     currentPlan.toLowerCase() === plan.name.toLowerCase().replace('plano ', ''));
+                  
                   return (
                     <div 
                       key={plan.id}
                       className={`relative bg-white rounded-2xl shadow-2xl hover:shadow-card-hover transition-all duration-300 hover:-translate-y-2 border-2 cursor-pointer ${
                         plan.highlighted 
                           ? 'border-residuall-orange scale-105' 
+                          : isCurrentUserPlan
+                          ? 'border-residuall-green/50'
                           : 'border-transparent hover:border-residuall-green/20'
-                      } ${currentPlan?.id === plan.id ? 'ring-2 ring-residuall-green' : ''}`}
-                      onClick={() => handlePlanSelection(plan)}
+                      } ${currentPlanData?.id === plan.id ? 'ring-2 ring-residuall-green' : ''}`}
+                      onClick={() => !isCurrentUserPlan && handlePlanSelection(plan)}
                     >
                       {plan.highlighted && (
                         <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                           <div className="bg-residuall-orange text-white text-center py-2 px-6 rounded-full text-sm font-montserrat font-semibold shadow-lg">
                             MAIS POPULAR
+                          </div>
+                        </div>
+                      )}
+
+                      {isCurrentUserPlan && (
+                        <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                          <div className="bg-residuall-green text-white text-center py-2 px-6 rounded-full text-sm font-montserrat font-semibold shadow-lg">
+                            PLANO ATUAL
                           </div>
                         </div>
                       )}
@@ -236,13 +275,21 @@ const PaymentPage = () => {
                         </ul>
                         
                         <button
+                          disabled={isCurrentUserPlan}
                           className={`block w-full text-center py-4 px-6 rounded-lg font-montserrat font-semibold transition-all duration-300 hover:scale-105 ${
-                            plan.highlighted
+                            isCurrentUserPlan
+                              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                              : plan.highlighted
                               ? 'bg-residuall-orange hover:bg-residuall-orange-light text-white shadow-lg'
                               : 'bg-residuall-green hover:bg-residuall-green-light text-white shadow-lg'
                           }`}
                         >
-                          {plan.price === 'Grátis' ? 'COMEÇAR AGORA' : 'ESCOLHER PLANO'}
+                          {isCurrentUserPlan 
+                            ? 'PLANO ATUAL' 
+                            : plan.price === 'Grátis' 
+                            ? 'ESCOLHER AGORA' 
+                            : 'ESCOLHER PLANO'
+                          }
                         </button>
                       </div>
                     </div>
@@ -259,26 +306,26 @@ const PaymentPage = () => {
                   Resumo do Plano
                 </h2>
                 
-                {currentPlan && (
+                {currentPlanData && (
                   <div className="border-2 border-residuall-green/20 rounded-2xl p-6">
                     <h3 className="font-montserrat font-bold text-xl text-residuall-green mb-2">
-                      {currentPlan.name}
+                      {currentPlanData.name}
                     </h3>
                     
                     <div className="flex items-baseline mb-4">
-                      {currentPlan.price === 'Grátis' ? (
+                      {currentPlanData.price === 'Grátis' ? (
                         <span className="text-3xl font-bold text-residuall-green">Grátis</span>
                       ) : (
                         <>
                           <span className="text-lg font-medium text-residuall-gray">R$</span>
-                          <span className="text-3xl font-bold text-residuall-green mx-1">{currentPlan.price}</span>
+                          <span className="text-3xl font-bold text-residuall-green mx-1">{currentPlanData.price}</span>
                           <span className="text-sm text-residuall-gray">/mês</span>
                         </>
                       )}
                     </div>
                     
                     <ul className="space-y-3">
-                      {currentPlan.features.map((feature, index) => (
+                      {currentPlanData.features.map((feature, index) => (
                         <li key={index} className="flex items-start">
                           <div className="w-4 h-4 bg-residuall-green/10 rounded-full flex items-center justify-center mr-3 mt-0.5 flex-shrink-0">
                             <Check size={12} className="text-residuall-green" />

@@ -1,6 +1,6 @@
-
 import { useState, useEffect } from "react";
-import { Lock, Mail, Phone, User, Camera, Save, X, Calendar } from "lucide-react";
+import { Lock, Mail, Phone, User, Camera, Save, X, Calendar, CreditCard, ArrowRight } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,11 +8,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
+import { usePaymentStatus } from "@/hooks/usePaymentStatus";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { toast } from 'sonner';
 
 const ProfilePage = () => {
   const { user } = useAuth();
+  const location = useLocation();
   const { profile, loading, updating, uploadingAvatar, updateProfile, uploadAvatar, changePassword } = useProfile();
+  const { hasActivePlan, selectedPlan, subscriptionActive, subscriptionExpiresAt, loading: paymentLoading } = usePaymentStatus();
+  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({
     full_name: "",
@@ -40,6 +45,15 @@ const ProfilePage = () => {
       });
     }
   }, [profile]);
+
+  // Mostrar mensagem de sucesso se veio da página de pagamento
+  useEffect(() => {
+    if (location.state?.successMessage) {
+      toast.success(location.state.successMessage);
+      // Limpar o state para não mostrar a mensagem novamente
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -109,7 +123,41 @@ const ProfilePage = () => {
     });
   };
 
-  if (loading) {
+  const handleChangePlan = () => {
+    navigate('/planos');
+  };
+
+  const getPlanDisplayName = (planId: string | null) => {
+    if (!planId) return 'Nenhum plano ativo';
+    
+    switch (planId.toLowerCase()) {
+      case 'basico':
+      case 'plano-básico':
+        return 'Plano Básico';
+      case 'profissional':
+      case 'plano-profissional':
+        return 'Plano Profissional';
+      case 'empresarial':
+      case 'plano-empresarial':
+        return 'Plano Empresarial';
+      default:
+        return planId;
+    }
+  };
+
+  const formatSubscriptionStatus = () => {
+    if (!hasActivePlan) return 'Inativo';
+    if (!subscriptionExpiresAt) return 'Ativo';
+    
+    const expiryDate = new Date(subscriptionExpiresAt);
+    const now = new Date();
+    
+    if (expiryDate < now) return 'Expirado';
+    
+    return `Ativo até ${expiryDate.toLocaleDateString('pt-BR')}`;
+  };
+
+  if (loading || paymentLoading) {
     return (
       <main className="flex-1 p-6 md:p-8 overflow-y-auto">
         <div className="max-w-4xl mx-auto flex items-center justify-center h-64">
@@ -315,6 +363,73 @@ const ProfilePage = () => {
                   </div>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Subscription Plan Card */}
+          <Card className="shadow-residuall hover:shadow-residuall-hover transition-all">
+            <CardHeader>
+              <CardTitle className="text-xl text-residuall-gray-tableText flex items-center gap-2">
+                <CreditCard size={20} />
+                Plano de Assinatura
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-residuall-gray-tableText">
+                    Plano Atual
+                  </label>
+                  <div className="p-3 bg-gray-50 rounded-lg border">
+                    <p className="font-medium text-residuall-green">
+                      {getPlanDisplayName(selectedPlan)}
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-residuall-gray-tableText">
+                    Status da Assinatura
+                  </label>
+                  <div className="p-3 bg-gray-50 rounded-lg border">
+                    <p className={`font-medium ${hasActivePlan ? 'text-green-600' : 'text-red-600'}`}>
+                      {formatSubscriptionStatus()}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {hasActivePlan && (
+                <div className="pt-4 border-t">
+                  <Button
+                    onClick={handleChangePlan}
+                    className="bg-residuall-brown hover:bg-residuall-brown/90 text-white flex items-center gap-2"
+                  >
+                    <CreditCard size={16} />
+                    Mudar de plano
+                    <ArrowRight size={16} />
+                  </Button>
+                  <p className="text-sm text-gray-500 mt-2">
+                    Escolha um novo plano que melhor atenda às suas necessidades
+                  </p>
+                </div>
+              )}
+
+              {!hasActivePlan && (
+                <div className="pt-4 border-t">
+                  <Button
+                    onClick={handleChangePlan}
+                    className="bg-residuall-green hover:bg-residuall-green/90 text-white flex items-center gap-2"
+                  >
+                    <CreditCard size={16} />
+                    Escolher plano
+                    <ArrowRight size={16} />
+                  </Button>
+                  <p className="text-sm text-gray-500 mt-2">
+                    Assine um plano para acessar todos os recursos da plataforma
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
 

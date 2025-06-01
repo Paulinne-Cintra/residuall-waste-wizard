@@ -1,8 +1,9 @@
 
 import { ReactNode } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Check } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { usePaymentStatus } from '@/hooks/usePaymentStatus';
 
 interface PlanCardProps {
   title: string;
@@ -24,7 +25,14 @@ const PlanCard = ({
   image
 }: PlanCardProps) => {
   const { user } = useAuth();
+  const { selectedPlan, hasActivePlan } = usePaymentStatus();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Verificar se é o plano atual do usuário
+  const isCurrentPlan = selectedPlan && 
+    (selectedPlan.toLowerCase() === title.toLowerCase().replace(/\s+/g, '-') ||
+     selectedPlan.toLowerCase() === title.toLowerCase().replace('plano ', ''));
 
   const handlePlanSelection = () => {
     const planData = {
@@ -34,20 +42,43 @@ const PlanCard = ({
       features: features
     };
 
+    // Se o usuário já está logado, vai direto para pagamento
     if (user) {
-      // Se já estiver logado, vai direto para pagamento
-      navigate('/pagamento', { state: { plan: planData } });
+      // Adicionar informação se está fazendo upgrade/mudança de plano
+      const stateData = {
+        plan: planData,
+        isUpgrade: hasActivePlan,
+        fromProfile: location.pathname === '/planos'
+      };
+      
+      navigate('/pagamento', { state: stateData });
     } else {
       // Se não estiver logado, vai para cadastro
       navigate('/cadastro', { state: { plan: planData } });
     }
   };
 
+  const getButtonText = () => {
+    if (isCurrentPlan && hasActivePlan) {
+      return 'PLANO ATUAL';
+    }
+    
+    if (hasActivePlan) {
+      return 'ESCOLHER ESTE PLANO';
+    }
+    
+    return buttonText;
+  };
+
+  const isButtonDisabled = isCurrentPlan && hasActivePlan;
+
   return (
     <div 
       className={`relative bg-white rounded-2xl shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-2 border-2 ${
         highlighted 
           ? 'border-residuall-orange scale-105' 
+          : isCurrentPlan 
+          ? 'border-residuall-green scale-102'
           : 'border-transparent hover:border-residuall-green/20'
       }`}
     >
@@ -55,6 +86,14 @@ const PlanCard = ({
         <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
           <div className="bg-residuall-orange text-white text-center py-2 px-6 rounded-full text-sm font-montserrat font-semibold shadow-lg">
             MAIS POPULAR
+          </div>
+        </div>
+      )}
+
+      {isCurrentPlan && hasActivePlan && (
+        <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+          <div className="bg-residuall-green text-white text-center py-2 px-6 rounded-full text-sm font-montserrat font-semibold shadow-lg">
+            SEU PLANO ATUAL
           </div>
         </div>
       )}
@@ -95,13 +134,16 @@ const PlanCard = ({
         
         <button
           onClick={handlePlanSelection}
-          className={`block w-full text-center py-4 px-6 rounded-lg font-montserrat font-semibold transition-all duration-300 hover:scale-105 ${
-            highlighted
-              ? 'bg-residuall-orange hover:bg-residuall-orange-light text-white shadow-lg'
-              : 'bg-residuall-green hover:bg-residuall-green-light text-white shadow-lg'
+          disabled={isButtonDisabled}
+          className={`block w-full text-center py-4 px-6 rounded-lg font-montserrat font-semibold transition-all duration-300 ${
+            isButtonDisabled
+              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              : highlighted
+              ? 'bg-residuall-orange hover:bg-residuall-orange-light text-white shadow-lg hover:scale-105'
+              : 'bg-residuall-green hover:bg-residuall-green-light text-white shadow-lg hover:scale-105'
           }`}
         >
-          {buttonText}
+          {getButtonText()}
         </button>
       </div>
     </div>
