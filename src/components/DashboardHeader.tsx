@@ -87,7 +87,7 @@ const DashboardHeader = ({ pageTitle }: DashboardHeaderProps) => {
           
           {/* Dropdown de Notificações */}
           {isNotificationsOpen && (
-            <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-residuall border border-gray-200 z-50 animate-fade-in">
+            <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-residuall border border-gray-200 z-[9999] animate-fade-in">
               <div className="p-3 border-b border-gray-200">
                 <h3 className="text-sm font-semibold">Notificações</h3>
               </div>
@@ -131,7 +131,7 @@ const DashboardHeader = ({ pageTitle }: DashboardHeaderProps) => {
               <ChevronDown size={16} className="text-gray-500 ml-1 hidden md:block" />
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56" align="end" sideOffset={5}>
+          <DropdownMenuContent className="w-56 bg-white" align="end" sideOffset={5} avoidCollisions={true} collisionPadding={8}>
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
                 <p className="text-sm font-medium leading-none">{userDisplayName}</p>
