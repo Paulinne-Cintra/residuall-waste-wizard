@@ -1,16 +1,18 @@
-
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Search, Bell, ChevronDown, LogOut } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useProjects } from '@/hooks/useProjects';
 import { useProjectMaterials } from '@/hooks/useProjectMaterials';
 import { useWasteEntries } from '@/hooks/useWasteEntries';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useToast } from '@/hooks/use-toast';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { signOut, user } = useAuth();
+  const { toast } = useToast();
   const { projects, loading: loadingProjects, error: errorProjects } = useProjects();
   const { materials, loading: loadingMaterials, error: errorMaterials } = useProjectMaterials();
   const { wasteEntries, loading: loadingWasteEntries, error: errorWasteEntries } = useWasteEntries();
@@ -62,6 +64,18 @@ const Dashboard: React.FC = () => {
         return 0;
     }
   };
+
+  // Mostrar mensagem de boas-vindas se veio do pagamento
+  useEffect(() => {
+    if (location.state?.welcomeMessage) {
+      toast({
+        title: "Bem-vindo!",
+        description: location.state.welcomeMessage,
+      });
+      // Limpar a mensagem do state
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, toast, navigate]);
 
   return (
     <div className="p-0">

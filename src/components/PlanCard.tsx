@@ -28,7 +28,7 @@ const PlanCard = ({
 
   const handlePlanSelection = () => {
     const planData = {
-      id: title.toLowerCase().replace(' ', '-'),
+      id: title.toLowerCase().replace(/\s+/g, '-'),
       name: title,
       price: price,
       features: features
@@ -38,7 +38,7 @@ const PlanCard = ({
       // Se já estiver logado, vai direto para pagamento
       navigate('/pagamento', { state: { plan: planData } });
     } else {
-      // Se não estiver logado, vai para cadastro com o plano selecionado
+      // Se não estiver logado, vai para cadastro
       navigate('/cadastro', { state: { plan: planData } });
     }
   };

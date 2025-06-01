@@ -31,15 +31,10 @@ const RegisterPage = () => {
   useEffect(() => {
     if (!authLoading && user) {
       console.log('RegisterPage - User is authenticated, redirecting...');
-      if (selectedPlan) {
-        console.log('RegisterPage - Redirecting to payment with plan:', selectedPlan);
-        navigate('/pagamento', { state: { plan: selectedPlan }, replace: true });
-      } else {
-        console.log('RegisterPage - No plan selected, redirecting to dashboard');
-        navigate('/dashboard', { replace: true });
-      }
+      // Após cadastro, sempre vai para seleção de plano
+      navigate('/pagamento', { replace: true });
     }
-  }, [user, authLoading, selectedPlan, navigate]);
+  }, [user, authLoading, navigate]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;

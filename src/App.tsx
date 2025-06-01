@@ -35,6 +35,7 @@ import DashboardLayout from "./components/DashboardLayout";
 import NotFound from "./pages/NotFound";
 import PaymentPage from "./pages/PaymentPage";
 import ConfirmationPage from "./pages/ConfirmationPage";
+import { PaymentProtectedRoute } from "./components/PaymentProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -75,11 +76,11 @@ const AppRoutes = () => {
       <Route path="/pagamento" element={<PaymentPage />} />
       <Route path="/confirmacao" element={<ConfirmationPage />} />
       
-      {/* Rotas do dashboard (protegidas) */}
+      {/* Rotas do dashboard (protegidas por autenticação E pagamento) */}
       <Route path="/dashboard" element={
-        <ProtectedRoute>
+        <PaymentProtectedRoute>
           <DashboardLayout />
-        </ProtectedRoute>
+        </PaymentProtectedRoute>
       }>
         <Route index element={<Dashboard />} />
         <Route path="projetos" element={<ProjectsPage />} />
