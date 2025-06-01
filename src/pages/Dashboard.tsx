@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { Search, Bell, ChevronDown, LogOut } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -96,7 +97,7 @@ const Dashboard: React.FC = () => {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <div className="flex items-center cursor-pointer">
+              <button className="flex items-center cursor-pointer focus:outline-none">
                 <img
                   src="https://via.placeholder.com/32"
                   alt="User Avatar"
@@ -106,9 +107,9 @@ const Dashboard: React.FC = () => {
                   {user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email || 'Usuário'}
                 </span>
                 <ChevronDown size={16} className="text-gray-500 ml-1 hidden md:block" />
-              </div>
+              </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-48">
+            <DropdownMenuContent className="w-48" align="end">
               <DropdownMenuItem onClick={() => navigate('/dashboard/perfil')}>
                 Meu Perfil
               </DropdownMenuItem>
