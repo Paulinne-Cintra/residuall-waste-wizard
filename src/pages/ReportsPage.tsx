@@ -1,6 +1,7 @@
+
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Filter, Calendar, BarChart, TrendingUp, TrendingDown, Download, Share2, Plus, Eye, FileText, Check } from 'lucide-react';
+import { Filter, Calendar, BarChart, TrendingUp, TrendingDown, Download, Share2, Plus, Eye, FileText, Check, ChevronDown } from 'lucide-react';
 import Chart from '../components/Chart';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -202,12 +203,14 @@ const ReportsPage = () => {
         <CardContent className="flex flex-wrap gap-4 items-center justify-between p-4">
           <div className="flex flex-wrap gap-2">
             <DropdownMenu open={projectDropdownOpen} onOpenChange={setProjectDropdownOpen}>
-              <DropdownMenuTrigger 
-                className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 hover:shadow-md transition-all duration-200 text-gray-700"
-                isOpen={projectDropdownOpen}
-              >
+              <DropdownMenuTrigger className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 hover:shadow-md transition-all duration-200 text-gray-700">
                 <Filter size={16} />
                 <span>{projectFilter}</span>
+                <ChevronDown 
+                  className={`h-4 w-4 transition-transform duration-200 ${
+                    projectDropdownOpen ? 'rotate-180' : ''
+                  }`} 
+                />
               </DropdownMenuTrigger>
               <DropdownMenuContent 
                 align="start" 
@@ -242,12 +245,14 @@ const ReportsPage = () => {
             </DropdownMenu>
             
             <DropdownMenu open={periodDropdownOpen} onOpenChange={setPeriodDropdownOpen}>
-              <DropdownMenuTrigger 
-                className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 hover:shadow-md transition-all duration-200 text-gray-700"
-                isOpen={periodDropdownOpen}
-              >
+              <DropdownMenuTrigger className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 hover:shadow-md transition-all duration-200 text-gray-700">
                 <Calendar size={16} />
                 <span>{periodFilter}</span>
+                <ChevronDown 
+                  className={`h-4 w-4 transition-transform duration-200 ${
+                    periodDropdownOpen ? 'rotate-180' : ''
+                  }`} 
+                />
               </DropdownMenuTrigger>
               <DropdownMenuContent 
                 align="start" 
@@ -282,12 +287,14 @@ const ReportsPage = () => {
             </DropdownMenu>
             
             <DropdownMenu open={statusDropdownOpen} onOpenChange={setStatusDropdownOpen}>
-              <DropdownMenuTrigger 
-                className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 hover:shadow-md transition-all duration-200 text-gray-700"
-                isOpen={statusDropdownOpen}
-              >
+              <DropdownMenuTrigger className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 hover:shadow-md transition-all duration-200 text-gray-700">
                 <Filter size={16} />
                 <span>{statusFilter}</span>
+                <ChevronDown 
+                  className={`h-4 w-4 transition-transform duration-200 ${
+                    statusDropdownOpen ? 'rotate-180' : ''
+                  }`} 
+                />
               </DropdownMenuTrigger>
               <DropdownMenuContent 
                 align="start" 

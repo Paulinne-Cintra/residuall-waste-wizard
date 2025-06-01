@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Filter, Calendar, BarChart, TrendingUp, TrendingDown, Eye, Plus, Building2, Droplet, Anchor, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Filter, Calendar, BarChart, TrendingUp, TrendingDown, Eye, Plus, Building2, Droplet, Anchor, CheckCircle, AlertTriangle, ChevronDown } from 'lucide-react';
 import { useProjects } from '@/hooks/useProjects';
 import AnimatedButton from '@/components/ui/AnimatedButton';
 import Chart from '../components/Chart';
@@ -143,12 +143,14 @@ const ProjectsPage = () => {
         <CardContent className="flex flex-wrap gap-4 items-center justify-between p-4">
           <div className="flex flex-wrap gap-2">
             <DropdownMenu open={statusDropdownOpen} onOpenChange={setStatusDropdownOpen}>
-              <DropdownMenuTrigger 
-                className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 hover:shadow-md transition-all duration-200 text-gray-700"
-                isOpen={statusDropdownOpen}
-              >
+              <DropdownMenuTrigger className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 hover:shadow-md transition-all duration-200 text-gray-700">
                 <Filter size={16} />
                 <span>{statusFilter}</span>
+                <ChevronDown 
+                  className={`h-4 w-4 transition-transform duration-200 ${
+                    statusDropdownOpen ? 'rotate-180' : ''
+                  }`} 
+                />
               </DropdownMenuTrigger>
               <DropdownMenuContent 
                 align="start" 
@@ -189,12 +191,14 @@ const ProjectsPage = () => {
             </DropdownMenu>
             
             <DropdownMenu open={dateDropdownOpen} onOpenChange={setDateDropdownOpen}>
-              <DropdownMenuTrigger 
-                className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 hover:shadow-md transition-all duration-200 text-gray-700"
-                isOpen={dateDropdownOpen}
-              >
+              <DropdownMenuTrigger className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 hover:shadow-md transition-all duration-200 text-gray-700">
                 <Calendar size={16} />
                 <span>{dateFilter}</span>
+                <ChevronDown 
+                  className={`h-4 w-4 transition-transform duration-200 ${
+                    dateDropdownOpen ? 'rotate-180' : ''
+                  }`} 
+                />
               </DropdownMenuTrigger>
               <DropdownMenuContent 
                 align="start" 
