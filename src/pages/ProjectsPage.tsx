@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Filter, Calendar, BarChart, TrendingUp, TrendingDown, Eye, Plus, ChevronDown, Building2, Droplet, Anchor, CheckCircle, AlertTriangle } from 'lucide-react';
 import { useProjects } from '@/hooks/useProjects';
+import { useRecommendations } from '@/hooks/useRecommendations';
 import AnimatedButton from '@/components/ui/AnimatedButton';
 import Chart from '../components/Chart';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,32 +22,22 @@ import { motion } from 'framer-motion';
 const ProjectsPage = () => {
   const { toast } = useToast();
   const { projects, loading, error } = useProjects();
+  const { recommendations, updateRecommendation } = useRecommendations();
   
-  const reuseMetricsData = [
-    { name: 'Tijolos', value: 2.5, unit: 'toneladas', description: 'Desperdício mensal médio', icon: Building2 },
-    { name: 'Cimento', value: 3.2, unit: 'toneladas', description: 'Desperdício mensal médio', icon: Droplet },
-    { name: 'Aço', value: 1.3, unit: 'toneladas', description: 'Desperdício mensal médio', icon: Anchor },
-  ];
-
   const [filteredProjects, setFilteredProjects] = useState(projects);
   const [statusFilter, setStatusFilter] = useState('Status');
   const [dateFilter, setDateFilter] = useState('Data');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Dados de exemplo para recomendações
-  const [recommendations, setRecommendations] = useState([
-    { id: '1', text: 'Analisar desperdício de concreto no projeto Edifício Aurora.', completed: false },
-    { id: '2', text: 'Verificar inventário de materiais recicláveis para o próximo projeto.', completed: true },
-    { id: '3', text: 'Treinar equipe sobre novas práticas de reuso.', completed: false },
-  ]);
-
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'execução':
+      case 'em_andamento':
         return 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800';
       case 'planejamento':
         return 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800';
       case 'concluído':
+      case 'concluido':
         return 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-800';
       case 'finalização':
         return 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800';
@@ -60,22 +51,23 @@ const ProjectsPage = () => {
       case 'planejamento':
         return 25;
       case 'execução':
+      case 'em_andamento':
         return 60;
       case 'finalização':
         return 90;
       case 'concluído':
+      case 'concluido':
         return 100;
       default:
         return 0;
     }
   };
 
-  const toggleRecommendation = (id: string) => {
-    setRecommendations(prev =>
-      prev.map(rec =>
-        rec.id === id ? { ...rec, completed: !rec.completed } : rec
-      )
-    );
+  const toggleRecommendation = async (id: string) => {
+    const recommendation = recommendations.find(r => r.id === id);
+    if (recommendation) {
+      await updateRecommendation(id, { aceita: !recommendation.aceita });
+    }
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -171,31 +163,6 @@ const ProjectsPage = () => {
         </CardContent>
       </Card>
 
-      {/* Cards de Métricas (Reuso) */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        {reuseMetricsData.map((metric, index) => {
-          const IconComponent = metric.icon;
-          return (
-            <AnimatedCardWrapper key={index} delay={0.05 * (index + 1)} animateOnView={true}>
-              <Card className="flex flex-col items-center justify-center p-6 shadow-md border-none">
-                <CardHeader className="p-0 pb-2 flex-col items-center">
-                  <CardDescription className="text-center text-sm font-medium text-gray-700 flex items-center gap-2">
-                    {IconComponent && <IconComponent size={16} className="text-residuall-green-secondary" />}
-                    {metric.name}
-                  </CardDescription>
-                  <CardTitle className="text-4xl font-extrabold text-gray-900 mt-2">
-                    <AnimatedNumber value={metric.value} suffix={` ${metric.unit}`} decimals={1} />
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-0 text-center text-xs text-gray-500">
-                  {metric.description}
-                </CardContent>
-              </Card>
-            </AnimatedCardWrapper>
-          );
-        })}
-      </div>
-
       {/* Seção de Projetos Ativos (Cards de Projeto) */}
       <Card className="mb-6 shadow-sm border-none">
         <CardHeader className="pb-4">
@@ -261,41 +228,60 @@ const ProjectsPage = () => {
         </CardContent>
       </Card>
 
-      {/* Seção de Recomendações */}
+      {/* Seção de Recomendações conectada aos dados reais */}
       <Card className="mb-6 shadow-sm border-none">
         <CardHeader className="pb-4">
           <CardTitle className="text-2xl font-bold text-gray-900">Recomendações</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {recommendations.map((rec) => (
-            <div 
-              key={rec.id} 
-              className="flex items-start p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-150 cursor-pointer"
-              onClick={() => toggleRecommendation(rec.id)}
-            >
-              <button
-                className={`shrink-0 p-1 rounded-full mr-3 transition-colors duration-200 ${
-                  rec.completed
-                    ? 'bg-green-100 text-green-500'
-                    : 'bg-residuall-brown bg-opacity-10 text-residuall-brown'
-                }`}
-              >
-                {rec.completed ? (
-                  <CheckCircle size={18} />
-                ) : (
-                  <AlertTriangle size={18} />
-                )}
-              </button>
-              <div>
-                <p className={`text-sm font-medium ${rec.completed ? 'text-gray-500 line-through' : 'text-gray-800'}`}>
-                  {rec.text}
-                </p>
-                <p className="text-xs text-gray-500 mt-1">
-                  {rec.completed ? 'Concluído' : 'Pendente'}
-                </p>
-              </div>
+          {recommendations.length === 0 ? (
+            <div className="text-center py-8">
+              <AlertTriangle className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+              <p className="text-gray-500">Nenhuma recomendação disponível no momento.</p>
             </div>
-          ))}
+          ) : (
+            recommendations.slice(0, 5).map((rec) => (
+              <div 
+                key={rec.id} 
+                className="flex items-start p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-150 cursor-pointer"
+                onClick={() => toggleRecommendation(rec.id)}
+              >
+                <button
+                  className={`shrink-0 p-1 rounded-full mr-3 transition-colors duration-200 ${
+                    rec.aceita
+                      ? 'bg-green-100 text-green-500'
+                      : 'bg-residuall-brown bg-opacity-10 text-residuall-brown'
+                  }`}
+                >
+                  {rec.aceita ? (
+                    <CheckCircle size={18} />
+                  ) : (
+                    <AlertTriangle size={18} />
+                  )}
+                </button>
+                <div className="flex-1">
+                  <p className={`text-sm font-medium ${rec.aceita ? 'text-gray-500 line-through' : 'text-gray-800'}`}>
+                    {rec.titulo}
+                  </p>
+                  {rec.descricao && (
+                    <p className="text-xs text-gray-600 mt-1">{rec.descricao}</p>
+                  )}
+                  <p className="text-xs text-gray-500 mt-1">
+                    Projeto: {rec.projects?.name || 'N/A'} • {rec.aceita ? 'Aceita' : 'Pendente'}
+                  </p>
+                </div>
+              </div>
+            ))
+          )}
+          {recommendations.length > 5 && (
+            <div className="text-center pt-4">
+              <Link to="/dashboard/recomendacoes">
+                <Button variant="outline" className="text-residuall-green-secondary">
+                  Ver todas as recomendações
+                </Button>
+              </Link>
+            </div>
+          )}
         </CardContent>
       </Card>
     </main>

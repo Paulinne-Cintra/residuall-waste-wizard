@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { Search, Bell, ChevronDown, LogOut } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -7,6 +8,7 @@ import { useProjectMaterials } from '@/hooks/useProjectMaterials';
 import { useWasteEntries } from '@/hooks/useWasteEntries';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from '@/hooks/use-toast';
+import Chart from '@/components/Chart';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -18,7 +20,7 @@ const Dashboard: React.FC = () => {
   const { wasteEntries, loading: loadingWasteEntries, error: errorWasteEntries } = useWasteEntries();
 
   // Calcula o número de projetos ativos
-  const activeProjectsCount = projects.filter(p => p.status === 'execução' || p.status === 'planejamento').length;
+  const activeProjectsCount = projects.filter(p => p.status === 'execução' || p.status === 'planejamento' || p.status === 'em_andamento').length;
   
   // Calcula total de materiais cadastrados
   const totalMaterialsCount = materials.length;
@@ -38,6 +40,43 @@ const Dashboard: React.FC = () => {
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     .slice(0, 3);
 
+  // Dados para gráfico Economia x Desperdício (baseado em dados reais)
+  const economyWasteData = projects.map(project => {
+    const projectMaterials = materials.filter(m => m.project_id === project.id);
+    const projectWaste = wasteEntries.filter(entry => 
+      projectMaterials.some(material => material.id === entry.project_material_id)
+    );
+    
+    const wasteAmount = projectWaste.reduce((sum, entry) => sum + entry.wasted_quantity, 0);
+    const economyAmount = projectWaste.reduce((sum, entry) => {
+      const material = projectMaterials.find(m => m.id === entry.project_material_id);
+      return sum + (entry.wasted_quantity * (material?.cost_per_unit || 0));
+    }, 0);
+
+    return {
+      name: project.name.length > 15 ? project.name.substring(0, 15) + '...' : project.name,
+      economia: Math.round(economyAmount),
+      desperdicio: Math.round(wasteAmount)
+    };
+  }).filter(item => item.economia > 0 || item.desperdicio > 0);
+
+  // Dados para gráfico Desperdício por Etapas (baseado em dados reais)
+  const wasteByStageData = wasteEntries.reduce((acc, entry) => {
+    const stage = entry.project_stage;
+    const existing = acc.find(item => item.name === stage);
+    
+    if (existing) {
+      existing.quantidade += entry.wasted_quantity;
+    } else {
+      acc.push({
+        name: stage,
+        quantidade: entry.wasted_quantity
+      });
+    }
+    
+    return acc;
+  }, [] as Array<{name: string, quantidade: number}>);
+
   const handleLogout = async () => {
     try {
       console.log('Dashboard - Iniciando logout...');
@@ -54,10 +93,12 @@ const Dashboard: React.FC = () => {
       case 'planejamento':
         return 25;
       case 'execução':
+      case 'em_andamento':
         return 60;
       case 'finalização':
         return 90;
       case 'concluído':
+      case 'concluido':
         return 100;
       default:
         return 0;
@@ -87,7 +128,7 @@ const Dashboard: React.FC = () => {
           />
         </div>
         <div className="flex items-center space-x-4 ml-auto">
-          {/* Filtro de Projetos - Corrigido */}
+          {/* Filtro de Projetos */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
@@ -254,19 +295,37 @@ const Dashboard: React.FC = () => {
         )}
       </div>
 
-      {/* Seções de gráficos */}
+      {/* Seção de gráficos com dados reais */}
       <div className="bg-white p-6 rounded-lg shadow-md mb-6 mx-6">
         <h3 className="text-lg font-semibold text-gray-700 mb-4">Economia x Desperdício</h3>
-        <div className="w-full h-48 bg-gray-100 rounded flex items-center justify-center">
-          <p className="text-gray-500">Gráfico de Economia x Desperdício</p>
-        </div>
+        {economyWasteData.length > 0 ? (
+          <Chart 
+            type="bar" 
+            data={economyWasteData} 
+            height={300} 
+            title="Economia vs Desperdício por Projeto"
+          />
+        ) : (
+          <div className="w-full h-48 bg-gray-100 rounded flex items-center justify-center">
+            <p className="text-gray-500">Dados insuficientes para exibir o gráfico</p>
+          </div>
+        )}
       </div>
 
       <div className="bg-white p-6 rounded-lg shadow-md mx-6">
         <h3 className="text-lg font-semibold text-gray-700 mb-4">Desperdício por Etapa</h3>
-        <div className="w-full h-48 bg-gray-100 rounded flex items-center justify-center">
-          <p className="text-gray-500">Gráfico de Desperdício por Etapa</p>
-        </div>
+        {wasteByStageData.length > 0 ? (
+          <Chart 
+            type="pie" 
+            data={wasteByStageData} 
+            height={300} 
+            title="Distribuição de Desperdício por Etapa"
+          />
+        ) : (
+          <div className="w-full h-48 bg-gray-100 rounded flex items-center justify-center">
+            <p className="text-gray-500">Nenhum desperdício registrado ainda</p>
+          </div>
+        )}
       </div>
     </div>
   );

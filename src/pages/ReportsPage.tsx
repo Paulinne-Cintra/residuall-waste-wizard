@@ -43,8 +43,10 @@ const ReportsPage = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'concluído':
+      case 'concluido':
         return 'status-tag status-tag-completed';
       case 'execução':
+      case 'em_andamento':
         return 'status-tag status-tag-ongoing';
       case 'planejamento':
         return 'status-tag status-tag-pending';
@@ -58,8 +60,7 @@ const ReportsPage = () => {
     setSearchQuery(value);
     
     const filtered = reports.filter(report =>
-      report.project_name.toLowerCase().includes(value.toLowerCase()) ||
-      report.material_type_name.toLowerCase().includes(value.toLowerCase())
+      report.project_name.toLowerCase().includes(value.toLowerCase())
     );
     setFilteredReports(filtered);
   };
@@ -262,11 +263,11 @@ const ReportsPage = () => {
         </Card>
       </div>
       
-      {/* Lista de Relatórios */}
+      {/* Lista de Relatórios - REMOVIDA COLUNA MATERIAL */}
       <Card className="mb-6">
         <CardHeader className="flex flex-row items-center justify-between pb-2 pt-6 px-6">
           <CardTitle className="text-lg text-residuall-gray-tableText">
-            Lista de Relatórios
+            Lista de Relatórios por Projeto
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -286,7 +287,6 @@ const ReportsPage = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead>Projeto</TableHead>
-                  <TableHead>Material</TableHead>
                   <TableHead>Quantidade Desperdiçada</TableHead>
                   <TableHead>Economia Gerada</TableHead>
                   <TableHead>Status</TableHead>
@@ -304,9 +304,6 @@ const ReportsPage = () => {
                           {report.project_name}
                         </span>
                       </div>
-                    </TableCell>
-                    <TableCell className="text-sm text-residuall-gray">
-                      {report.material_type_name}
                     </TableCell>
                     <TableCell className="text-sm text-residuall-gray">
                       {report.total_wasted_quantity.toFixed(2)}
