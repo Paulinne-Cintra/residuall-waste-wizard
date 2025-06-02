@@ -125,7 +125,7 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               {chartData.length > 0 ? (
-                <Chart data={chartData} />
+                <Chart type="bar" data={chartData} />
               ) : (
                 <div className="h-64 flex items-center justify-center text-gray-500">
                   <div className="text-center">

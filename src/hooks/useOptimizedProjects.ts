@@ -103,7 +103,15 @@ export const useOptimizedProjects = (): UseOptimizedProjectsResult => {
         throw error;
       }
 
-      setProjects(data || []);
+      // Transform the search result to match ProjectWithProgress interface
+      const transformedData = (data || []).map(project => ({
+        ...project,
+        user_id: user?.id || '',
+        waste_entries_count: 0, // Default value since search function doesn't return this
+        updated_at: null // Default value since search function doesn't return this
+      }));
+
+      setProjects(transformedData);
     } catch (err: any) {
       console.error('Erro na busca de projetos:', err);
       setError(err.message);
