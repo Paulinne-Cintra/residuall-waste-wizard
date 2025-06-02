@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -164,7 +163,27 @@ export const useArchivedProjects = () => {
     }
 
     try {
-      // Primeiro, excluir todos os materiais relacionados ao projeto
+      // Primeiro, buscar os IDs dos materiais do projeto
+      const { data: projectMaterials } = await supabase
+        .from('project_materials')
+        .select('id')
+        .eq('project_id', projectId);
+
+      // Excluir entradas de desperdício relacionadas aos materiais do projeto
+      if (projectMaterials && projectMaterials.length > 0) {
+        const materialIds = projectMaterials.map(material => material.id);
+        
+        const { error: wasteError } = await supabase
+          .from('waste_entries')
+          .delete()
+          .in('project_material_id', materialIds);
+
+        if (wasteError) {
+          console.error('Erro ao excluir entradas de desperdício:', wasteError);
+        }
+      }
+
+      // Excluir materiais do projeto
       const { error: materialsError } = await supabase
         .from('project_materials')
         .delete()
@@ -172,21 +191,6 @@ export const useArchivedProjects = () => {
 
       if (materialsError) {
         console.error('Erro ao excluir materiais do projeto:', materialsError);
-      }
-
-      // Excluir entradas de desperdício relacionadas
-      const { error: wasteError } = await supabase
-        .from('waste_entries')
-        .delete()
-        .in('project_material_id', 
-          supabase
-            .from('project_materials')
-            .select('id')
-            .eq('project_id', projectId)
-        );
-
-      if (wasteError) {
-        console.error('Erro ao excluir entradas de desperdício:', wasteError);
       }
 
       // Excluir desperdício por etapa
