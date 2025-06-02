@@ -20,7 +20,7 @@ export const useProjectStageWaste = (projectId?: string) => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  const { data: stageWaste = [], loading, error } = useQuery({
+  const { data: stageWaste = [], isLoading, error } = useQuery({
     queryKey: ['project-stage-waste', projectId],
     queryFn: async () => {
       let query = supabase
@@ -123,7 +123,7 @@ export const useProjectStageWaste = (projectId?: string) => {
   return {
     stageWaste,
     wasteByStage,
-    loading,
+    loading: isLoading,
     error,
     createStageWaste: createStageWaste.mutate,
     updateStageWaste: updateStageWaste.mutate,

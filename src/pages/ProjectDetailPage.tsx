@@ -64,6 +64,17 @@ const ProjectDetailPage = () => {
     }
   };
 
+  const handleMaterialSubmit = async (data: any): Promise<boolean> => {
+    try {
+      // Aqui seria implementada a lógica de salvamento do material
+      console.log('Material data:', data);
+      return true;
+    } catch (error) {
+      console.error('Erro ao salvar material:', error);
+      return false;
+    }
+  };
+
   return (
     <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
       <div className="max-w-6xl mx-auto">
@@ -239,7 +250,7 @@ const ProjectDetailPage = () => {
       <MaterialFormModal
         isOpen={isMaterialModalOpen}
         onClose={() => setIsMaterialModalOpen(false)}
-        onSubmit={() => {}}
+        onSubmit={handleMaterialSubmit}
         projectId={id!}
       />
 
