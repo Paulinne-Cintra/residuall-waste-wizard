@@ -14,6 +14,7 @@ interface MaterialFormModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: any) => Promise<boolean>;
+  projectId: string;
 }
 
 const materialTypes = [
