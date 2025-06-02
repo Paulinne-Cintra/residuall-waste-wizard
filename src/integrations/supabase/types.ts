@@ -198,7 +198,21 @@ export type Database = {
             foreignKeyName: "project_documents_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
+            referencedRelation: "project_reports_summary"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "project_documents_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_documents_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects_with_progress"
             referencedColumns: ["id"]
           },
         ]
@@ -254,7 +268,21 @@ export type Database = {
             foreignKeyName: "project_materials_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
+            referencedRelation: "project_reports_summary"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "project_materials_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_materials_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects_with_progress"
             referencedColumns: ["id"]
           },
           {
@@ -308,7 +336,21 @@ export type Database = {
             foreignKeyName: "project_stage_waste_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
+            referencedRelation: "project_reports_summary"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "project_stage_waste_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_stage_waste_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects_with_progress"
             referencedColumns: ["id"]
           },
         ]
@@ -406,7 +448,21 @@ export type Database = {
             foreignKeyName: "recomendacoes_projeto_id_fkey"
             columns: ["projeto_id"]
             isOneToOne: false
+            referencedRelation: "project_reports_summary"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "recomendacoes_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recomendacoes_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "projects_with_progress"
             referencedColumns: ["id"]
           },
         ]
@@ -450,7 +506,21 @@ export type Database = {
             foreignKeyName: "reports_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
+            referencedRelation: "project_reports_summary"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "reports_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reports_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects_with_progress"
             referencedColumns: ["id"]
           },
         ]
@@ -628,7 +698,21 @@ export type Database = {
             foreignKeyName: "team_member_projects_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
+            referencedRelation: "project_reports_summary"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "team_member_projects_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_member_projects_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects_with_progress"
             referencedColumns: ["id"]
           },
         ]
@@ -729,6 +813,13 @@ export type Database = {
             foreignKeyName: "waste_entries_project_material_id_fkey"
             columns: ["project_material_id"]
             isOneToOne: false
+            referencedRelation: "materials_with_project"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "waste_entries_project_material_id_fkey"
+            columns: ["project_material_id"]
+            isOneToOne: false
             referencedRelation: "project_materials"
             referencedColumns: ["id"]
           },
@@ -736,12 +827,126 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      dashboard_metrics: {
+        Row: {
+          active_projects: number | null
+          total_economy_generated: number | null
+          total_materials: number | null
+          total_projects: number | null
+          total_waste_entries: number | null
+          total_waste_quantity: number | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
+      materials_with_project: {
+        Row: {
+          category: string | null
+          cost_per_unit: number | null
+          created_at: string | null
+          dimensions_specs: string | null
+          estimated_quantity: number | null
+          id: string | null
+          material_type_name: string | null
+          minimum_quantity: number | null
+          project_id: string | null
+          project_name: string | null
+          project_status: string | null
+          stock_quantity: number | null
+          stock_status: string | null
+          supplier_id: string | null
+          total_estimated_cost: number | null
+          unit_of_measurement: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_materials_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "project_reports_summary"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "project_materials_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_materials_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects_with_progress"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_materials_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_reports_summary: {
+        Row: {
+          created_at: string | null
+          project_id: string | null
+          project_location: string | null
+          project_name: string | null
+          project_status: string | null
+          total_materials: number | null
+          total_project_cost: number | null
+          total_waste_cost: number | null
+          total_waste_quantity: number | null
+          user_id: string | null
+          waste_entries_count: number | null
+        }
+        Relationships: []
+      }
+      projects_with_progress: {
+        Row: {
+          arquivado: boolean | null
+          budget: number | null
+          created_at: string | null
+          description_notes: string | null
+          dimensions_details: string | null
+          id: string | null
+          location: string | null
+          materials_count: number | null
+          name: string | null
+          planned_end_date: string | null
+          progress_percentage: number | null
+          project_type: string | null
+          responsible_team_contacts: string | null
+          start_date: string | null
+          status: string | null
+          updated_at: string | null
+          user_id: string | null
+          waste_entries_count: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       generate_invitation_token: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      search_projects: {
+        Args: { search_term: string; user_id_param: string }
+        Returns: {
+          id: string
+          name: string
+          status: string
+          location: string
+          progress_percentage: number
+          materials_count: number
+          created_at: string
+        }[]
       }
     }
     Enums: {

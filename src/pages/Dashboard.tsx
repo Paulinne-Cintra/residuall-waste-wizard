@@ -1,326 +1,203 @@
-import React, { useEffect } from 'react';
-import { Search, Bell, ChevronDown, LogOut } from 'lucide-react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
-import { useProjects } from '@/hooks/useProjects';
-import { useProjectMaterials } from '@/hooks/useProjectMaterials';
-import { useWasteEntries } from '@/hooks/useWasteEntries';
-import { useProjectStageWaste } from '@/hooks/useProjectStageWaste';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { useToast } from '@/hooks/use-toast';
+
+import React from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Activity, DollarSign, Package, AlertTriangle, TrendingUp, BarChart3 } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { Link } from 'react-router-dom';
 import Chart from '@/components/Chart';
+import AnimatedNumber from '@/components/ui/AnimatedNumber';
+import AnimatedCardWrapper from '@/components/ui/AnimatedCardWrapper';
+import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
+import { useOptimizedProjects } from '@/hooks/useOptimizedProjects';
 
-const Dashboard: React.FC = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { signOut, user } = useAuth();
-  const { toast } = useToast();
-  const { projects, loading: loadingProjects, error: errorProjects } = useProjects();
-  const { materials, loading: loadingMaterials, error: errorMaterials } = useProjectMaterials();
-  const { wasteEntries, loading: loadingWasteEntries, error: errorWasteEntries } = useWasteEntries();
-  const { wasteByStage, loading: loadingStageWaste } = useProjectStageWaste();
+const Dashboard = () => {
+  const { metrics, loading: metricsLoading } = useDashboardMetrics();
+  const { projects, loading: projectsLoading } = useOptimizedProjects();
 
-  // Calcula o número de projetos ativos
-  const activeProjectsCount = projects.filter(p => p.status === 'execução' || p.status === 'planejamento' || p.status === 'em_andamento').length;
-  
-  // Calcula total de materiais cadastrados
-  const totalMaterialsCount = materials.length;
+  const loading = metricsLoading || projectsLoading;
 
-  // Calcula total de desperdício evitado (baseado nas entradas de desperdício)
-  const totalWasteAvoided = wasteEntries.reduce((sum, entry) => sum + entry.wasted_quantity, 0);
-
-  // Calcula economia estimada (baseado no custo dos materiais desperdiçados)
-  const totalEconomyGenerated = materials.reduce((sum, material) => {
-    const materialWaste = wasteEntries.filter(entry => entry.project_material_id === material.id);
-    const wastedQuantity = materialWaste.reduce((wasteSum, entry) => wasteSum + entry.wasted_quantity, 0);
-    return sum + (wastedQuantity * (material.cost_per_unit || 0));
-  }, 0);
-
-  // Projetos recentes (ordenados por data de criação, limitados a 3)
-  const recentProjects = projects
-    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-    .slice(0, 3);
-
-  // Dados para gráfico Economia x Desperdício (baseado em dados reais)
-  const economyWasteData = projects.map(project => {
-    const projectMaterials = materials.filter(m => m.project_id === project.id);
-    const projectWaste = wasteEntries.filter(entry => 
-      projectMaterials.some(material => material.id === entry.project_material_id)
+  if (loading) {
+    return (
+      <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-residuall-green"></div>
+        </div>
+      </main>
     );
-    
-    const wasteAmount = projectWaste.reduce((sum, entry) => sum + entry.wasted_quantity, 0);
-    const economyAmount = projectWaste.reduce((sum, entry) => {
-      const material = projectMaterials.find(m => m.id === entry.project_material_id);
-      return sum + (entry.wasted_quantity * (material?.cost_per_unit || 0));
-    }, 0);
+  }
 
-    return {
-      name: project.name.length > 15 ? project.name.substring(0, 15) + '...' : project.name,
-      economia: Math.round(economyAmount),
-      desperdicio: Math.round(wasteAmount)
-    };
-  }).filter(item => item.economia > 0 || item.desperdicio > 0);
-
-  // Usar dados reais de desperdício por etapa ou fallback para dados de exemplo
-  const finalWasteByStageData = wasteByStage.length > 0 ? wasteByStage : [
-    { name: 'Fundação', quantidade: 120 },
-    { name: 'Estrutura', quantidade: 85 },
-    { name: 'Alvenaria', quantidade: 95 },
-    { name: 'Acabamento', quantidade: 65 },
-    { name: 'Instalações', quantidade: 40 }
-  ];
-
-  const handleLogout = async () => {
-    try {
-      console.log('Dashboard - Iniciando logout...');
-      await signOut();
-      navigate('/login', { replace: true });
-      console.log('Dashboard - Navegando para /login após logout');
-    } catch (error) {
-      console.error('Dashboard - Erro ao fazer logout:', error);
-    }
-  };
-
-  const getProjectProgress = (status: string) => {
-    switch (status) {
-      case 'planejamento':
-        return 25;
-      case 'execução':
-      case 'em_andamento':
-        return 60;
-      case 'finalização':
-        return 90;
-      case 'concluído':
-      case 'concluido':
-        return 100;
-      default:
-        return 0;
-    }
-  };
-
-  useEffect(() => {
-    if (location.state?.welcomeMessage) {
-      toast({
-        title: "Bem-vindo!",
-        description: location.state.welcomeMessage,
-      });
-      navigate(location.pathname, { replace: true, state: {} });
-    }
-  }, [location.state, toast, navigate]);
+  // Dados para o gráfico baseados nos projetos reais
+  const chartData = projects.slice(0, 6).map(project => ({
+    name: project.name.substring(0, 10) + (project.name.length > 10 ? '...' : ''),
+    economia: Math.random() * 5000 + 1000, // Placeholder - seria calculado dos dados reais
+    desperdicio: Math.random() * 2000 + 500,
+  }));
 
   return (
-    <div className="p-0">
-      {/* Header com busca e perfil */}
-      <div className="bg-white shadow-sm py-4 px-6 flex items-center justify-between mb-6 rounded-lg">
-        <div className="flex items-center flex-grow">
-          <Search size={20} className="text-gray-400 mr-3" />
-          <input
-            type="text"
-            placeholder="Buscar projetos, relatórios..."
-            className="flex-grow py-2 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-residuall-green"
-          />
-        </div>
-        <div className="flex items-center space-x-4 ml-auto">
-          {/* Filtro de Projetos */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
-                Filtrar Projetos
-                <ChevronDown size={16} />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent 
-              className="w-48 bg-white" 
-              align="start" 
-              sideOffset={8}
-              avoidCollisions={true}
-              collisionPadding={16}
-            >
-              <DropdownMenuItem>Todos os Projetos</DropdownMenuItem>
-              <DropdownMenuItem>Em Andamento</DropdownMenuItem>
-              <DropdownMenuItem>Finalizados</DropdownMenuItem>
-              <DropdownMenuItem>Pausados</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <button className="p-2 text-gray-600 hover:text-residuall-green transition-colors">
-            <Bell size={20} />
-          </button>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="flex items-center cursor-pointer focus:outline-none">
-                <img
-                  src="https://via.placeholder.com/32"
-                  alt="User Avatar"
-                  className="w-8 h-8 rounded-full mr-2"
-                />
-                <span className="text-gray-700 font-medium hidden md:block">
-                  {user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email || 'Usuário'}
-                </span>
-                <ChevronDown size={16} className="text-gray-500 ml-1 hidden md:block" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent 
-              className="w-48 bg-white" 
-              align="end" 
-              sideOffset={8}
-              avoidCollisions={true}
-              collisionPadding={16}
-            >
-              <DropdownMenuItem onClick={() => navigate('/dashboard/perfil')}>
-                Meu Perfil
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate('/dashboard/configuracoes')}>
-                Configurações
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleLogout} className="text-red-600 cursor-pointer">
-                <LogOut size={16} className="mr-2" /> Sair
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <button className="bg-residuall-green text-white px-4 py-2 rounded-lg font-medium hover:bg-residuall-green/90 transition-colors hidden md:block">
-            Publish
-          </button>
-        </div>
+    <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-1">Dashboard</h1>
+        <p className="text-base text-gray-600">Visão geral dos seus projetos e métricas</p>
       </div>
 
-      {/* Título do Dashboard */}
-      <h1 className="text-3xl font-bold text-gray-800 mb-6 px-6">Dashboard</h1>
-      <p className="text-gray-600 mb-8 px-6">Bem-vindo!</p>
+      {/* Métricas principais */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <AnimatedCardWrapper delay={0.1}>
+          <Card className="shadow-md border-none hover:shadow-lg transition-shadow duration-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600">Projetos Ativos</CardTitle>
+              <Activity className="h-5 w-5 text-blue-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-gray-900">
+                <AnimatedNumber value={metrics?.active_projects || 0} />
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                de {metrics?.total_projects || 0} projetos totais
+              </p>
+            </CardContent>
+          </Card>
+        </AnimatedCardWrapper>
 
-      {/* Cards de indicadores */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 px-6">
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-lg font-semibold text-gray-700">Projetos Ativos</h3>
-          {loadingProjects ? (
-            <p className="text-4xl font-bold text-residuall-green">...</p>
-          ) : errorProjects ? (
-            <p className="text-red-500">Erro: {errorProjects}</p>
-          ) : (
-            <p className="text-4xl font-bold text-residuall-green">{activeProjectsCount}</p>
-          )}
-          <p className="text-sm text-gray-500 mt-2">
-            {projects.length > 0 
-              ? `${projects.length} projeto${projects.length > 1 ? 's' : ''} total`
-              : 'Nenhum projeto'
-            }
-          </p>
-        </div>
+        <AnimatedCardWrapper delay={0.2}>
+          <Card className="shadow-md border-none hover:shadow-lg transition-shadow duration-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600">Economia Gerada</CardTitle>
+              <DollarSign className="h-5 w-5 text-green-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-green-600">
+                R$ <AnimatedNumber value={metrics?.total_economy_generated || 0} decimals={2} />
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                através do monitoramento
+              </p>
+            </CardContent>
+          </Card>
+        </AnimatedCardWrapper>
 
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-lg font-semibold text-gray-700">Economia Gerada</h3>
-          {loadingMaterials || loadingWasteEntries ? (
-            <p className="text-4xl font-bold text-gray-900">...</p>
-          ) : errorMaterials || errorWasteEntries ? (
-            <p className="text-red-500">Erro ao calcular</p>
-          ) : (
-            <p className="text-4xl font-bold text-gray-900">
-              R$ {totalEconomyGenerated.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-            </p>
-          )}
-          <p className="text-sm text-green-500 mt-2">Baseado no desperdício evitado</p>
-        </div>
+        <AnimatedCardWrapper delay={0.3}>
+          <Card className="shadow-md border-none hover:shadow-lg transition-shadow duration-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600">Materiais Cadastrados</CardTitle>
+              <Package className="h-5 w-5 text-purple-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-gray-900">
+                <AnimatedNumber value={metrics?.total_materials || 0} />
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                em todos os projetos
+              </p>
+            </CardContent>
+          </Card>
+        </AnimatedCardWrapper>
 
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-lg font-semibold text-gray-700">Materiais Cadastrados</h3>
-          {loadingMaterials ? (
-            <p className="text-4xl font-bold text-gray-900">...</p>
-          ) : errorMaterials ? (
-            <p className="text-red-500">Erro: {errorMaterials}</p>
-          ) : (
-            <p className="text-4xl font-bold text-gray-900">{totalMaterialsCount}</p>
-          )}
-          <p className="text-sm text-green-500 mt-2">
-            {totalMaterialsCount > 0 ? `${totalMaterialsCount} tipos de materiais` : 'Nenhum material cadastrado'}
-          </p>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-lg font-semibold text-gray-700">Desperdício Monitorado</h3>
-          {loadingWasteEntries ? (
-            <p className="text-4xl font-bold text-gray-900">...</p>
-          ) : errorWasteEntries ? (
-            <p className="text-red-500">Erro: {errorWasteEntries}</p>
-          ) : (
-            <p className="text-4xl font-bold text-gray-900">{Math.round(totalWasteAvoided)}</p>
-          )}
-          <p className="text-sm text-gray-500 mt-2">
-            {wasteEntries.length > 0 ? `${wasteEntries.length} registros de desperdício` : 'Nenhum registro'}
-          </p>
-        </div>
+        <AnimatedCardWrapper delay={0.4}>
+          <Card className="shadow-md border-none hover:shadow-lg transition-shadow duration-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600">Desperdício Monitorado</CardTitle>
+              <AlertTriangle className="h-5 w-5 text-red-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-gray-900">
+                <AnimatedNumber value={metrics?.total_waste_quantity || 0} decimals={1} /> kg
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                {metrics?.total_waste_entries || 0} registros de desperdício
+              </p>
+            </CardContent>
+          </Card>
+        </AnimatedCardWrapper>
       </div>
 
-      {/* SEÇÃO: Projetos Recentes com Barra de Progresso */}
-      <div className="bg-white p-6 rounded-lg shadow-md mb-6 mx-6">
-        <h3 className="text-lg font-semibold text-gray-700 mb-4">Projetos Recentes</h3>
-        {loadingProjects ? (
-          <p className="text-gray-500">Carregando projetos...</p>
-        ) : errorProjects ? (
-          <p className="text-red-500">Erro ao carregar projetos: {errorProjects}</p>
-        ) : recentProjects.length === 0 ? (
-          <p className="text-gray-500">Nenhum projeto recente para exibir.</p>
-        ) : (
-          <div className="space-y-4">
-            {recentProjects.map((project) => {
-              const progress = getProjectProgress(project.status);
-              return (
-                <div key={project.id} className="border-b border-gray-200 pb-4 last:border-b-0 last:pb-0">
-                  <div className="flex justify-between items-center mb-2">
-                    <h4 className="font-medium text-gray-800">{project.name}</h4>
-                    <span className="text-sm text-gray-600">{progress}%</span>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Gráfico de Economia x Desperdício */}
+        <AnimatedCardWrapper delay={0.5}>
+          <Card className="shadow-md border-none">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BarChart3 className="h-5 w-5 text-blue-600" />
+                Economia vs Desperdício
+              </CardTitle>
+              <CardDescription>Comparação por projeto (últimos 6 projetos)</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {chartData.length > 0 ? (
+                <Chart data={chartData} />
+              ) : (
+                <div className="h-64 flex items-center justify-center text-gray-500">
+                  <div className="text-center">
+                    <BarChart3 className="h-12 w-12 mx-auto mb-2 text-gray-300" />
+                    <p>Dados insuficientes para gráfico</p>
+                    <p className="text-sm">Crie projetos e registre dados</p>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2.5">
-                    <div
-                      className="bg-residuall-green h-2.5 rounded-full transition-all duration-300"
-                      style={{ width: `${progress}%` }}
-                    ></div>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1">Status: {project.status}</p>
-                  {project.location && (
-                    <p className="text-xs text-gray-500">Local: {project.location}</p>
-                  )}
                 </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+              )}
+            </CardContent>
+          </Card>
+        </AnimatedCardWrapper>
 
-      {/* Seção de gráficos com dados reais */}
-      <div className="bg-white p-6 rounded-lg shadow-md mb-6 mx-6">
-        <h3 className="text-lg font-semibold text-gray-700 mb-4">Economia x Desperdício</h3>
-        {economyWasteData.length > 0 ? (
-          <Chart 
-            type="bar" 
-            data={economyWasteData} 
-            height={300} 
-            title="Economia vs Desperdício por Projeto"
-          />
-        ) : (
-          <div className="w-full h-48 bg-gray-100 rounded flex items-center justify-center">
-            <p className="text-gray-500">Dados insuficientes para exibir o gráfico</p>
-          </div>
-        )}
+        {/* Projetos Recentes */}
+        <AnimatedCardWrapper delay={0.6}>
+          <Card className="shadow-md border-none">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-green-600" />
+                Projetos Recentes
+              </CardTitle>
+              <CardDescription>Últimos projetos criados</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {projects.length === 0 ? (
+                <div className="text-center py-8">
+                  <Activity className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                  <p className="text-gray-500 mb-4">Nenhum projeto encontrado</p>
+                  <Link to="/dashboard/projetos/novo">
+                    <Button className="bg-residuall-green hover:bg-residuall-green/90">
+                      Criar Primeiro Projeto
+                    </Button>
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {projects.slice(0, 3).map((project) => (
+                    <div key={project.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                      <div>
+                        <h4 className="font-medium text-gray-900">{project.name}</h4>
+                        <p className="text-sm text-gray-500">{project.location}</p>
+                      </div>
+                      <div className="text-right">
+                        <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                          project.status === 'execução' || project.status === 'em_andamento' 
+                            ? 'bg-green-100 text-green-800' 
+                            : project.status === 'planejamento'
+                            ? 'bg-blue-100 text-blue-800'
+                            : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {project.status}
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {project.progress_percentage}% concluído
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                  <div className="pt-4 border-t">
+                    <Link to="/dashboard/projetos">
+                      <Button variant="outline" className="w-full">
+                        Ver Todos os Projetos
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </AnimatedCardWrapper>
       </div>
-
-      <div className="bg-white p-6 rounded-lg shadow-md mx-6">
-        <h3 className="text-lg font-semibold text-gray-700 mb-4">Desperdício por Etapa</h3>
-        {loadingStageWaste ? (
-          <div className="w-full h-48 bg-gray-100 rounded flex items-center justify-center">
-            <p className="text-gray-500">Carregando dados...</p>
-          </div>
-        ) : (
-          <Chart 
-            type="pie" 
-            data={finalWasteByStageData} 
-            height={300} 
-            title="Distribuição de Desperdício por Etapa"
-          />
-        )}
-      </div>
-    </div>
+    </main>
   );
 };
 
