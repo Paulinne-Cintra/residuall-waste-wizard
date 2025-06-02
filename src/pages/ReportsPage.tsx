@@ -73,10 +73,6 @@ const ReportsPage = () => {
           <h1 className="text-3xl font-bold text-gray-900 mb-1">Relatórios</h1>
           <p className="text-base text-gray-600">Análise detalhada de desperdício e performance dos projetos</p>
         </div>
-        <Button className="mt-4 md:mt-0">
-          <Download className="h-4 w-4 mr-2" />
-          Exportar Todos
-        </Button>
       </div>
 
       {/* Filters */}

@@ -7,64 +7,22 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useTeamMembers } from '@/hooks/useTeamMembers';
+import { useToast } from "@/hooks/use-toast";
+import TeamMemberProfileModal from '@/components/TeamMemberProfileModal';
+import EditTeamMemberModal from '@/components/EditTeamMemberModal';
 
 const TeamPage = () => {
+  const { members, loading, deleteMember, refetch } = useTeamMembers();
+  const { toast } = useToast();
+  
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState('Todos');
   const [statusFilter, setStatusFilter] = useState('Todos');
-
-  // Dados de exemplo para membros do time (será substituído pelos dados reais do banco)
-  const teamMembers = [
-    {
-      id: '1',
-      name: 'Carlos Silva',
-      email: 'carlos.silva@residuall.com',
-      phone: '(11) 99999-1234',
-      role: 'Engenheiro Civil',
-      status: 'Ativo',
-      avatar: null,
-      joinedAt: '2024-01-15',
-      projects: ['Residencial Aurora', 'Casa Sustentável Verde'],
-      location: 'São Paulo, SP'
-    },
-    {
-      id: '2',
-      name: 'Maria Santos',
-      email: 'maria.santos@residuall.com',
-      phone: '(11) 99999-5678',
-      role: 'Arquiteta',
-      status: 'Ativo',
-      avatar: null,
-      joinedAt: '2024-02-01',
-      projects: ['Edifício Comercial Centro'],
-      location: 'São Paulo, SP'
-    },
-    {
-      id: '3',
-      name: 'João Oliveira',
-      email: 'joao.oliveira@residuall.com',
-      phone: '(11) 99999-9012',
-      role: 'Técnico em Edificações',
-      status: 'Ativo',
-      avatar: null,
-      joinedAt: '2024-01-20',
-      projects: ['Reforma Shopping Plaza', 'Galpão Industrial'],
-      location: 'Guarulhos, SP'
-    },
-    {
-      id: '4',
-      name: 'Ana Costa',
-      email: 'ana.costa@residuall.com',
-      phone: '(11) 99999-3456',
-      role: 'Gerente de Projetos',
-      status: 'Ativo',
-      avatar: null,
-      joinedAt: '2024-01-10',
-      projects: ['Condomínio Horizontal Jardins'],
-      location: 'Alphaville, SP'
-    }
-  ];
+  
+  const [selectedMember, setSelectedMember] = useState<any>(null);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
@@ -85,7 +43,7 @@ const TeamPage = () => {
     }
   };
 
-  const filteredMembers = teamMembers.filter(member => {
+  const filteredMembers = members.filter(member => {
     const matchesSearch = member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          member.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          member.role.toLowerCase().includes(searchQuery.toLowerCase());
@@ -96,7 +54,49 @@ const TeamPage = () => {
     return matchesSearch && matchesRole && matchesStatus;
   });
 
-  const roles = [...new Set(teamMembers.map(member => member.role))];
+  const roles = [...new Set(members.map(member => member.role))];
+
+  const handleViewProfile = (member: any) => {
+    setSelectedMember(member);
+    setIsProfileModalOpen(true);
+  };
+
+  const handleEditMember = (member: any) => {
+    setSelectedMember(member);
+    setIsEditModalOpen(true);
+  };
+
+  const handleRemoveMember = async (member: any) => {
+    if (window.confirm(`Tem certeza que deseja remover ${member.name} da equipe?`)) {
+      const success = await deleteMember(member.id, member.has_account);
+      if (success) {
+        refetch();
+      }
+    }
+  };
+
+  const handleSaveMember = async (memberId: string, data: { name: string; role: string; status: string }) => {
+    // Aqui você implementaria a lógica para salvar as alterações
+    // Por enquanto, vamos simular uma operação bem-sucedida
+    console.log('Salvando alterações do membro:', memberId, data);
+    
+    // Simular delay da API
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Simular sucesso
+    await refetch();
+    return true;
+  };
+
+  if (loading) {
+    return (
+      <main className="flex-1 overflow-y-auto p-4 md:p-6">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-residuall-green"></div>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="flex-1 overflow-y-auto p-4 md:p-6">
@@ -122,7 +122,7 @@ const TeamPage = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-residuall-gray-tableText">{teamMembers.length}</div>
+            <div className="text-3xl font-bold text-residuall-gray-tableText">{members.length}</div>
             <p className="text-sm text-residuall-gray">membros ativos</p>
           </CardContent>
         </Card>
@@ -194,10 +194,10 @@ const TeamPage = () => {
                 <DropdownMenuItem onClick={() => setStatusFilter('Todos')}>
                   Todos os Status
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setStatusFilter('Ativo')}>
+                <DropdownMenuItem onClick={() => setStatusFilter('active')}>
                   Ativo
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setStatusFilter('Inativo')}>
+                <DropdownMenuItem onClick={() => setStatusFilter('inactive')}>
                   Inativo
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -229,10 +229,10 @@ const TeamPage = () => {
             <div className="text-center py-12">
               <Users className="mx-auto h-16 w-16 text-gray-400 mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">
-                {teamMembers.length === 0 ? 'Nenhum membro cadastrado' : 'Nenhum membro encontrado'}
+                {members.length === 0 ? 'Nenhum membro cadastrado' : 'Nenhum membro encontrado'}
               </h3>
               <p className="text-gray-500 mb-6">
-                {teamMembers.length === 0 
+                {members.length === 0 
                   ? 'Comece adicionando membros à sua equipe.' 
                   : 'Tente ajustar os filtros de busca.'
                 }
@@ -245,7 +245,7 @@ const TeamPage = () => {
                   <CardHeader className="pb-3">
                     <div className="flex items-center space-x-3">
                       <Avatar className="h-12 w-12">
-                        <AvatarImage src={member.avatar || undefined} />
+                        <AvatarImage src={member.profile_picture_url || undefined} />
                         <AvatarFallback className="bg-residuall-green text-white">
                           {getInitials(member.name)}
                         </AvatarFallback>
@@ -263,9 +263,18 @@ const TeamPage = () => {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="bg-white">
-                          <DropdownMenuItem>Ver Perfil</DropdownMenuItem>
-                          <DropdownMenuItem>Editar</DropdownMenuItem>
-                          <DropdownMenuItem>Remover</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleViewProfile(member)}>
+                            Ver Perfil
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleEditMember(member)}>
+                            Editar
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={() => handleRemoveMember(member)}
+                            className="text-red-600 focus:text-red-600"
+                          >
+                            Remover
+                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
@@ -278,34 +287,20 @@ const TeamPage = () => {
                       </div>
                       <div className="flex items-center gap-2">
                         <Phone size={14} />
-                        <span>{member.phone}</span>
+                        <span>Não informado</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <MapPin size={14} />
-                        <span>{member.location}</span>
-                      </div>
-                    </div>
-                    <div className="mt-3">
-                      <p className="text-xs text-gray-500 mb-1">Projetos ativos:</p>
-                      <div className="flex flex-wrap gap-1">
-                        {member.projects.slice(0, 2).map((project, index) => (
-                          <Badge key={index} variant="outline" className="text-xs">
-                            {project.length > 15 ? project.substring(0, 15) + '...' : project}
-                          </Badge>
-                        ))}
-                        {member.projects.length > 2 && (
-                          <Badge variant="outline" className="text-xs">
-                            +{member.projects.length - 2}
-                          </Badge>
-                        )}
+                        <span>Não informado</span>
                       </div>
                     </div>
                   </CardContent>
                   <CardFooter className="pt-0">
                     <div className="w-full flex items-center justify-between text-xs text-gray-500">
-                      <span>Desde {new Date(member.joinedAt).toLocaleDateString('pt-BR')}</span>
-                      <Badge className={member.status === 'Ativo' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
-                        {member.status}
+                      <span>Desde {new Date(member.created_at).toLocaleDateString('pt-BR')}</span>
+                      <Badge className={member.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
+                        {member.status === 'active' ? 'Ativo' : 
+                         member.status === 'away' ? 'Ausente' : 'Inativo'}
                       </Badge>
                     </div>
                   </CardFooter>
@@ -315,6 +310,20 @@ const TeamPage = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Modais */}
+      <TeamMemberProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+        member={selectedMember}
+      />
+
+      <EditTeamMemberModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        member={selectedMember}
+        onSave={handleSaveMember}
+      />
     </main>
   );
 };
