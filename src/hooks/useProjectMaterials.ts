@@ -11,6 +11,10 @@ interface ProjectMaterial {
   unit_of_measurement: string | null;
   dimensions_specs: string | null;
   cost_per_unit: number | null;
+  stock_quantity: number | null;
+  minimum_quantity: number | null;
+  category: string | null;
+  supplier_id: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -19,6 +23,7 @@ interface UseProjectMaterialsResult {
   materials: ProjectMaterial[];
   loading: boolean;
   error: string | null;
+  createMaterial: (materialData: any) => Promise<boolean>;
 }
 
 export const useProjectMaterials = (): UseProjectMaterialsResult => {
@@ -71,5 +76,36 @@ export const useProjectMaterials = (): UseProjectMaterialsResult => {
     }
   }, [user]);
 
-  return { materials, loading, error };
+  const createMaterial = async (materialData: any): Promise<boolean> => {
+    if (!user) {
+      setError("Usuário não autenticado.");
+      return false;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('project_materials')
+        .insert([materialData])
+        .select();
+
+      if (error) {
+        console.error('Erro ao criar material:', error);
+        setError(error.message);
+        return false;
+      }
+
+      if (data && data.length > 0) {
+        setMaterials(prev => [...prev, data[0] as ProjectMaterial]);
+        return true;
+      }
+
+      return false;
+    } catch (err: any) {
+      console.error('Erro ao criar material:', err);
+      setError(err.message);
+      return false;
+    }
+  };
+
+  return { materials, loading, error, createMaterial };
 };

@@ -11,6 +11,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useProjectMaterials } from '@/hooks/useProjectMaterials';
 import { useProjects } from '@/hooks/useProjects';
 import MaterialFormModal from '@/components/MaterialFormModal';
+import { useToast } from "@/hooks/use-toast";
 
 const MaterialsPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -18,8 +19,9 @@ const MaterialsPage = () => {
   const [stockFilter, setStockFilter] = useState('Todos');
   const [isModalOpen, setIsModalOpen] = useState(false);
   
-  const { materials, loading, error } = useProjectMaterials();
+  const { materials, loading, error, createMaterial } = useProjectMaterials();
   const { projects } = useProjects();
+  const { toast } = useToast();
 
   // Filtrar materiais baseado nos filtros
   const filteredMaterials = useMemo(() => {
@@ -88,6 +90,34 @@ const MaterialsPage = () => {
     
     if (estimated === 0) return 0;
     return Math.min((stock / estimated) * 100, 100);
+  };
+
+  // Função para lidar com criação de material
+  const handleCreateMaterial = async (materialData: any): Promise<boolean> => {
+    try {
+      const success = await createMaterial(materialData);
+      if (success) {
+        toast({
+          title: "Material cadastrado",
+          description: "O material foi adicionado com sucesso.",
+        });
+        return true;
+      } else {
+        toast({
+          title: "Erro",
+          description: "Não foi possível cadastrar o material.",
+          variant: "destructive",
+        });
+        return false;
+      }
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Ocorreu um erro ao cadastrar o material.",
+        variant: "destructive",
+      });
+      return false;
+    }
   };
 
   if (loading) {
@@ -363,6 +393,7 @@ const MaterialsPage = () => {
       <MaterialFormModal 
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+        onSubmit={handleCreateMaterial}
       />
     </main>
   );
