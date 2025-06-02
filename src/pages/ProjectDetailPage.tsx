@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,17 +15,18 @@ import {
   TrendingUp,
   AlertTriangle,
   FileText,
-  Settings
+  Edit
 } from 'lucide-react';
 import { useOptimizedProjects } from '@/hooks/useOptimizedProjects';
 import Chart from '@/components/Chart';
+import EditProjectForm from '@/components/forms/EditProjectForm';
 
 const ProjectDetailPage = () => {
   const { projectId } = useParams<{ projectId: string }>();
   const { projects, loading } = useOptimizedProjects();
   const [project, setProject] = useState<any>(null);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
 
-  // Dados fictícios para demonstração
   const mockProjectDetails = {
     materials: [
       { name: 'Concreto', quantity: 150, unit: 'm³', cost: 45000, waste: 8.2 },
@@ -78,6 +78,11 @@ const ProjectDetailPage = () => {
     }
   }, [projects, projectId]);
 
+  const handleProjectUpdate = (updatedProject: any) => {
+    setProject(updatedProject);
+    setIsEditing(false);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -111,6 +116,31 @@ const ProjectDetailPage = () => {
     }
   };
 
+  if (isEditing) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <Button variant="ghost" size="sm" onClick={() => setIsEditing(false)}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Cancelar
+            </Button>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Editar Projeto</h1>
+              <p className="text-gray-600">Atualize as informações do projeto</p>
+            </div>
+          </div>
+        </div>
+        
+        <EditProjectForm 
+          project={project} 
+          onUpdate={handleProjectUpdate}
+          onCancel={() => setIsEditing(false)}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -135,9 +165,9 @@ const ProjectDetailPage = () => {
             </div>
           </div>
         </div>
-        <Button>
-          <Settings className="h-4 w-4 mr-2" />
-          Configurações
+        <Button onClick={() => setIsEditing(true)}>
+          <Edit className="h-4 w-4 mr-2" />
+          Editar
         </Button>
       </div>
 
