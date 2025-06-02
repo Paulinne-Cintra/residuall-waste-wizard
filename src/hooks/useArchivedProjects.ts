@@ -108,6 +108,9 @@ export const useArchivedProjects = () => {
   const restoreProject = async (projectId: string) => {
     // Se for um projeto fictício, simular sucesso
     if (projectId.startsWith('mock-')) {
+      // Remove o projeto fictício da lista local
+      setArchivedProjects(prev => prev.filter(project => project.id !== projectId));
+      
       toast({
         title: "Projeto restaurado!",
         description: "Este é um projeto de demonstração. Em uma aplicação real, seria restaurado com sucesso.",
@@ -118,17 +121,23 @@ export const useArchivedProjects = () => {
     try {
       const { error } = await supabase
         .from('projects')
-        .update({ arquivado: false })
-        .eq('id', projectId);
+        .update({ 
+          arquivado: false,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', projectId)
+        .eq('user_id', user?.id);
 
       if (error) throw error;
 
+      // Remove o projeto da lista local
+      setArchivedProjects(prev => prev.filter(project => project.id !== projectId));
+
       toast({
         title: "Sucesso!",
-        description: "Projeto restaurado com sucesso!",
+        description: "Projeto restaurado com sucesso! O projeto agora está disponível na página de projetos.",
       });
 
-      await fetchArchivedProjects();
       return true;
     } catch (err: any) {
       console.error('Erro ao restaurar projeto:', err);
@@ -144,6 +153,9 @@ export const useArchivedProjects = () => {
   const deleteProject = async (projectId: string) => {
     // Se for um projeto fictício, simular sucesso
     if (projectId.startsWith('mock-')) {
+      // Remove o projeto fictício da lista local
+      setArchivedProjects(prev => prev.filter(project => project.id !== projectId));
+      
       toast({
         title: "Projeto excluído!",
         description: "Este é um projeto de demonstração. Em uma aplicação real, seria excluído permanentemente.",
@@ -152,19 +164,78 @@ export const useArchivedProjects = () => {
     }
 
     try {
+      // Primeiro, excluir todos os materiais relacionados ao projeto
+      const { error: materialsError } = await supabase
+        .from('project_materials')
+        .delete()
+        .eq('project_id', projectId);
+
+      if (materialsError) {
+        console.error('Erro ao excluir materiais do projeto:', materialsError);
+      }
+
+      // Excluir entradas de desperdício relacionadas
+      const { error: wasteError } = await supabase
+        .from('waste_entries')
+        .delete()
+        .in('project_material_id', 
+          supabase
+            .from('project_materials')
+            .select('id')
+            .eq('project_id', projectId)
+        );
+
+      if (wasteError) {
+        console.error('Erro ao excluir entradas de desperdício:', wasteError);
+      }
+
+      // Excluir desperdício por etapa
+      const { error: stageWasteError } = await supabase
+        .from('project_stage_waste')
+        .delete()
+        .eq('project_id', projectId);
+
+      if (stageWasteError) {
+        console.error('Erro ao excluir desperdício por etapa:', stageWasteError);
+      }
+
+      // Excluir recomendações relacionadas
+      const { error: recommendationsError } = await supabase
+        .from('recomendacoes')
+        .delete()
+        .eq('projeto_id', projectId);
+
+      if (recommendationsError) {
+        console.error('Erro ao excluir recomendações:', recommendationsError);
+      }
+
+      // Excluir relatórios relacionados
+      const { error: reportsError } = await supabase
+        .from('reports')
+        .delete()
+        .eq('project_id', projectId);
+
+      if (reportsError) {
+        console.error('Erro ao excluir relatórios:', reportsError);
+      }
+
+      // Finalmente, excluir o projeto
       const { error } = await supabase
         .from('projects')
         .delete()
-        .eq('id', projectId);
+        .eq('id', projectId)
+        .eq('user_id', user?.id);
 
       if (error) throw error;
+
+      // Remove o projeto da lista local
+      setArchivedProjects(prev => prev.filter(project => project.id !== projectId));
 
       toast({
         title: "Sucesso!",
         description: "Projeto excluído permanentemente!",
       });
 
-      await fetchArchivedProjects();
       return true;
     } catch (err: any) {
       console.error('Erro ao excluir projeto:', err);
