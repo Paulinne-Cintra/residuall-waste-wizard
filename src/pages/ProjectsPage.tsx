@@ -1,224 +1,315 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Filter, Calendar, Plus, ChevronDown, Building2, Search } from 'lucide-react';
-import { useOptimizedProjects } from '@/hooks/useOptimizedProjects';
-import AnimatedButton from '@/components/ui/AnimatedButton';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from "@/hooks/use-toast";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import AnimatedCardWrapper from '@/components/ui/AnimatedCardWrapper';
-import { motion } from 'framer-motion';
+import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import {
+  Building,
+  Plus,
+  MapPin,
+  Package,
+  AlertTriangle,
+  Eye,
+  MoreVertical,
+  Edit,
+  FileText,
+  Archive
+} from "lucide-react";
+
+interface ProjectWithProgress {
+  id: string;
+  user_id: string;
+  name: string;
+  location: string | null;
+  status: string;
+  progress_percentage: number;
+  materials_count: number;
+  waste_entries_count: number;
+  created_at: string;
+  updated_at: string | null;
+}
 
 const ProjectsPage = () => {
-  const { projects, loading, error, searchProjects, filterProjects } = useOptimizedProjects();
-  
-  const [statusFilter, setStatusFilter] = useState('Status');
-  const [dateFilter, setDateFilter] = useState('Data');
-  const [searchQuery, setSearchQuery] = useState('');
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [projects, setProjects] = useState<ProjectWithProgress[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [statusFilter, setStatusFilter] = useState<string>('Todos');
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'execução':
-      case 'em_andamento':
-        return 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800';
-      case 'planejamento':
-        return 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800';
-      case 'concluído':
-      case 'concluido':
-        return 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-800';
-      case 'finalização':
-        return 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800';
-      default:
-        return 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-800';
+  useEffect(() => {
+    fetchProjects();
+  }, [user, statusFilter]);
+
+  const fetchProjects = async () => {
+    setLoading(true);
+    setError(null);
+
+    if (!user) {
+      setError("Usuário não autenticado.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      let query = supabase
+        .from('projects_with_progress')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('arquivado', false)
+        .order('created_at', { ascending: false });
+
+      if (statusFilter !== 'Todos') {
+        query = query.eq('status', statusFilter);
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error('Erro ao buscar projetos:', error);
+        throw error;
+      }
+
+      setProjects(data as ProjectWithProgress[]);
+    } catch (err: any) {
+      console.error('Erro na busca de projetos:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleSearchChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setSearchQuery(value);
-    
-    if (value.trim() === '') {
-      // Se busca estiver vazia, recarrega todos os projetos
-      window.location.reload();
-    } else {
-      await searchProjects(value);
+  const handleArchiveProject = async (project: ProjectWithProgress) => {
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .update({ arquivado: true })
+        .eq('id', project.id);
+
+      if (error) {
+        console.error('Erro ao arquivar projeto:', error);
+        throw error;
+      }
+
+      toast({
+        title: "Sucesso!",
+        description: "Projeto arquivado com sucesso!",
+      });
+
+      fetchProjects();
+    } catch (err: any) {
+      console.error('Erro ao arquivar projeto:', err);
+      toast({
+        title: "Erro",
+        description: "Erro ao arquivar projeto.",
+        variant: "destructive",
+      });
     }
   };
 
-  const handleStatusFilter = async (status: string) => {
-    setStatusFilter(status);
-    await filterProjects(status);
-  };
-
-  if (loading) {
-    return (
-      <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-residuall-green"></div>
-        </div>
-      </main>
-    );
-  }
-
-  if (error) {
-    return (
-      <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
-        <div className="text-center text-red-600">
-          Erro ao carregar projetos: {error}
-        </div>
-      </main>
-    );
-  }
+  const filteredProjects = projects.filter(project => {
+    const searchTerm = searchQuery.toLowerCase();
+    return project.name.toLowerCase().includes(searchTerm) ||
+           (project.location && project.location.toLowerCase().includes(searchTerm)) ||
+           project.status.toLowerCase().includes(searchTerm);
+  });
 
   return (
-    <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
-      {/* Cabeçalho da página */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-1">Projetos</h1>
-          <p className="text-base text-gray-600">Gerencie todos os seus projetos em um só lugar</p>
+          <h1 className="text-2xl font-bold text-residuall-gray-dark">Projetos</h1>
+          <p className="text-residuall-gray">Acompanhe e gerencie seus projetos</p>
         </div>
-        <div className="mt-4 md:mt-0 flex space-x-2">
-          <Link to="/dashboard/projetos/novo">
-            <Button className="flex items-center gap-2">
-              <Plus size={18} />
-              Novo Projeto
-            </Button>
-          </Link>
-        </div>
+        <Link to="/dashboard/projetos/novo">
+          <Button className="bg-residuall-green hover:bg-residuall-green/90">
+            <Plus className="h-4 w-4 mr-2" />
+            Criar Novo Projeto
+          </Button>
+        </Link>
       </div>
 
       {/* Filtros */}
-      <Card className="mb-6 shadow-sm border-none">
+      <Card>
         <CardContent className="flex flex-wrap gap-4 items-center justify-between p-4">
           <div className="flex flex-wrap gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="flex items-center gap-2 text-gray-700 hover:bg-gray-100 border-gray-300">
-                  <Filter size={16} />
-                  <span>{statusFilter}</span>
-                  <ChevronDown size={16} />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" sideOffset={5} className="bg-white">
-                <DropdownMenuItem onClick={() => handleStatusFilter('Todos')}>Todos</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleStatusFilter('planejamento')}>Planejamento</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleStatusFilter('execução')}>Execução</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleStatusFilter('em_andamento')}>Em Andamento</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleStatusFilter('finalização')}>Finalização</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleStatusFilter('concluído')}>Concluído</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="flex items-center gap-2 text-gray-700 hover:bg-gray-100 border-gray-300">
-                  <Calendar size={16} />
-                  <span>{dateFilter}</span>
-                  <ChevronDown size={16} />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" sideOffset={5} className="bg-white">
-                <DropdownMenuItem onClick={() => setDateFilter('Última semana')}>Última semana</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setDateFilter('Último mês')}>Último mês</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setDateFilter('Último trimestre')}>Último trimestre</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setDateFilter('Último ano')}>Último ano</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-            <Input
-              type="text"
-              placeholder="Buscar projetos..."
-              value={searchQuery}
-              onChange={handleSearchChange}
-              className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-residuall-green focus:border-transparent transition-all duration-200"
-            />
+            <div>
+              <Label htmlFor="search">Buscar Projeto:</Label>
+              <Input
+                type="text"
+                id="search"
+                placeholder="Buscar por nome, localização..."
+                className="ml-2"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="status">Filtrar por Status:</Label>
+              <select
+                id="status"
+                className="ml-2 p-2 border rounded"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+              >
+                <option value="Todos">Todos</option>
+                <option value="planejamento">Planejamento</option>
+                <option value="execução">Execução</option>
+                <option value="em_andamento">Em Andamento</option>
+                <option value="concluído">Concluído</option>
+              </select>
+            </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Seção de Projetos */}
-      <Card className="mb-6 shadow-sm border-none">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-2xl font-bold text-gray-900">Seus Projetos</CardTitle>
-          <CardDescription>
-            {searchQuery ? `Resultados para "${searchQuery}"` : 'Lista completa dos seus projetos'}
-          </CardDescription>
+      {/* Lista de projetos */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg text-residuall-gray-tableText">
+            Projetos ({filteredProjects.length})
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          {projects.length === 0 ? (
+          {filteredProjects.length === 0 ? (
             <div className="text-center py-12">
-              <Building2 className="mx-auto h-16 w-16 text-gray-400 mb-4" />
+              <Building className="mx-auto h-16 w-16 text-gray-400 mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">
-                {searchQuery ? 'Nenhum projeto encontrado' : 'Nenhum projeto encontrado'}
+                {projects.length === 0 ? 'Nenhum projeto criado' : 'Nenhum projeto encontrado'}
               </h3>
-              <p className="text-gray-500 mb-6">
-                {searchQuery 
-                  ? 'Tente usar outros termos de busca ou limpar o filtro.'
-                  : 'Comece criando seu primeiro projeto para acompanhar desperdícios.'
+              <p className="text-gray-500 mb-4">
+                {projects.length === 0 
+                  ? 'Comece criando seu primeiro projeto para monitorar desperdícios e otimizar recursos.'
+                  : 'Tente ajustar os filtros de busca ou criar um novo projeto.'
                 }
               </p>
-              {!searchQuery && (
-                <Link to="/dashboard/projetos/novo">
-                  <Button className="bg-residuall-green hover:bg-residuall-green/90">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Criar Primeiro Projeto
-                  </Button>
-                </Link>
-              )}
+              <Link to="/dashboard/projetos/novo">
+                <Button className="bg-residuall-green hover:bg-residuall-green/90">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Criar Novo Projeto
+                </Button>
+              </Link>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {projects.map((project, index) => (
-                <AnimatedCardWrapper key={project.id} delay={0.1 + (index * 0.1)} animateOnView={true}>
-                  <Card className="shadow-md hover:shadow-lg transition-shadow duration-200 border-none">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-lg font-semibold text-gray-800">{project.name}</CardTitle>
-                      <CardDescription className="text-sm text-gray-500">{project.location}</CardDescription>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredProjects.map((project) => (
+                <Card key={project.id} className="hover:shadow-lg transition-shadow cursor-pointer">
+                  <Link to={`/dashboard/projetos/${project.id}`}>
+                    <CardHeader className="pb-3">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <CardTitle className="text-base font-semibold text-residuall-gray-dark line-clamp-2">
+                            {project.name}
+                          </CardTitle>
+                          <div className="flex items-center text-sm text-residuall-gray mt-1">
+                            <MapPin size={14} className="mr-1" />
+                            {project.location || 'Localização não informada'}
+                          </div>
+                        </div>
+                        <Badge 
+                          className={`ml-2 ${
+                            project.status === 'execução' || project.status === 'em_andamento' 
+                              ? 'bg-green-100 text-green-800' 
+                              : project.status === 'planejamento'
+                              ? 'bg-blue-100 text-blue-800'
+                              : 'bg-gray-100 text-gray-800'
+                          }`}
+                        >
+                          {project.status}
+                        </Badge>
+                      </div>
                     </CardHeader>
-                    <CardContent className="pb-4">
-                      <div className="flex items-center justify-between text-sm mb-2">
-                        <span className={getStatusColor(project.status)}>
-                          {project.status.charAt(0).toUpperCase() + project.status.slice(1)}
-                        </span>
-                        <span className="text-base font-semibold text-gray-700">{project.progress_percentage}%</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2 mb-3">
-                        <motion.div
-                          className="bg-residuall-green h-2 rounded-full"
-                          initial={{ width: "0%" }}
-                          animate={{ width: `${project.progress_percentage}%` }}
-                          transition={{
-                            duration: 1.5,
-                            delay: 0.5 + (index * 0.1),
-                            ease: "easeOut"
-                          }}
-                        ></motion.div>
-                      </div>
-                      <div className="text-xs text-gray-500 space-y-1">
-                        <div>Materiais: {project.materials_count}</div>
-                        <div>Registros de desperdício: {project.waste_entries_count}</div>
+                    <CardContent className="pt-0">
+                      <div className="space-y-3">
+                        <div>
+                          <div className="flex justify-between text-sm mb-1">
+                            <span className="text-residuall-gray">Progresso</span>
+                            <span className="font-medium">{project.progress_percentage}%</span>
+                          </div>
+                          <Progress value={project.progress_percentage} className="h-2 bg-gray-200" />
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div className="flex items-center text-residuall-gray">
+                            <Package size={14} className="mr-1" />
+                            <span>{project.materials_count} materiais</span>
+                          </div>
+                          <div className="flex items-center text-residuall-gray">
+                            <AlertTriangle size={14} className="mr-1" />
+                            <span>{project.waste_entries_count} registros</span>
+                          </div>
+                        </div>
+
+                        <div className="text-xs text-residuall-gray">
+                          Criado em {new Date(project.created_at).toLocaleDateString('pt-BR')}
+                        </div>
                       </div>
                     </CardContent>
-                    <CardFooter className="pt-0">
-                      <Link to={`/dashboard/projetos/${project.id}`} className="w-full">
-                        <Button variant="outline" className="w-full text-residuall-green-secondary hover:bg-residuall-green-secondary/10 font-medium px-4 py-2">
-                          Ver detalhes
-                        </Button>
-                      </Link>
-                    </CardFooter>
-                  </Card>
-                </AnimatedCardWrapper>
+                  </Link>
+                  
+                  <CardContent className="pt-0 border-t">
+                    <div className="flex justify-between items-center">
+                      <Button variant="outline" size="sm" asChild>
+                        <Link to={`/dashboard/projetos/${project.id}`}>
+                          <Eye className="h-4 w-4 mr-1" />
+                          Ver Detalhes
+                        </Link>
+                      </Button>
+                      
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem asChild>
+                            <Link to={`/dashboard/projetos/${project.id}`}>
+                              <Eye className="h-4 w-4 mr-2" />
+                              Ver detalhes
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <Edit className="h-4 w-4 mr-2" />
+                            Editar
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <FileText className="h-4 w-4 mr-2" />
+                            Gerar relatório
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem 
+                            className="text-orange-600"
+                            onClick={() => handleArchiveProject(project)}
+                          >
+                            <Archive className="h-4 w-4 mr-2" />
+                            Arquivar
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </CardContent>
+                </Card>
               ))}
             </div>
           )}
         </CardContent>
       </Card>
-    </main>
+    </div>
   );
 };
 
