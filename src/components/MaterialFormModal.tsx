@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -14,7 +13,7 @@ interface MaterialFormModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: any) => Promise<boolean>;
-  projectId: string;
+  projectId?: string;
 }
 
 const materialTypes = [
@@ -46,7 +45,7 @@ const units = [
   'Peça'
 ];
 
-const MaterialFormModal: React.FC<MaterialFormModalProps> = ({ isOpen, onClose, onSubmit }) => {
+const MaterialFormModal: React.FC<MaterialFormModalProps> = ({ isOpen, onClose, onSubmit, projectId }) => {
   const { suppliers, createSupplier } = useSuppliers();
   const { projects } = useProjects();
   
@@ -59,7 +58,7 @@ const MaterialFormModal: React.FC<MaterialFormModalProps> = ({ isOpen, onClose, 
     minimum_quantity: '',
     category: '',
     supplier_id: '',
-    project_id: '',
+    project_id: projectId || '',
     dimensions_specs: ''
   });
   
@@ -308,22 +307,24 @@ const MaterialFormModal: React.FC<MaterialFormModalProps> = ({ isOpen, onClose, 
             </div>
           )}
 
-          {/* Projeto */}
-          <div className="space-y-2">
-            <Label htmlFor="project">Projeto *</Label>
-            <Select value={formData.project_id} onValueChange={(value) => handleInputChange('project_id', value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione o projeto" />
-              </SelectTrigger>
-              <SelectContent>
-                {activeProjects.map((project) => (
-                  <SelectItem key={project.id} value={project.id}>
-                    {project.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {/* Projeto - only show if projectId is not provided */}
+          {!projectId && (
+            <div className="space-y-2">
+              <Label htmlFor="project">Projeto *</Label>
+              <Select value={formData.project_id} onValueChange={(value) => handleInputChange('project_id', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o projeto" />
+                </SelectTrigger>
+                <SelectContent>
+                  {activeProjects.map((project) => (
+                    <SelectItem key={project.id} value={project.id}>
+                      {project.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           {/* Especificações */}
           <div className="space-y-2">
