@@ -283,13 +283,17 @@ const ProjectsPage = () => {
                               Ver detalhes
                             </Link>
                           </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <Edit className="h-4 w-4 mr-2" />
-                            Editar
+                          <DropdownMenuItem asChild>
+                            <Link to={`/dashboard/projetos/${project.id}`}>
+                              <Edit className="h-4 w-4 mr-2" />
+                              Editar
+                            </Link>
                           </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <FileText className="h-4 w-4 mr-2" />
-                            Gerar relatório
+                          <DropdownMenuItem asChild>
+                            <Link to={`/dashboard/relatorios/${project.id}`}>
+                              <FileText className="h-4 w-4 mr-2" />
+                              Gerar relatório
+                            </Link>
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem 
