@@ -2,11 +2,11 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { File, Trash2, Filter, Calendar, ChevronDown } from "lucide-react";
+import { File, Trash2, Filter, Calendar, ChevronDown, Archive, RotateCcw } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useArchivedProjects } from "@/hooks/useArchivedProjects";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
@@ -80,6 +80,54 @@ const ArquivadosPage = () => {
         <p className="text-residuall-gray">Gerencie itens arquivados e restaure quando necessário</p>
       </div>
 
+      {/* Estatísticas */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-gray-500 flex items-center gap-2">
+              <Archive size={16} />
+              Total Arquivado
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-gray-700">{archivedProjects.length}</div>
+            <p className="text-sm text-gray-500 mt-1">projetos arquivados</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-gray-500">
+              Este Mês
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-blue-600">
+              {archivedProjects.filter(p => {
+                const archiveDate = new Date(p.updated_at);
+                const now = new Date();
+                return archiveDate.getMonth() === now.getMonth() && archiveDate.getFullYear() === now.getFullYear();
+              }).length}
+            </div>
+            <p className="text-sm text-gray-500 mt-1">arquivados recentemente</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-gray-500">
+              Tipos de Projeto
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-green-600">
+              {[...new Set(archivedProjects.map(p => p.project_type).filter(Boolean))].length}
+            </div>
+            <p className="text-sm text-gray-500 mt-1">categorias diferentes</p>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Filtros */}
       <Card className="mb-6">
         <CardContent className="flex flex-wrap gap-4 items-center justify-between p-4">
@@ -130,83 +178,94 @@ const ArquivadosPage = () => {
         </CardContent>
       </Card>
 
-      <div className="mt-6 bg-white p-6 rounded-lg shadow">
-        <h2 className="text-xl font-semibold mb-4 text-residuall-gray-dark">Lista de Itens Arquivados</h2>
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nome do Projeto</TableHead>
-                <TableHead>Tipo</TableHead>
-                <TableHead>Localização</TableHead>
-                <TableHead>Data de Arquivamento</TableHead>
-                <TableHead className="text-right">Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredProjects.map((project) => (
-                <TableRow key={project.id}>
-                  <TableCell className="font-medium">{project.name}</TableCell>
-                  <TableCell>{project.project_type || 'Não definido'}</TableCell>
-                  <TableCell>{project.location || 'Não definido'}</TableCell>
-                  <TableCell>{formatDate(project.updated_at)}</TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleRestore(project)}
-                        className="flex items-center"
-                      >
-                        <File size={16} className="mr-1" /> Restaurar
-                      </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
+      {/* Lista de projetos arquivados */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg text-residuall-gray-tableText">
+            Projetos Arquivados ({filteredProjects.length})
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {filteredProjects.length === 0 ? (
+            <div className="text-center py-12">
+              <Archive className="mx-auto h-16 w-16 text-gray-400 mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                {archivedProjects.length === 0 ? 'Nenhum projeto arquivado' : 'Nenhum projeto encontrado'}
+              </h3>
+              <p className="text-gray-500">
+                {archivedProjects.length === 0 
+                  ? 'Nenhum projeto arquivado no momento.'
+                  : 'Tente ajustar os filtros de busca.'
+                }
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nome do Projeto</TableHead>
+                    <TableHead>Tipo</TableHead>
+                    <TableHead>Localização</TableHead>
+                    <TableHead>Data de Arquivamento</TableHead>
+                    <TableHead className="text-right">Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredProjects.map((project) => (
+                    <TableRow key={project.id}>
+                      <TableCell className="font-medium">{project.name}</TableCell>
+                      <TableCell>{project.project_type || 'Não definido'}</TableCell>
+                      <TableCell>{project.location || 'Não definido'}</TableCell>
+                      <TableCell>{formatDate(project.updated_at)}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end space-x-2">
                           <Button
                             variant="outline"
                             size="sm"
-                            className="text-red-500 hover:text-red-700 flex items-center"
+                            onClick={() => handleRestore(project)}
+                            className="flex items-center text-blue-600 hover:text-blue-700"
                           >
-                            <Trash2 size={16} className="mr-1" /> Excluir
+                            <RotateCcw size={16} className="mr-1" /> Restaurar
                           </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Tem certeza que deseja excluir este item permanentemente? Esta ação não pode ser desfeita.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => handleDelete(project)}
-                              className="bg-red-500 hover:bg-red-600"
-                            >
-                              Excluir Permanentemente
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-        
-        {filteredProjects.length === 0 && (
-          <div className="text-center py-8">
-            <p className="text-residuall-gray">
-              {archivedProjects.length === 0 
-                ? "Nenhum projeto arquivado encontrado." 
-                : "Nenhum projeto encontrado com os filtros aplicados."
-              }
-            </p>
-          </div>
-        )}
-      </div>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-red-500 hover:text-red-700 flex items-center"
+                              >
+                                <Trash2 size={16} className="mr-1" /> Excluir
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Tem certeza que deseja excluir este projeto permanentemente? Esta ação não pode ser desfeita.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleDelete(project)}
+                                  className="bg-red-500 hover:bg-red-600"
+                                >
+                                  Excluir Permanentemente
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };

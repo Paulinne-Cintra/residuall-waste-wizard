@@ -1,13 +1,12 @@
-
 import React, { useState, useMemo } from 'react';
-import { Plus, Search, Package, AlertTriangle, CheckCircle, Filter, ChevronDown } from 'lucide-react';
+import { Plus, Search, Package, AlertTriangle, CheckCircle, Filter, ChevronDown, Eye } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useProjectMaterials } from '@/hooks/useProjectMaterials';
 import { useProjects } from '@/hooks/useProjects';
 import MaterialFormModal from '@/components/MaterialFormModal';
@@ -18,6 +17,7 @@ const MaterialsPage = () => {
   const [categoryFilter, setCategoryFilter] = useState('Todas');
   const [stockFilter, setStockFilter] = useState('Todos');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedMaterial, setSelectedMaterial] = useState<any>(null);
   
   const { materials, loading, error, createMaterial } = useProjectMaterials();
   const { projects } = useProjects();
@@ -312,13 +312,12 @@ const MaterialsPage = () => {
                     <TableHead>Estoque</TableHead>
                     <TableHead>Custo Unit.</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>Progresso</TableHead>
+                    <TableHead>Detalhes</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredMaterials.map((material) => {
                     const stockStatus = getStockStatus(material);
-                    const stockProgress = getStockProgress(material);
                     
                     return (
                       <TableRow key={material.id} className="hover:bg-gray-50">
@@ -372,12 +371,63 @@ const MaterialsPage = () => {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <div className="w-full">
-                            <Progress value={stockProgress} className="h-2" />
-                            <span className="text-xs text-gray-500 mt-1">
-                              {stockProgress.toFixed(0)}%
-                            </span>
-                          </div>
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => setSelectedMaterial(material)}
+                              >
+                                <Eye size={18} className="text-residuall-green-secondary hover:text-residuall-green" />
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-md">
+                              <DialogHeader>
+                                <DialogTitle>Detalhes do Material</DialogTitle>
+                                <DialogDescription>
+                                  Informações completas sobre o material selecionado
+                                </DialogDescription>
+                              </DialogHeader>
+                              {selectedMaterial && (
+                                <div className="space-y-4">
+                                  <div>
+                                    <h4 className="font-semibold text-gray-700">Nome:</h4>
+                                    <p className="text-gray-600">{selectedMaterial.material_type_name}</p>
+                                  </div>
+                                  <div>
+                                    <h4 className="font-semibold text-gray-700">Projeto:</h4>
+                                    <p className="text-gray-600">{getProjectName(selectedMaterial.project_id)}</p>
+                                  </div>
+                                  <div>
+                                    <h4 className="font-semibold text-gray-700">Categoria:</h4>
+                                    <p className="text-gray-600">{selectedMaterial.category || 'Não definido'}</p>
+                                  </div>
+                                  <div>
+                                    <h4 className="font-semibold text-gray-700">Quantidade Estimada:</h4>
+                                    <p className="text-gray-600">{selectedMaterial.estimated_quantity} {selectedMaterial.unit_of_measurement}</p>
+                                  </div>
+                                  <div>
+                                    <h4 className="font-semibold text-gray-700">Estoque Atual:</h4>
+                                    <p className="text-gray-600">{selectedMaterial.stock_quantity || 0}</p>
+                                  </div>
+                                  <div>
+                                    <h4 className="font-semibold text-gray-700">Custo por Unidade:</h4>
+                                    <p className="text-gray-600">{selectedMaterial.cost_per_unit ? `R$ ${selectedMaterial.cost_per_unit.toFixed(2)}` : 'Não definido'}</p>
+                                  </div>
+                                  {selectedMaterial.dimensions_specs && (
+                                    <div>
+                                      <h4 className="font-semibold text-gray-700">Especificações:</h4>
+                                      <p className="text-gray-600">{selectedMaterial.dimensions_specs}</p>
+                                    </div>
+                                  )}
+                                  <div>
+                                    <h4 className="font-semibold text-gray-700">Data de Cadastro:</h4>
+                                    <p className="text-gray-600">{new Date(selectedMaterial.created_at).toLocaleDateString('pt-BR')}</p>
+                                  </div>
+                                </div>
+                              )}
+                            </DialogContent>
+                          </Dialog>
                         </TableCell>
                       </TableRow>
                     );

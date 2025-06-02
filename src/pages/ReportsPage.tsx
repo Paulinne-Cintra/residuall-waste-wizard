@@ -20,9 +20,23 @@ const ReportsPage = () => {
   const [statusFilter, setStatusFilter] = useState('Status');
   const [searchQuery, setSearchQuery] = useState('');
 
+  // CORRIGIDO: Remover duplicatas - mostrar apenas um relatório por projeto
+  const uniqueReports = reports.reduce((acc, current) => {
+    const existingIndex = acc.findIndex(item => item.project_id === current.project_id);
+    if (existingIndex === -1) {
+      acc.push(current);
+    } else {
+      // Manter o relatório mais recente se houver duplicatas
+      if (new Date(current.created_at) > new Date(acc[existingIndex].created_at)) {
+        acc[existingIndex] = current;
+      }
+    }
+    return acc;
+  }, [] as typeof reports);
+
   // Atualizar relatórios filtrados quando os dados mudarem
   useEffect(() => {
-    setFilteredReports(reports);
+    setFilteredReports(uniqueReports);
   }, [reports]);
 
   // Dados para gráficos baseados nos relatórios reais
@@ -34,7 +48,7 @@ const ReportsPage = () => {
     { name: 'Mai', economia: Math.round(metrics.totalSavings * 0.32) }
   ];
 
-  const projectsEconomyData = reports.slice(0, 5).map(report => ({
+  const projectsEconomyData = uniqueReports.slice(0, 5).map(report => ({
     name: report.project_name.length > 15 ? report.project_name.substring(0, 15) + '...' : report.project_name,
     economia: Math.round(report.total_economy_generated)
   }));
@@ -44,14 +58,14 @@ const ReportsPage = () => {
     switch (status) {
       case 'concluído':
       case 'concluido':
-        return 'status-tag status-tag-completed';
+        return 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-800';
       case 'execução':
       case 'em_andamento':
-        return 'status-tag status-tag-ongoing';
+        return 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800';
       case 'planejamento':
-        return 'status-tag status-tag-pending';
+        return 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800';
       default:
-        return 'status-tag';
+        return 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-800';
     }
   };
 
@@ -59,7 +73,7 @@ const ReportsPage = () => {
     const value = e.target.value;
     setSearchQuery(value);
     
-    const filtered = reports.filter(report =>
+    const filtered = uniqueReports.filter(report =>
       report.project_name.toLowerCase().includes(value.toLowerCase())
     );
     setFilteredReports(filtered);
@@ -115,7 +129,7 @@ const ReportsPage = () => {
                 collisionPadding={16}
               >
                 <DropdownMenuItem onClick={() => setProjectFilter('Todos')}>Todos</DropdownMenuItem>
-                {Array.from(new Set(reports.map(r => r.project_name))).map(projectName => (
+                {Array.from(new Set(uniqueReports.map(r => r.project_name))).map(projectName => (
                   <DropdownMenuItem key={projectName} onClick={() => setProjectFilter(projectName)}>
                     {projectName}
                   </DropdownMenuItem>
@@ -263,11 +277,11 @@ const ReportsPage = () => {
         </Card>
       </div>
       
-      {/* Lista de Relatórios - REMOVIDA COLUNA MATERIAL */}
+      {/* CORRIGIDO: Lista de Relatórios - um por projeto */}
       <Card className="mb-6">
         <CardHeader className="flex flex-row items-center justify-between pb-2 pt-6 px-6">
           <CardTitle className="text-lg text-residuall-gray-tableText">
-            Lista de Relatórios por Projeto
+            Lista de Relatórios por Projeto ({filteredReports.length})
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -296,7 +310,7 @@ const ReportsPage = () => {
               </TableHeader>
               <TableBody>
                 {filteredReports.map(report => (
-                  <TableRow key={report.id} className="hover:bg-gray-50">
+                  <TableRow key={`${report.project_id}-${report.id}`} className="hover:bg-gray-50">
                     <TableCell>
                       <div className="flex items-center">
                         <FileText size={16} className="text-residuall-gray mr-2" />

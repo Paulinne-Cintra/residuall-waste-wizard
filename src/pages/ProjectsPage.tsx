@@ -1,30 +1,20 @@
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Filter, Calendar, BarChart, TrendingUp, TrendingDown, Eye, Plus, ChevronDown, Building2, Droplet, Anchor, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Filter, Calendar, Plus, ChevronDown, Building2 } from 'lucide-react';
 import { useProjects } from '@/hooks/useProjects';
-import { useRecommendations } from '@/hooks/useRecommendations';
 import AnimatedButton from '@/components/ui/AnimatedButton';
-import Chart from '../components/Chart';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
 
 import AnimatedCardWrapper from '@/components/ui/AnimatedCardWrapper';
-import AnimatedNumber from '@/components/ui/AnimatedNumber';
 import { motion } from 'framer-motion';
 
 const ProjectsPage = () => {
-  const { toast } = useToast();
   const { projects, loading, error } = useProjects();
-  const { recommendations, updateRecommendation } = useRecommendations();
   
-  const [filteredProjects, setFilteredProjects] = useState(projects);
   const [statusFilter, setStatusFilter] = useState('Status');
   const [dateFilter, setDateFilter] = useState('Data');
   const [searchQuery, setSearchQuery] = useState('');
@@ -60,13 +50,6 @@ const ProjectsPage = () => {
         return 100;
       default:
         return 0;
-    }
-  };
-
-  const toggleRecommendation = async (id: string) => {
-    const recommendation = recommendations.find(r => r.id === id);
-    if (recommendation) {
-      await updateRecommendation(id, { aceita: !recommendation.aceita });
     }
   };
 
@@ -163,7 +146,7 @@ const ProjectsPage = () => {
         </CardContent>
       </Card>
 
-      {/* Seção de Projetos Ativos (Cards de Projeto) */}
+      {/* CORRIGIDO: Seção APENAS de Projetos - removida seção de recomendações */}
       <Card className="mb-6 shadow-sm border-none">
         <CardHeader className="pb-4">
           <CardTitle className="text-2xl font-bold text-gray-900">Seus Projetos</CardTitle>
@@ -223,63 +206,6 @@ const ProjectsPage = () => {
                   </AnimatedCardWrapper>
                 );
               })}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Seção de Recomendações conectada aos dados reais */}
-      <Card className="mb-6 shadow-sm border-none">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-2xl font-bold text-gray-900">Recomendações</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {recommendations.length === 0 ? (
-            <div className="text-center py-8">
-              <AlertTriangle className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-              <p className="text-gray-500">Nenhuma recomendação disponível no momento.</p>
-            </div>
-          ) : (
-            recommendations.slice(0, 5).map((rec) => (
-              <div 
-                key={rec.id} 
-                className="flex items-start p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-150 cursor-pointer"
-                onClick={() => toggleRecommendation(rec.id)}
-              >
-                <button
-                  className={`shrink-0 p-1 rounded-full mr-3 transition-colors duration-200 ${
-                    rec.aceita
-                      ? 'bg-green-100 text-green-500'
-                      : 'bg-residuall-brown bg-opacity-10 text-residuall-brown'
-                  }`}
-                >
-                  {rec.aceita ? (
-                    <CheckCircle size={18} />
-                  ) : (
-                    <AlertTriangle size={18} />
-                  )}
-                </button>
-                <div className="flex-1">
-                  <p className={`text-sm font-medium ${rec.aceita ? 'text-gray-500 line-through' : 'text-gray-800'}`}>
-                    {rec.titulo}
-                  </p>
-                  {rec.descricao && (
-                    <p className="text-xs text-gray-600 mt-1">{rec.descricao}</p>
-                  )}
-                  <p className="text-xs text-gray-500 mt-1">
-                    Projeto: {rec.projects?.name || 'N/A'} • {rec.aceita ? 'Aceita' : 'Pendente'}
-                  </p>
-                </div>
-              </div>
-            ))
-          )}
-          {recommendations.length > 5 && (
-            <div className="text-center pt-4">
-              <Link to="/dashboard/recomendacoes">
-                <Button variant="outline" className="text-residuall-green-secondary">
-                  Ver todas as recomendações
-                </Button>
-              </Link>
             </div>
           )}
         </CardContent>
