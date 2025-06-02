@@ -266,6 +266,53 @@ export type Database = {
           },
         ]
       }
+      project_stage_waste: {
+        Row: {
+          created_at: string
+          id: string
+          measurement_date: string
+          measurement_unit: string | null
+          notes: string | null
+          project_id: string
+          stage_name: string
+          updated_at: string
+          waste_cost: number | null
+          waste_quantity: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          measurement_date?: string
+          measurement_unit?: string | null
+          notes?: string | null
+          project_id: string
+          stage_name: string
+          updated_at?: string
+          waste_cost?: number | null
+          waste_quantity?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          measurement_date?: string
+          measurement_unit?: string | null
+          notes?: string | null
+          project_id?: string
+          stage_name?: string
+          updated_at?: string
+          waste_cost?: number | null
+          waste_quantity?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_stage_waste_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       projects: {
         Row: {
           arquivado: boolean

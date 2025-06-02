@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useProjects } from '@/hooks/useProjects';
 import { useProjectMaterials } from '@/hooks/useProjectMaterials';
 import { useWasteEntries } from '@/hooks/useWasteEntries';
+import { useProjectStageWaste } from '@/hooks/useProjectStageWaste';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from '@/hooks/use-toast';
 import Chart from '@/components/Chart';
@@ -17,6 +18,7 @@ const Dashboard: React.FC = () => {
   const { projects, loading: loadingProjects, error: errorProjects } = useProjects();
   const { materials, loading: loadingMaterials, error: errorMaterials } = useProjectMaterials();
   const { wasteEntries, loading: loadingWasteEntries, error: errorWasteEntries } = useWasteEntries();
+  const { wasteByStage, loading: loadingStageWaste } = useProjectStageWaste();
 
   // Calcula o número de projetos ativos
   const activeProjectsCount = projects.filter(p => p.status === 'execução' || p.status === 'planejamento' || p.status === 'em_andamento').length;
@@ -59,25 +61,8 @@ const Dashboard: React.FC = () => {
     };
   }).filter(item => item.economia > 0 || item.desperdicio > 0);
 
-  // CORRIGIDO: Dados para gráfico Desperdício por Etapas (conectado aos dados reais)
-  const wasteByStageData = wasteEntries.reduce((acc, entry) => {
-    const stage = entry.project_stage;
-    const existing = acc.find(item => item.name === stage);
-    
-    if (existing) {
-      existing.quantidade += entry.wasted_quantity;
-    } else {
-      acc.push({
-        name: stage,
-        quantidade: entry.wasted_quantity
-      });
-    }
-    
-    return acc;
-  }, [] as Array<{name: string, quantidade: number}>);
-
-  // Se não há dados reais, mostrar dados de exemplo
-  const finalWasteByStageData = wasteByStageData.length > 0 ? wasteByStageData : [
+  // Usar dados reais de desperdício por etapa ou fallback para dados de exemplo
+  const finalWasteByStageData = wasteByStage.length > 0 ? wasteByStage : [
     { name: 'Fundação', quantidade: 120 },
     { name: 'Estrutura', quantidade: 85 },
     { name: 'Alvenaria', quantidade: 95 },
@@ -322,12 +307,18 @@ const Dashboard: React.FC = () => {
 
       <div className="bg-white p-6 rounded-lg shadow-md mx-6">
         <h3 className="text-lg font-semibold text-gray-700 mb-4">Desperdício por Etapa</h3>
-        <Chart 
-          type="pie" 
-          data={finalWasteByStageData} 
-          height={300} 
-          title="Distribuição de Desperdício por Etapa"
-        />
+        {loadingStageWaste ? (
+          <div className="w-full h-48 bg-gray-100 rounded flex items-center justify-center">
+            <p className="text-gray-500">Carregando dados...</p>
+          </div>
+        ) : (
+          <Chart 
+            type="pie" 
+            data={finalWasteByStageData} 
+            height={300} 
+            title="Distribuição de Desperdício por Etapa"
+          />
+        )}
       </div>
     </div>
   );

@@ -1,87 +1,23 @@
 
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Filter, Calendar, BarChart, TrendingUp, Eye, FileText, ChevronDown } from 'lucide-react';
-import Chart from '../components/Chart';
+import React, { useState } from 'react';
+import { Eye, Download, Filter, Calendar, ChevronDown } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import { useReports } from "@/hooks/useReports";
+import { Badge } from "@/components/ui/badge";
+import { useProjects } from '@/hooks/useProjects';
+import { useProjectStageWaste } from '@/hooks/useProjectStageWaste';
+import { Link } from 'react-router-dom';
 
 const ReportsPage = () => {
-  const { reports, metrics, loading, error } = useReports();
-
-  // Estado para os filtros
-  const [filteredReports, setFilteredReports] = useState(reports);
-  const [projectFilter, setProjectFilter] = useState('Projeto');
-  const [periodFilter, setPeriodFilter] = useState('Período');
+  const { projects, loading } = useProjects();
+  const { stageWaste } = useProjectStageWaste();
   const [statusFilter, setStatusFilter] = useState('Status');
-  const [searchQuery, setSearchQuery] = useState('');
-
-  // CORRIGIDO: Remover duplicatas - mostrar apenas um relatório por projeto
-  const uniqueReports = reports.reduce((acc, current) => {
-    const existingIndex = acc.findIndex(item => item.project_id === current.project_id);
-    if (existingIndex === -1) {
-      acc.push(current);
-    } else {
-      // Manter o relatório mais recente se houver duplicatas
-      if (new Date(current.created_at) > new Date(acc[existingIndex].created_at)) {
-        acc[existingIndex] = current;
-      }
-    }
-    return acc;
-  }, [] as typeof reports);
-
-  // Atualizar relatórios filtrados quando os dados mudarem
-  useEffect(() => {
-    setFilteredReports(uniqueReports);
-  }, [reports]);
-
-  // Dados para gráficos baseados nos relatórios reais
-  const economyData = [
-    { name: 'Jan', economia: Math.round(metrics.totalSavings * 0.15) },
-    { name: 'Fev', economia: Math.round(metrics.totalSavings * 0.22) },
-    { name: 'Mar', economia: Math.round(metrics.totalSavings * 0.18) },
-    { name: 'Abr', economia: Math.round(metrics.totalSavings * 0.25) },
-    { name: 'Mai', economia: Math.round(metrics.totalSavings * 0.32) }
-  ];
-
-  const projectsEconomyData = uniqueReports.slice(0, 5).map(report => ({
-    name: report.project_name.length > 15 ? report.project_name.substring(0, 15) + '...' : report.project_name,
-    economia: Math.round(report.total_economy_generated)
-  }));
-
-  // Função para obter a cor do status
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'concluído':
-      case 'concluido':
-        return 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-800';
-      case 'execução':
-      case 'em_andamento':
-        return 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800';
-      case 'planejamento':
-        return 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800';
-      default:
-        return 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-800';
-    }
-  };
-
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setSearchQuery(value);
-    
-    const filtered = uniqueReports.filter(report =>
-      report.project_name.toLowerCase().includes(value.toLowerCase())
-    );
-    setFilteredReports(filtered);
-  };
+  const [dateFilter, setDateFilter] = useState('Data');
 
   if (loading) {
     return (
-      <main className="flex-1 overflow-y-auto p-4 md:p-6">
+      <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-residuall-green"></div>
         </div>
@@ -89,76 +25,64 @@ const ReportsPage = () => {
     );
   }
 
-  if (error) {
-    return (
-      <main className="flex-1 overflow-y-auto p-4 md:p-6">
-        <div className="text-center text-red-600">
-          Erro ao carregar relatórios: {error}
-        </div>
-      </main>
-    );
-  }
+  // Criar relatórios únicos por projeto
+  const reports = projects.map(project => {
+    const projectWasteData = stageWaste.filter(waste => waste.project_id === project.id);
+    const totalWaste = projectWasteData.reduce((sum, waste) => sum + waste.waste_quantity, 0);
+    const totalCost = projectWasteData.reduce((sum, waste) => sum + (waste.waste_cost || 0), 0);
+    
+    return {
+      id: project.id,
+      title: `Relatório de Desperdício - ${project.name}`,
+      project_id: project.id,
+      project_name: project.name,
+      report_type: 'waste_analysis',
+      generated_at: new Date().toISOString(),
+      created_at: project.created_at || new Date().toISOString(),
+      totalWaste,
+      totalCost,
+      wasteEntries: projectWasteData.length
+    };
+  });
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'concluído':
+      case 'concluido':
+        return 'bg-green-100 text-green-800';
+      case 'em_andamento':
+      case 'execução':
+        return 'bg-blue-100 text-blue-800';
+      case 'planejamento':
+        return 'bg-yellow-100 text-yellow-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getProjectStatus = (projectId: string) => {
+    const project = projects.find(p => p.id === projectId);
+    return project?.status || 'indefinido';
+  };
 
   return (
-    <main className="flex-1 overflow-y-auto p-4 md:p-6">
-      {/* Cabeçalho da página */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+    <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-residuall-gray-tableText">Relatórios</h1>
-          <p className="text-residuall-gray">Visualize relatórios detalhados baseados nos seus projetos</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-1">Relatórios</h1>
+          <p className="text-base text-gray-600">Análise detalhada de desperdício e performance dos projetos</p>
         </div>
+        <Button className="mt-4 md:mt-0">
+          <Download className="h-4 w-4 mr-2" />
+          Exportar Todos
+        </Button>
       </div>
-      
-      {/* Filtros */}
-      <Card className="mb-6">
+
+      {/* Filters */}
+      <Card className="mb-6 shadow-sm border-none">
         <CardContent className="flex flex-wrap gap-4 items-center justify-between p-4">
           <div className="flex flex-wrap gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="flex items-center gap-2">
-                  <Filter size={16} />
-                  <span>{projectFilter}</span>
-                  <ChevronDown size={16} />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent 
-                className="w-48 bg-white" 
-                align="start" 
-                sideOffset={8}
-                avoidCollisions={true}
-                collisionPadding={16}
-              >
-                <DropdownMenuItem onClick={() => setProjectFilter('Todos')}>Todos</DropdownMenuItem>
-                {Array.from(new Set(uniqueReports.map(r => r.project_name))).map(projectName => (
-                  <DropdownMenuItem key={projectName} onClick={() => setProjectFilter(projectName)}>
-                    {projectName}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-            
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="flex items-center gap-2">
-                  <Calendar size={16} />
-                  <span>{periodFilter}</span>
-                  <ChevronDown size={16} />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent 
-                className="w-48 bg-white" 
-                align="start" 
-                sideOffset={8}
-                avoidCollisions={true}
-                collisionPadding={16}
-              >
-                <DropdownMenuItem onClick={() => setPeriodFilter('Última semana')}>Última semana</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setPeriodFilter('Último mês')}>Último mês</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setPeriodFilter('Último trimestre')}>Último trimestre</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setPeriodFilter('Último ano')}>Último ano</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="flex items-center gap-2">
@@ -167,184 +91,99 @@ const ReportsPage = () => {
                   <ChevronDown size={16} />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent 
-                className="w-48 bg-white" 
-                align="start" 
-                sideOffset={8}
-                avoidCollisions={true}
-                collisionPadding={16}
-              >
+              <DropdownMenuContent>
                 <DropdownMenuItem onClick={() => setStatusFilter('Todos')}>Todos</DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setStatusFilter('planejamento')}>Planejamento</DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setStatusFilter('execução')}>Execução</DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setStatusFilter('concluído')}>Concluído</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-          </div>
-          
-          <div>
-            <Input
-              type="text"
-              placeholder="Buscar relatórios..."
-              value={searchQuery}
-              onChange={handleSearchChange}
-              className="input-field"
-            />
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="flex items-center gap-2">
+                  <Calendar size={16} />
+                  <span>{dateFilter}</span>
+                  <ChevronDown size={16} />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => setDateFilter('Última semana')}>Última semana</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setDateFilter('Último mês')}>Último mês</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setDateFilter('Último trimestre')}>Último trimestre</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </CardContent>
       </Card>
-      
-      {/* Cards de indicadores */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Porcentagem de Resíduos Reaproveitados</CardDescription>
-          </CardHeader>
-          <CardContent className="pb-2">
-            <div className="flex items-center justify-between">
-              <div className="text-3xl font-bold text-residuall-green">{metrics.reuseRate}%</div>
-              <div className="bg-residuall-green bg-opacity-10 p-2 rounded-full">
-                <BarChart size={24} className="text-residuall-green" />
-              </div>
-            </div>
-            <div className="mt-4">
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div className="bg-residuall-green h-2 rounded-full" style={{ width: `${metrics.reuseRate}%` }}></div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Economia Gerada em Materiais</CardDescription>
-          </CardHeader>
-          <CardContent className="pb-2">
-            <div className="flex items-center justify-between">
-              <div className="text-3xl font-bold text-residuall-green">R$ {metrics.totalSavings.toLocaleString()}</div>
-              <div className="bg-residuall-green bg-opacity-10 p-2 rounded-full">
-                <TrendingUp size={24} className="text-residuall-green" />
-              </div>
-            </div>
-            <div className="flex items-center mt-4">
-              <span className="text-residuall-green text-sm mr-2">+{metrics.totalProjects > 0 ? '18' : '0'}%</span>
-              <span className="text-xs text-residuall-gray">comparado ao mês anterior</span>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Economia por Projetos</CardDescription>
-          </CardHeader>
-          <CardContent className="pb-2">
-            <div className="flex items-center justify-between">
-              <div className="text-3xl font-bold text-residuall-green">{metrics.totalProjects} projetos</div>
-              <div className="bg-residuall-green bg-opacity-10 p-2 rounded-full">
-                <BarChart size={24} className="text-residuall-green" />
-              </div>
-            </div>
-            <div className="flex items-center mt-4">
-              <span className="text-residuall-green text-sm mr-2">R$ {metrics.avgSavingsPerProject.toLocaleString()}</span>
-              <span className="text-xs text-residuall-gray">média por projeto</span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-      
-      {/* Gráficos */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg text-residuall-gray-tableText">
-              Economia Gerada ao Longo do Tempo
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Chart type="bar" data={economyData} height={250} />
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg text-residuall-gray-tableText">
-              Economia por Projeto
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Chart type="bar" data={projectsEconomyData} height={250} />
-          </CardContent>
-        </Card>
-      </div>
-      
-      {/* CORRIGIDO: Lista de Relatórios - um por projeto */}
-      <Card className="mb-6">
-        <CardHeader className="flex flex-row items-center justify-between pb-2 pt-6 px-6">
-          <CardTitle className="text-lg text-residuall-gray-tableText">
-            Lista de Relatórios por Projeto ({filteredReports.length})
-          </CardTitle>
+
+      {/* Reports List */}
+      <Card className="shadow-sm border-none">
+        <CardHeader>
+          <CardTitle>Relatórios de Projetos</CardTitle>
+          <CardDescription>Relatórios de análise de desperdício por projeto</CardDescription>
         </CardHeader>
         <CardContent>
-          {filteredReports.length === 0 ? (
+          {reports.length === 0 ? (
             <div className="text-center py-12">
-              <FileText className="mx-auto h-16 w-16 text-gray-400 mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum relatório encontrado</h3>
-              <p className="text-gray-500 mb-6">Crie projetos e registre desperdícios para gerar relatórios.</p>
-              <Link to="/dashboard/projetos/novo">
-                <Button className="bg-residuall-green hover:bg-residuall-green/90">
-                  Criar Primeiro Projeto
-                </Button>
-              </Link>
+              <p className="text-gray-500 mb-4">Nenhum relatório disponível</p>
+              <p className="text-sm text-gray-400">Crie projetos para gerar relatórios automaticamente</p>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Projeto</TableHead>
-                  <TableHead>Quantidade Desperdiçada</TableHead>
-                  <TableHead>Economia Gerada</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Localização</TableHead>
-                  <TableHead className="text-right">Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredReports.map(report => (
-                  <TableRow key={`${report.project_id}-${report.id}`} className="hover:bg-gray-50">
-                    <TableCell>
-                      <div className="flex items-center">
-                        <FileText size={16} className="text-residuall-gray mr-2" />
-                        <span className="text-sm font-medium text-residuall-gray-tableText">
-                          {report.project_name}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-sm text-residuall-gray">
-                      {report.total_wasted_quantity.toFixed(2)}
-                    </TableCell>
-                    <TableCell className="text-sm font-semibold text-residuall-green">
-                      R$ {report.total_economy_generated.toLocaleString()}
-                    </TableCell>
-                    <TableCell>
-                      <span className={getStatusColor(report.project_status)}>
-                        {report.project_status.charAt(0).toUpperCase() + report.project_status.slice(1)}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-sm text-residuall-gray">
-                      {report.project_location}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Link 
-                        to={`/dashboard/relatorios/${report.project_id}`} 
-                        className="text-residuall-green-secondary hover:text-residuall-green"
-                      >
-                        <Eye size={18} />
-                      </Link>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-200">
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Relatório</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Projeto</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Status</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Desperdício Total</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Custo Total</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Registros</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Data</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {reports.map((report) => (
+                    <tr key={report.id} className="border-b border-gray-100 hover:bg-gray-50">
+                      <td className="py-3 px-4">
+                        <div>
+                          <p className="font-medium text-gray-900">{report.title}</p>
+                          <p className="text-sm text-gray-500">{report.report_type}</p>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4 text-gray-700">{report.project_name}</td>
+                      <td className="py-3 px-4">
+                        <Badge className={getStatusColor(getProjectStatus(report.project_id))}>
+                          {getProjectStatus(report.project_id)}
+                        </Badge>
+                      </td>
+                      <td className="py-3 px-4 text-gray-700">{report.totalWaste.toFixed(1)} kg</td>
+                      <td className="py-3 px-4 text-gray-700">R$ {report.totalCost.toFixed(2)}</td>
+                      <td className="py-3 px-4 text-gray-700">{report.wasteEntries}</td>
+                      <td className="py-3 px-4 text-gray-500">
+                        {new Date(report.created_at).toLocaleDateString('pt-BR')}
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="flex space-x-2">
+                          <Link to={`/dashboard/relatorios/${report.id}`}>
+                            <Button variant="outline" size="sm">
+                              <Eye className="h-4 w-4 mr-1" />
+                              Ver
+                            </Button>
+                          </Link>
+                          <Button variant="outline" size="sm">
+                            <Download className="h-4 w-4 mr-1" />
+                            PDF
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </CardContent>
       </Card>
