@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, User, Building, Phone } from 'lucide-react';
@@ -129,7 +128,8 @@ const RegisterPage = () => {
   // Mostrar loading enquanto a autenticação está sendo verificada
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{background: 'linear-gradient(135deg, #E8A87C1A 0%, #4A6C581A 100%), #F4F7F6'}}>
+      <div className="min-h-screen flex items-center justify-center"
+           style={{ background: 'linear-gradient(135deg, #E8A87C1A 0%, #4A6C581A 100%), #F4F7F6' }}>
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-residuall-green-default"></div>
       </div>
     );
@@ -141,11 +141,11 @@ const RegisterPage = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center py-12 px-4" style={{background: 'linear-gradient(135deg, #E8A87C1A 0%, #4A6C581A 100%), #F4F7F6'}}>
+    <div className="min-h-screen flex items-center justify-center py-12 px-4"
+         style={{ background: 'linear-gradient(135deg, #E8A87C1A 0%, #4A6C581A 100%), #F4F7F6' }}>
       <div className="w-full max-w-2xl">
         <div className="bg-white rounded-xl shadow-2xl overflow-hidden">
           <div className="p-8 md:p-10">
-            {/* Logo e header do formulário */}
             <div className="text-center mb-8">
               <div className="flex items-center justify-center gap-3 mb-4">
                 <img 
@@ -266,44 +266,44 @@ const RegisterPage = () => {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label htmlFor="company" className="block text-sm font-montserrat font-medium text-gray-800 mb-2">
-                    Empresa *
-                  </label>
-                  <div className="relative">
-                    <Building size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600" />
-                    <input 
-                      id="company" 
-                      name="company"
-                      type="text" 
-                      className={`input-modern pl-11 ${errors.company ? 'border-red-500' : ''}`}
-                      placeholder="Nome da empresa" 
-                      value={formData.company} 
-                      onChange={handleInputChange} 
-                    />
+                  <div>
+                    <label htmlFor="company" className="block text-sm font-montserrat font-medium text-gray-800 mb-2">
+                      Empresa *
+                    </label>
+                    <div className="relative">
+                      <Building size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600" />
+                      <input 
+                        id="company" 
+                        name="company"
+                        type="text" 
+                        className={`input-modern pl-11 ${errors.company ? 'border-red-500' : ''}`}
+                        placeholder="Nome da empresa" 
+                        value={formData.company} 
+                        onChange={handleInputChange} 
+                      />
+                    </div>
+                    {errors.company && <p className="mt-2 text-sm text-red-500">{errors.company}</p>}
                   </div>
-                  {errors.company && <p className="mt-2 text-sm text-red-500">{errors.company}</p>}
-                </div>
 
-                <div>
-                  <label htmlFor="phone" className="block text-sm font-montserrat font-medium text-gray-800 mb-2">
-                    Telefone *
-                  </label>
-                  <div className="relative">
-                    <Phone size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600" />
-                    <input 
-                      id="phone" 
-                      name="phone"
-                      type="tel" 
-                      className={`input-modern pl-11 ${errors.phone ? 'border-red-500' : ''}`}
-                      placeholder="(11) 99999-9999" 
-                      value={formData.phone} 
-                      onChange={handleInputChange} 
-                    />
+                  <div>
+                    <label htmlFor="phone" className="block text-sm font-montserrat font-medium text-gray-800 mb-2">
+                      Telefone *
+                    </label>
+                    <div className="relative">
+                      <Phone size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600" />
+                      <input 
+                        id="phone" 
+                        name="phone"
+                        type="tel" 
+                        className={`input-modern pl-11 ${errors.phone ? 'border-red-500' : ''}`}
+                        placeholder="(11) 99999-9999" 
+                        value={formData.phone} 
+                        onChange={handleInputChange} 
+                      />
+                    </div>
+                    {errors.phone && <p className="mt-2 text-sm text-red-500">{errors.phone}</p>}
                   </div>
-                  {errors.phone && <p className="mt-2 text-sm text-red-500">{errors.phone}</p>}
                 </div>
-              </div>
 
               <div>
                 <label htmlFor="professionalRole" className="block text-sm font-montserrat font-medium text-gray-800 mb-2">

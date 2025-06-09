@@ -73,19 +73,21 @@ const LoginPage = () => {
   // Mostrar loading enquanto a autenticação está sendo verificada
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{background: 'linear-gradient(135deg, #E8A87C1A 0%, #4A6C581A 100%), #F4F7F6'}}>
+      <div className="min-h-screen flex items-center justify-center"
+           style={{ background: 'linear-gradient(135deg, #E8A87C1A 0%, #4A6C581A 100%), #F4F7F6' }}>
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-residuall-green-default"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{background: 'linear-gradient(135deg, #E8A87C1A 0%, #4A6C581A 100%), #F4F7F6'}}>
+    <div className="min-h-screen flex items-center justify-center px-4"
+         style={{ background: 'linear-gradient(135deg, #E8A87C1A 0%, #4A6C581A 100%), #F4F7F6' }}>
       <div className="w-full max-w-md">
         {/* Card principal */}
         <div className="bg-white rounded-xl shadow-2xl overflow-hidden">
           <div className="p-8 md:p-10">
-            {/* Logo e header do formulário */}
+            {/* Header do formulário com logo */}
             <div className="text-center mb-8">
               <div className="flex items-center justify-center gap-3 mb-4">
                 <img 
