@@ -1,4 +1,5 @@
 
+
 /* index.css */
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Lato:wght@300;400;500;700&family=Quicksand:wght@300;400;500;600;700&display=swap');
 @tailwind base;
@@ -78,7 +79,6 @@
 @layer base {
   * {
     @apply border-border;
-    transition: all 0.3s ease-in-out;
   }
 
   body {
@@ -103,6 +103,11 @@
     COMPONENTES PERSONALIZADOS
     ======================= */
 @layer components {
+  /* Adicionar transições seletivamente para restaurar o design */
+  .btn-primary, .btn-secondary, .btn-outline, .card-modern, .logo-hover, .nav-link, .sidebar-menu-item {
+    @apply transition-all duration-300 ease-in-out;
+  }
+
   /* Botões */
   .btn-primary {
     @apply bg-residuall-green hover:bg-residuall-green-light text-white font-montserrat font-medium py-3 px-6 rounded-lg transition-all duration-300 shadow-card hover:shadow-card-hover hover:scale-105;
@@ -249,3 +254,4 @@
     @apply bg-card rounded-lg shadow-residuall p-6 flex flex-col hover:shadow-residuall-hover transition-all;
   }
 }
+
