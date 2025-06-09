@@ -33,8 +33,8 @@ const Header = () => {
     : "fixed top-0 w-full z-50 bg-transparent transition-all duration-300";
   
   const textClasses = isScrolled 
-    ? "text-residuall-gray-dark" 
-    : "text-white/90";
+    ? "text-residuall-gray" 
+    : "text-white";
   
   const logoClasses = isScrolled 
     ? "text-residuall-green" 
@@ -59,19 +59,19 @@ const Header = () => {
         <nav className="hidden md:flex items-center space-x-8">
           <Link 
             to="/" 
-            className={`nav-link ${isActiveRoute('/') ? 'text-residuall-green font-medium' : textClasses} transition-colors duration-300`}
+            className={`nav-link ${isActiveRoute('/') ? 'nav-link-active' : ''} ${textClasses} transition-colors duration-300`}
           >
             HOME
           </Link>
           <Link 
             to="/sobre" 
-            className={`nav-link ${isActiveRoute('/sobre') ? 'text-residuall-green font-medium' : textClasses} transition-colors duration-300`}
+            className={`nav-link ${isActiveRoute('/sobre') ? 'nav-link-active' : ''} ${textClasses} transition-colors duration-300`}
           >
             SOBRE
           </Link>
           <Link 
             to="/planos" 
-            className={`nav-link ${isActiveRoute('/planos') ? 'text-residuall-green font-medium' : textClasses} transition-colors duration-300`}
+            className={`nav-link ${isActiveRoute('/planos') ? 'nav-link-active' : ''} ${textClasses} transition-colors duration-300`}
           >
             PLANOS
           </Link>
@@ -87,12 +87,24 @@ const Header = () => {
               </Avatar>
             </Link>
           ) : (
-            <Link 
-              to="/login" 
-              className={`font-montserrat font-medium px-4 py-2 rounded-lg transition-all duration-300 hover:scale-105 ${textClasses} hover:opacity-80`}
-            >
-              ENTRAR
-            </Link>
+            <div className="flex items-center space-x-4">
+              <Link 
+                to="/login" 
+                className={`font-montserrat font-medium px-4 py-2 rounded-lg transition-all duration-300 hover:scale-105 ${
+                  isScrolled 
+                    ? 'text-residuall-gray hover:text-residuall-green' 
+                    : 'text-white hover:text-gray-200'
+                }`}
+              >
+                ENTRAR
+              </Link>
+              <Link 
+                to="/cadastro" 
+                className="btn-secondary text-sm px-6 py-2"
+              >
+                CRIAR CONTA
+              </Link>
+            </div>
           )}
         </nav>
 
@@ -148,13 +160,22 @@ const Header = () => {
                 PERFIL
               </Link>
             ) : (
-              <Link 
-                to="/login" 
-                className="text-residuall-gray hover:text-residuall-green py-2"
-                onClick={toggleMenu}
-              >
-                ENTRAR
-              </Link>
+              <div className="flex flex-col space-y-2">
+                <Link 
+                  to="/login" 
+                  className="text-residuall-gray hover:text-residuall-green py-2"
+                  onClick={toggleMenu}
+                >
+                  ENTRAR
+                </Link>
+                <Link 
+                  to="/cadastro" 
+                  className="btn-secondary text-sm px-6 py-2 text-center"
+                  onClick={toggleMenu}
+                >
+                  CRIAR CONTA
+                </Link>
+              </div>
             )}
           </div>
         </div>
