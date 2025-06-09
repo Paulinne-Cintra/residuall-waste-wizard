@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import TestimonialCarousel from '../components/TestimonialCarousel';
-import { CheckCircle, BarChart, Recycle, Award, ArrowRight } from 'lucide-react';
+import { CheckCircle, BarChart, Recycle, Award, ArrowRight, ClipboardList, Monitor, Wrench } from 'lucide-react';
 
 const HomePage = () => {
   return (
@@ -33,7 +33,7 @@ const HomePage = () => {
           </div>
         </section>
 
-        {/* --- Seções Existentes (mantidas para consistência) --- */}
+        {/* --- Seção de Benefícios --- */}
         <section className="section-padding bg-white">
           <div className="container mx-auto px-4">
             <div className="text-center mb-16">
@@ -85,25 +85,59 @@ const HomePage = () => {
             </div>
           </div>
         </section>
+        
+        {/* --- Nova Seção: Como Funciona --- */}
+        <section className="section-padding bg-residuall-gray-light">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-16">
+              <h2 className="heading-lg text-residuall-green mb-4">
+                Comece em 4 Passos Simples
+              </h2>
+              <p className="text-refined text-residuall-gray max-w-3xl mx-auto">
+                Transforme sua gestão de resíduos com a nossa metodologia comprovada.
+              </p>
+            </div>
 
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 text-center">
+              {[
+                { icon: ClipboardList, title: "Cadastre seu Projeto", description: "Insira as informações básicas da sua obra para iniciar o monitoramento." },
+                { icon: Monitor, title: "Registe o Desperdício", description: "Aponte os materiais e as quantidades desperdiçadas em cada etapa." },
+                { icon: BarChart, title: "Analise os Dados", description: "Use os nossos dashboards para visualizar os pontos críticos de perda." },
+                { icon: Wrench, title: "Otimize e Economize", description: "Aplique as nossas recomendações para reduzir custos e aumentar a sustentabilidade." }
+              ].map((item, index) => (
+                <div key={index} className="card-modern">
+                  <div className="w-20 h-20 bg-residuall-green/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <item.icon size={40} className="text-residuall-green" />
+                  </div>
+                  <h3 className="font-montserrat font-semibold text-xl text-residuall-green mb-3">{item.title}</h3>
+                  <p className="text-residuall-gray leading-relaxed text-sm">{item.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* --- Seção de Depoimentos --- */}
         <section className="section-padding bg-white">
           <div className="container mx-auto px-4">
             <div className="text-center mb-16">
               <h2 className="heading-lg text-residuall-green mb-4">
-                O que nossos clientes dizem
+                O que os nossos clientes dizem
               </h2>
             </div>
             <TestimonialCarousel />
           </div>
         </section>
 
+        {/* --- Seção CTA Final --- */}
         <section className="bg-residuall-green py-20 text-white">
           <div className="container mx-auto px-4 text-center">
             <h2 className="heading-lg text-white mb-6">
-              Pronto para transformar sua gestão de resíduos?
+              Pronto para transformar a sua gestão de resíduos?
             </h2>
             <Link to="/cadastro" className="btn-secondary bg-residuall-orange hover:bg-residuall-orange-light">
               CRIAR CONTA GRÁTIS
+              <ArrowRight className="ml-2" />
             </Link>
           </div>
         </section>
