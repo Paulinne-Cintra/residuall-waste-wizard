@@ -1,7 +1,6 @@
 
-
 /* index.css */
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Lato:wght@300;400;500;700&family=Quicksand:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700&family=Lato:wght@300;400;500;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -83,11 +82,11 @@
 
   body {
     background: theme('colors.residuall-gray.light');
-    @apply text-foreground font-lato;
+    @apply text-foreground font-quicksand;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-montserrat font-semibold;
+    @apply font-quicksand font-semibold;
   }
 
   h1 { @apply text-4xl; }
@@ -110,20 +109,37 @@
 
   /* Botões */
   .btn-primary {
-    @apply bg-residuall-green hover:bg-residuall-green-light text-white font-montserrat font-medium py-3 px-6 rounded-lg transition-all duration-300 shadow-card hover:shadow-card-hover hover:scale-105;
+    @apply bg-residuall-green hover:bg-residuall-green-light text-white font-quicksand font-medium py-3 px-6 rounded-lg transition-all duration-300 shadow-card hover:shadow-card-hover hover:scale-105;
   }
 
   .btn-secondary {
-    @apply bg-residuall-orange hover:bg-residuall-orange-light text-white font-montserrat font-medium py-3 px-6 rounded-lg transition-all duration-300 shadow-card hover:shadow-card-hover hover:scale-105;
+    @apply bg-residuall-orange hover:bg-residuall-orange-light text-white font-quicksand font-medium py-3 px-6 rounded-lg transition-all duration-300 shadow-card hover:shadow-card-hover hover:scale-105;
   }
 
   .btn-outline {
-    @apply border-2 border-residuall-green text-residuall-green font-montserrat font-medium py-3 px-6 rounded-lg hover:bg-residuall-green hover:text-white transition-all duration-300 hover:scale-105;
+    @apply border-2 border-residuall-green text-residuall-green font-quicksand font-medium py-3 px-6 rounded-lg hover:bg-residuall-green hover:text-white transition-all duration-300 hover:scale-105;
+  }
+
+  .btn-golden {
+    background: linear-gradient(135deg, #e2c290, #d4a574);
+    @apply text-gray-800 font-quicksand font-medium py-3 px-6 rounded-lg transition-all duration-300 shadow-card hover:shadow-card-hover hover:scale-105;
   }
 
   /* Cards */
   .card-modern {
-    @apply bg-white rounded-xl shadow-card hover:shadow-card-hover p-6 transition-all duration-300 hover:-translate-y-1;
+    @apply bg-white rounded-xl shadow-card hover:shadow-card-hover p-6 transition-all duration-300 hover:-translate-y-2;
+  }
+
+  .card-hover-effect:hover .icon-bg {
+    @apply bg-residuall-green;
+  }
+
+  .card-hover-effect:hover .icon-svg {
+    @apply text-white;
+  }
+
+  .card-hover-effect:hover .card-title {
+    @apply text-residuall-green;
   }
 
   /* Inputs */
@@ -133,16 +149,24 @@
 
   /* Links de navegação */
   .nav-link {
-    @apply text-residuall-gray font-montserrat font-medium hover:text-residuall-green transition-all duration-300 hover:scale-105 relative;
+    @apply text-white font-quicksand font-medium hover:text-gray-200 transition-all duration-300 relative;
+  }
+
+  .nav-link-scrolled {
+    @apply text-gray-800 hover:text-residuall-green;
   }
 
   .nav-link-active {
-    @apply text-residuall-green;
+    @apply relative;
   }
 
   .nav-link-active::after {
     content: '';
-    @apply absolute bottom-0 left-0 w-full h-0.5 bg-residuall-green;
+    @apply absolute bottom-0 left-0 w-full h-0.5 bg-white;
+  }
+
+  .nav-link-active.nav-link-scrolled::after {
+    @apply bg-residuall-green;
   }
 
   /* Seções */
@@ -163,44 +187,55 @@
     border-bottom: 1px solid rgba(47, 74, 58, 0.1);
   }
 
-  /* Fundo animado para login */
-  .login-animated-bg {
-    @apply bg-login-bg relative overflow-hidden;
+  .header-gradient {
+    background: linear-gradient(to bottom, rgba(0,0,0,0.6), rgba(0,0,0,0.1));
   }
 
-  .login-animated-bg::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-image: 
-      polygon(20% 0%, 0% 20%, 30% 50%, 0% 80%, 20% 100%, 50% 70%, 80% 100%, 100% 80%, 70% 50%, 100% 20%, 80% 0%, 50% 30%);
-    opacity: 0.1;
-    animation: geometric-move 20s linear infinite;
+  /* Carousel */
+  .carousel-slide {
+    @apply absolute inset-0 w-full h-full transition-all duration-1000 ease-in-out;
   }
 
-  /* Carrossel de depoimentos */
-  .testimonial-carousel {
-    @apply relative overflow-hidden;
+  .carousel-slide.active {
+    @apply opacity-100;
   }
 
-  .testimonial-slide {
-    @apply transition-transform duration-500 ease-in-out;
+  .carousel-slide.inactive {
+    @apply opacity-0;
+  }
+
+  .carousel-text {
+    @apply animate-fade-in;
+  }
+
+  /* Dots */
+  .carousel-dots {
+    @apply flex space-x-2;
+  }
+
+  .carousel-dot {
+    @apply w-3 h-3 rounded-full transition-all duration-300 cursor-pointer;
+  }
+
+  .carousel-dot.active {
+    @apply bg-white scale-125;
+  }
+
+  .carousel-dot.inactive {
+    @apply bg-white/50 hover:bg-white/75;
   }
 
   /* Tipografia refinada */
   .heading-xl {
-    @apply text-4xl md:text-5xl lg:text-6xl font-montserrat font-bold tracking-tight;
+    @apply text-4xl md:text-5xl lg:text-6xl font-quicksand font-bold tracking-tight;
   }
 
   .heading-lg {
-    @apply text-3xl md:text-4xl font-montserrat font-semibold tracking-tight;
+    @apply text-3xl md:text-4xl font-quicksand font-semibold tracking-tight;
   }
 
   .text-refined {
-    @apply font-lato text-lg leading-relaxed;
+    @apply font-quicksand text-lg leading-relaxed;
   }
 
   /* =======================
@@ -254,4 +289,3 @@
     @apply bg-card rounded-lg shadow-residuall p-6 flex flex-col hover:shadow-residuall-hover transition-all;
   }
 }
-

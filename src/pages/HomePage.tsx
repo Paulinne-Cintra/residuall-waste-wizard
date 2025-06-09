@@ -1,35 +1,91 @@
 
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import TestimonialCarousel from '../components/TestimonialCarousel';
-import { CheckCircle, BarChart, Recycle, Award, ArrowRight, ClipboardList, Monitor, Wrench } from 'lucide-react';
+import { CheckCircle, BarChart, Recycle, Award, ArrowRight, ClipboardList, Monitor, Wrench, Leaf, Building, Target } from 'lucide-react';
 
 const HomePage = () => {
+  const [currentSlide, setCurrentSlide] = useState(0);
+  
+  const slides = [
+    {
+      title: "Construa com propósito, construa com futuro",
+      subtitle: "Transforme a gestão de resíduos da construção civil com inteligência e sustentabilidade",
+      image: "/lovable-uploads/a914c69a-7f63-456e-8895-a34d09333659.png"
+    },
+    {
+      title: "Sustentabilidade que faz a diferença",
+      subtitle: "Monitore, analise e otimize o desperdício de materiais em tempo real",
+      image: "/lovable-uploads/e3e209f2-3395-4fc8-a27f-d932a376ff44.png"
+    },
+    {
+      title: "Inovação para um futuro verde",
+      subtitle: "Dashboards inteligentes e relatórios detalhados para decisões sustentáveis",
+      image: "/lovable-uploads/bc8267d3-0115-404c-a8c1-b1dcc1b1f9b7.png"
+    }
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % slides.length);
+    }, 7000);
+
+    return () => clearInterval(interval);
+  }, [slides.length]);
+
+  const goToSlide = (index: number) => {
+    setCurrentSlide(index);
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-residuall-gray-light">
       <Header />
 
-      <main className="flex-grow">
-        {/* --- Hero Section Redesenhada --- */}
-        <section 
-          className="relative text-white bg-cover bg-center"
-          style={{
-            backgroundImage: 'linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url("https://images.unsplash.com/photo-1541976590-713941681591?ixlib=rb-4.0.3&auto=format&fit=crop&w=2069&q=80")',
-            height: '100vh',
-            minHeight: '650px'
-          }}
-        >
-          <div className="relative z-10 container mx-auto px-4 h-full flex flex-col justify-center items-start text-left pt-20">
-            <div className="max-w-3xl">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-montserrat font-bold tracking-tight uppercase" style={{ textShadow: '2px 2px 8px rgba(0,0,0,0.7)' }}>
-                Construa com propósito,
-                <br />
-                construa com futuro.
-              </h1>
-              <p className="mt-6 text-lg md:text-xl text-white/95 max-w-2xl font-lato" style={{ textShadow: '1px 1px 4px rgba(0,0,0,0.8)' }}>
-                A Residuall nasceu com a necessidade de transformar a forma como o setor da construção civil lida com seus resíduos. Desenvolvemos um software para auxiliar na coleta e visualização de dados sobre o desperdício de materiais na indústria da construção civil, oferecemos uma plataforma intuitiva e inteligente para seu negócio. Queremos facilitar a tomada de decisões, incentivando práticas eficientes, sustentáveis e alinhadas às demandas ambientais de hoje e do futuro.
-              </p>
+      <main className="flex-grow pt-20">
+        {/* --- Hero Section com Carrossel --- */}
+        <section className="relative h-screen overflow-hidden">
+          {slides.map((slide, index) => (
+            <div
+              key={index}
+              className={`carousel-slide ${index === currentSlide ? 'active' : 'inactive'}`}
+              style={{
+                backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)), url("${slide.image}")`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center'
+              }}
+            >
+              <div className="relative z-10 container mx-auto px-4 h-full flex flex-col justify-center items-start text-left">
+                <div className={`max-w-4xl carousel-text ${index === currentSlide ? 'animate-fade-in' : ''}`}>
+                  <h1 className="text-4xl md:text-5xl lg:text-6xl font-quicksand font-bold tracking-tight uppercase text-white mb-6" style={{ textShadow: '2px 2px 8px rgba(0,0,0,0.7)' }}>
+                    {slide.title}
+                  </h1>
+                  <p className="text-lg md:text-xl text-white/95 max-w-3xl font-quicksand leading-relaxed" style={{ textShadow: '1px 1px 4px rgba(0,0,0,0.8)' }}>
+                    {slide.subtitle}
+                  </p>
+                  <div className="mt-8">
+                    <Link to="/cadastro" className="btn-secondary text-lg px-8 py-4 inline-flex items-center">
+                      COMEÇAR AGORA
+                      <ArrowRight className="ml-2" size={20} />
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+          
+          {/* Dots de navegação */}
+          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20">
+            <div className="carousel-dots">
+              {slides.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => goToSlide(index)}
+                  className={`carousel-dot ${index === currentSlide ? 'active' : 'inactive'}`}
+                  aria-label={`Slide ${index + 1}`}
+                />
+              ))}
             </div>
           </div>
         </section>
@@ -48,38 +104,38 @@ const HomePage = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="card-modern text-center">
-                <div className="w-16 h-16 bg-residuall-green/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Recycle size={32} className="text-residuall-green" />
+              <div className="card-modern card-hover-effect text-center group">
+                <div className="icon-bg w-16 h-16 bg-residuall-green/10 rounded-full flex items-center justify-center mx-auto mb-6 transition-all duration-300">
+                  <Leaf size={32} className="icon-svg text-residuall-green transition-all duration-300" />
                 </div>
-                <h3 className="font-montserrat font-semibold text-xl text-residuall-green mb-4">
+                <h3 className="card-title font-quicksand font-semibold text-xl text-residuall-green mb-4 transition-all duration-300">
                   Sustentabilidade Real
                 </h3>
-                <p className="text-residuall-gray leading-relaxed">
+                <p className="text-residuall-gray leading-relaxed font-quicksand">
                   Monitore e reduza o impacto ambiental dos seus projetos com dados precisos e ações efetivas.
                 </p>
               </div>
 
-              <div className="card-modern text-center">
-                <div className="w-16 h-16 bg-residuall-orange/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <BarChart size={32} className="text-residuall-orange" />
+              <div className="card-modern card-hover-effect text-center group">
+                <div className="icon-bg w-16 h-16 bg-residuall-orange/10 rounded-full flex items-center justify-center mx-auto mb-6 transition-all duration-300">
+                  <BarChart size={32} className="icon-svg text-residuall-orange transition-all duration-300" />
                 </div>
-                <h3 className="font-montserrat font-semibold text-xl text-residuall-green mb-4">
+                <h3 className="card-title font-quicksand font-semibold text-xl text-residuall-green mb-4 transition-all duration-300">
                   Análises Inteligentes
                 </h3>
-                <p className="text-residuall-gray leading-relaxed">
+                <p className="text-residuall-gray leading-relaxed font-quicksand">
                   Dashboards intuitivos e relatórios detalhados para decisões baseadas em dados.
                 </p>
               </div>
 
-              <div className="card-modern text-center">
-                <div className="w-16 h-16 bg-residuall-beige/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Award size={32} className="text-residuall-green" />
+              <div className="card-modern card-hover-effect text-center group">
+                <div className="icon-bg w-16 h-16 bg-residuall-beige/20 rounded-full flex items-center justify-center mx-auto mb-6 transition-all duration-300">
+                  <Award size={32} className="icon-svg text-residuall-green transition-all duration-300" />
                 </div>
-                <h3 className="font-montserrat font-semibold text-xl text-residuall-green mb-4">
+                <h3 className="card-title font-quicksand font-semibold text-xl text-residuall-green mb-4 transition-all duration-300">
                   Economia Comprovada
                 </h3>
-                <p className="text-residuall-gray leading-relaxed">
+                <p className="text-residuall-gray leading-relaxed font-quicksand">
                   Reduza custos operacionais e desperdícios com gestão eficiente de materiais.
                 </p>
               </div>
@@ -87,7 +143,7 @@ const HomePage = () => {
           </div>
         </section>
         
-        {/* --- Nova Seção: Como Funciona --- */}
+        {/* --- Seção: Como Funciona (4 Passos) --- */}
         <section className="section-padding bg-residuall-gray-light">
           <div className="container mx-auto px-4">
             <div className="text-center mb-16">
@@ -101,17 +157,41 @@ const HomePage = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 text-center">
               {[
-                { icon: ClipboardList, title: "Cadastre seu Projeto", description: "Insira as informações básicas da sua obra para iniciar o monitoramento." },
-                { icon: Monitor, title: "Registe o Desperdício", description: "Aponte os materiais e as quantidades desperdiçadas em cada etapa." },
-                { icon: BarChart, title: "Analise os Dados", description: "Use os nossos dashboards para visualizar os pontos críticos de perda." },
-                { icon: Wrench, title: "Otimize e Economize", description: "Aplique as nossas recomendações para reduzir custos e aumentar a sustentabilidade." }
+                { 
+                  icon: ClipboardList, 
+                  title: "Cadastre seu Projeto", 
+                  description: "Insira as informações básicas da sua obra para iniciar o monitoramento.",
+                  color: "text-residuall-green"
+                },
+                { 
+                  icon: Monitor, 
+                  title: "Registe o Desperdício", 
+                  description: "Aponte os materiais e as quantidades desperdiçadas em cada etapa.",
+                  color: "text-residuall-orange"
+                },
+                { 
+                  icon: BarChart, 
+                  title: "Analise os Dados", 
+                  description: "Use os nossos dashboards para visualizar os pontos críticos de perda.",
+                  color: "text-residuall-green"
+                },
+                { 
+                  icon: Target, 
+                  title: "Otimize e Economize", 
+                  description: "Aplique as nossas recomendações para reduzir custos e aumentar a sustentabilidade.",
+                  color: "text-residuall-orange"
+                }
               ].map((item, index) => (
-                <div key={index} className="card-modern">
-                  <div className="w-20 h-20 bg-residuall-green/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <item.icon size={40} className="text-residuall-green" />
+                <div key={index} className="card-modern card-hover-effect group">
+                  <div className="icon-bg w-20 h-20 bg-residuall-green/10 rounded-full flex items-center justify-center mx-auto mb-6 transition-all duration-300">
+                    <item.icon size={40} className={`icon-svg ${item.color} transition-all duration-300`} />
                   </div>
-                  <h3 className="font-montserrat font-semibold text-xl text-residuall-green mb-3">{item.title}</h3>
-                  <p className="text-residuall-gray leading-relaxed text-sm">{item.description}</p>
+                  <h3 className="card-title font-quicksand font-semibold text-xl text-residuall-green mb-3 transition-all duration-300">
+                    {item.title}
+                  </h3>
+                  <p className="text-residuall-gray leading-relaxed text-sm font-quicksand">
+                    {item.description}
+                  </p>
                 </div>
               ))}
             </div>
@@ -133,12 +213,15 @@ const HomePage = () => {
         {/* --- Seção CTA Final --- */}
         <section className="bg-residuall-green py-20 text-white">
           <div className="container mx-auto px-4 text-center">
-            <h2 className="heading-lg text-white mb-6">
+            <h2 className="heading-lg text-white mb-6 font-quicksand">
               Pronto para transformar a sua gestão de resíduos?
             </h2>
-            <Link to="/cadastro" className="btn-secondary bg-residuall-orange hover:bg-residuall-orange-light">
+            <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto font-quicksand">
+              Junte-se às empresas que já revolucionaram seus processos de construção
+            </p>
+            <Link to="/cadastro" className="btn-secondary bg-residuall-orange hover:bg-residuall-orange-light inline-flex items-center text-lg px-8 py-4">
               CRIAR CONTA GRÁTIS
-              <ArrowRight className="ml-2" />
+              <ArrowRight className="ml-2" size={20} />
             </Link>
           </div>
         </section>

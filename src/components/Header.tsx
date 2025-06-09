@@ -29,16 +29,20 @@ const Header = () => {
 
   const isScrolled = scrollY > 50;
   const headerClasses = isScrolled 
-    ? "fixed top-0 w-full z-50 header-glass transition-all duration-300" 
-    : "fixed top-0 w-full z-50 bg-transparent transition-all duration-300";
+    ? "fixed top-0 w-full z-50 header-glass transition-all duration-500" 
+    : "fixed top-0 w-full z-50 header-gradient transition-all duration-500";
   
   const textClasses = isScrolled 
-    ? "text-residuall-gray" 
+    ? "text-gray-800" 
     : "text-white";
   
   const logoClasses = isScrolled 
-    ? "text-residuall-green" 
+    ? "text-gray-800" 
     : "text-white";
+
+  const buttonClasses = isScrolled
+    ? "bg-residuall-green text-white hover:bg-residuall-green-light"
+    : "btn-golden";
 
   return (
     <header className={headerClasses}>
@@ -48,9 +52,9 @@ const Header = () => {
           <img
             src="/logo.png"
             alt="Logo Residuall"
-            className="h-8 md:h-10 w-auto mr-3"
+            className="h-8 md:h-8 w-auto mr-3"
           />
-          <span className={`brand-text text-2xl md:text-3xl ${logoClasses} transition-colors duration-300`}>
+          <span className={`brand-text text-2xl font-bold ${logoClasses} transition-colors duration-500`}>
             RESIDUALL
           </span>
         </Link>
@@ -59,19 +63,19 @@ const Header = () => {
         <nav className="hidden md:flex items-center space-x-8">
           <Link 
             to="/" 
-            className={`nav-link ${isActiveRoute('/') ? 'nav-link-active' : ''} ${textClasses} transition-colors duration-300`}
+            className={`nav-link ${isActiveRoute('/') ? 'nav-link-active' : ''} ${isScrolled ? 'nav-link-scrolled' : ''} transition-colors duration-500`}
           >
             HOME
           </Link>
           <Link 
             to="/sobre" 
-            className={`nav-link ${isActiveRoute('/sobre') ? 'nav-link-active' : ''} ${textClasses} transition-colors duration-300`}
+            className={`nav-link ${isActiveRoute('/sobre') ? 'nav-link-active' : ''} ${isScrolled ? 'nav-link-scrolled' : ''} transition-colors duration-500`}
           >
             SOBRE
           </Link>
           <Link 
             to="/planos" 
-            className={`nav-link ${isActiveRoute('/planos') ? 'nav-link-active' : ''} ${textClasses} transition-colors duration-300`}
+            className={`nav-link ${isActiveRoute('/planos') ? 'nav-link-active' : ''} ${isScrolled ? 'nav-link-scrolled' : ''} transition-colors duration-500`}
           >
             PLANOS
           </Link>
@@ -87,24 +91,12 @@ const Header = () => {
               </Avatar>
             </Link>
           ) : (
-            <div className="flex items-center space-x-4">
-              <Link 
-                to="/login" 
-                className={`font-montserrat font-medium px-4 py-2 rounded-lg transition-all duration-300 hover:scale-105 ${
-                  isScrolled 
-                    ? 'text-residuall-gray hover:text-residuall-green' 
-                    : 'text-white hover:text-gray-200'
-                }`}
-              >
-                ENTRAR
-              </Link>
-              <Link 
-                to="/cadastro" 
-                className="btn-secondary text-sm px-6 py-2"
-              >
-                CRIAR CONTA
-              </Link>
-            </div>
+            <Link 
+              to="/login" 
+              className={`font-quicksand font-medium px-6 py-3 rounded-lg transition-all duration-500 hover:scale-105 ${buttonClasses}`}
+            >
+              ENTRAR
+            </Link>
           )}
         </nav>
 
@@ -160,22 +152,13 @@ const Header = () => {
                 PERFIL
               </Link>
             ) : (
-              <div className="flex flex-col space-y-2">
-                <Link 
-                  to="/login" 
-                  className="text-residuall-gray hover:text-residuall-green py-2"
-                  onClick={toggleMenu}
-                >
-                  ENTRAR
-                </Link>
-                <Link 
-                  to="/cadastro" 
-                  className="btn-secondary text-sm px-6 py-2 text-center"
-                  onClick={toggleMenu}
-                >
-                  CRIAR CONTA
-                </Link>
-              </div>
+              <Link 
+                to="/login" 
+                className="btn-secondary text-sm px-6 py-2 text-center"
+                onClick={toggleMenu}
+              >
+                ENTRAR
+              </Link>
             )}
           </div>
         </div>
