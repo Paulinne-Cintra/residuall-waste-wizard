@@ -97,11 +97,6 @@
   .brand-text {
     @apply font-quicksand font-bold uppercase tracking-wide;
   }
-
-  /* Adicionar transições seletivamente onde for necessário */
-  button, a, .card-modern {
-    @apply transition-all duration-300 ease-in-out;
-  }
 }
 
 /* =======================
@@ -110,30 +105,30 @@
 @layer components {
   /* Botões */
   .btn-primary {
-    @apply bg-residuall-green hover:bg-residuall-green-light text-white font-montserrat font-medium py-3 px-6 rounded-lg shadow-card hover:shadow-card-hover hover:scale-105;
+    @apply bg-residuall-green hover:bg-residuall-green-light text-white font-montserrat font-medium py-3 px-6 rounded-lg transition-all duration-300 shadow-card hover:shadow-card-hover hover:scale-105;
   }
 
   .btn-secondary {
-    @apply bg-residuall-orange hover:bg-residuall-orange-light text-white font-montserrat font-medium py-3 px-6 rounded-lg shadow-card hover:shadow-card-hover hover:scale-105;
+    @apply bg-residuall-orange hover:bg-residuall-orange-light text-white font-montserrat font-medium py-3 px-6 rounded-lg transition-all duration-300 shadow-card hover:shadow-card-hover hover:scale-105;
   }
 
   .btn-outline {
-    @apply border-2 border-residuall-green text-residuall-green font-montserrat font-medium py-3 px-6 rounded-lg hover:bg-residuall-green hover:text-white hover:scale-105;
+    @apply border-2 border-residuall-green text-residuall-green font-montserrat font-medium py-3 px-6 rounded-lg hover:bg-residuall-green hover:text-white transition-all duration-300 hover:scale-105;
   }
 
   /* Cards */
   .card-modern {
-    @apply bg-white rounded-xl shadow-card hover:shadow-card-hover p-6 hover:-translate-y-1;
+    @apply bg-white rounded-xl shadow-card hover:shadow-card-hover p-6 transition-all duration-300 hover:-translate-y-1;
   }
 
   /* Inputs */
   .input-modern {
-    @apply w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-residuall-green focus:border-transparent;
+    @apply w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-residuall-green focus:border-transparent transition-all duration-300;
   }
 
   /* Links de navegação */
   .nav-link {
-    @apply text-residuall-gray font-montserrat font-medium hover:text-residuall-green hover:scale-105 relative;
+    @apply text-residuall-gray font-montserrat font-medium hover:text-residuall-green transition-all duration-300 hover:scale-105 relative;
   }
 
   .nav-link-active {
@@ -152,7 +147,7 @@
 
   /* Logo com efeito hover */
   .logo-hover {
-    @apply hover:scale-110 hover:brightness-110;
+    @apply transition-all duration-300 hover:scale-110 hover:brightness-110;
   }
 
   /* Cabeçalho glassmorphism */
@@ -179,5 +174,78 @@
       polygon(20% 0%, 0% 20%, 30% 50%, 0% 80%, 20% 100%, 50% 70%, 80% 100%, 100% 80%, 70% 50%, 100% 20%, 80% 0%, 50% 30%);
     opacity: 0.1;
     animation: geometric-move 20s linear infinite;
+  }
+
+  /* Carrossel de depoimentos */
+  .testimonial-carousel {
+    @apply relative overflow-hidden;
+  }
+
+  .testimonial-slide {
+    @apply transition-transform duration-500 ease-in-out;
+  }
+
+  /* Tipografia refinada */
+  .heading-xl {
+    @apply text-4xl md:text-5xl lg:text-6xl font-montserrat font-bold tracking-tight;
+  }
+
+  .heading-lg {
+    @apply text-3xl md:text-4xl font-montserrat font-semibold tracking-tight;
+  }
+
+  .text-refined {
+    @apply font-lato text-lg leading-relaxed;
+  }
+
+  /* =======================
+    SIDEBAR - MANTIDO PARA COMPATIBILIDADE
+    ======================= */
+  .sidebar-container {
+    @apply bg-sidebar;
+  }
+
+  .sidebar-menu-item {
+    @apply flex items-center p-3 rounded-lg transition-colors duration-200;
+    @apply text-sidebar-item-text;
+    @apply hover:bg-sidebar-item-hover-bg hover:text-sidebar-item-active-text;
+  }
+
+  .sidebar-menu-item-active {
+    @apply flex items-center p-3 rounded-lg font-semibold transition-colors duration-200;
+    @apply bg-sidebar-active;
+    @apply text-sidebar-item-active-text;
+
+    .dark & {
+        @apply bg-sidebar-dark-item-active-bg;
+    }
+  }
+
+  .sidebar-icon {
+    @apply mr-3 flex-shrink-0;
+    @apply text-inherit;
+  }
+
+  .toggle-button {
+    @apply p-1;
+    @apply text-sidebar-foreground;
+    @apply hover:text-white;
+  }
+
+  .header-search {
+    @apply px-4 py-2 rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent bg-card w-full max-w-md placeholder:text-residuall-gray;
+  }
+
+  /* Manter demais estilos existentes */
+  .input-field {
+    @apply w-full px-4 py-3 rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent;
+  }
+
+  .card-container {
+    @apply bg-card rounded-lg shadow-residuall hover:shadow-residuall-hover p-5 transition-all hover:translate-y-[-5px];
+  }
+
+  .dashboard-card {
+    @apply bg-card rounded-lg shadow-residuall p-6 flex flex-col hover:shadow-residuall-hover transition-all;
   }
 }
