@@ -1,8 +1,8 @@
-
 import { useState, useEffect } from 'react';
 import { Link, Navigate, useLocation } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import Header from '../components/Header';
+import AnimatedBackground from '../components/AnimatedBackground';
 import { useAuth } from '@/hooks/useAuth';
 
 const LoginPage = () => {
@@ -81,13 +81,14 @@ const LoginPage = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col relative overflow-hidden login-animated-bg">
+    <div className="min-h-screen flex flex-col relative overflow-hidden">
+      <AnimatedBackground />
       <Header />
       
       <main className="flex-grow flex items-center justify-center py-12 relative z-10 px-4 pt-20 md:pt-24">
         <div className="w-full max-w-md">
           {/* Card principal */}
-          <div className="bg-white rounded-3xl shadow-2xl overflow-hidden backdrop-blur-sm">
+          <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl overflow-hidden">
             <div className="p-8 md:p-10">
               {/* Header do formulário */}
               <div className="text-center mb-8">
