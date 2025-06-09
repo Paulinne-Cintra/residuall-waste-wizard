@@ -19,7 +19,7 @@ const Header = () => {
     <header 
       className="w-full fixed top-0 left-0 z-50"
       style={{
-        backgroundImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.6), transparent)'
+        backgroundImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.4) 50%, transparent 100%)'
       }}
     >
       <div className="container mx-auto px-4 flex items-center justify-between h-20">
@@ -41,8 +41,8 @@ const Header = () => {
             to="/" 
             className={({ isActive }) => 
               isActive 
-                ? "text-white font-bold" 
-                : "text-white/90 hover:text-white"
+                ? "text-white font-bold text-lg underline" 
+                : "text-white/90 hover:text-white text-lg"
             }
           >
             HOME
@@ -51,8 +51,8 @@ const Header = () => {
             to="/sobre" 
             className={({ isActive }) => 
               isActive 
-                ? "text-white font-bold" 
-                : "text-white/90 hover:text-white"
+                ? "text-white font-bold text-lg underline" 
+                : "text-white/90 hover:text-white text-lg"
             }
           >
             SOBRE
@@ -61,8 +61,8 @@ const Header = () => {
             to="/planos" 
             className={({ isActive }) => 
               isActive 
-                ? "text-white font-bold" 
-                : "text-white/90 hover:text-white"
+                ? "text-white font-bold text-lg underline" 
+                : "text-white/90 hover:text-white text-lg"
             }
           >
             PLANOS
@@ -83,7 +83,7 @@ const Header = () => {
           ) : (
             <Link 
               to="/login" 
-              className="py-2 px-5 rounded-lg font-bold text-gray-800 transition-all duration-300 hover:scale-105"
+              className="py-2 px-5 rounded-lg font-bold text-gray-800 text-lg transition-all duration-300 hover:scale-105"
               style={{
                 background: 'linear-gradient(to right, #e2c290, #c9ad7f)'
               }}
@@ -111,7 +111,7 @@ const Header = () => {
               to="/" 
               className={({ isActive }) => 
                 isActive 
-                  ? "block py-2 text-white font-medium" 
+                  ? "block py-2 text-white font-medium underline" 
                   : "block py-2 text-white/90 hover:text-white"
               }
               onClick={toggleMenu}
@@ -122,7 +122,7 @@ const Header = () => {
               to="/sobre" 
               className={({ isActive }) => 
                 isActive 
-                  ? "block py-2 text-white font-medium" 
+                  ? "block py-2 text-white font-medium underline" 
                   : "block py-2 text-white/90 hover:text-white"
               }
               onClick={toggleMenu}
@@ -133,7 +133,7 @@ const Header = () => {
               to="/planos" 
               className={({ isActive }) => 
                 isActive 
-                  ? "block py-2 text-white font-medium" 
+                  ? "block py-2 text-white font-medium underline" 
                   : "block py-2 text-white/90 hover:text-white"
               }
               onClick={toggleMenu}

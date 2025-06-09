@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '../components/Header';
@@ -43,7 +42,7 @@ const HomePage = () => {
     <div className="min-h-screen flex flex-col bg-residuall-gray-light">
       <Header />
 
-      <main className="flex-grow pt-20">
+      <main className="flex-grow">
         {/* --- Hero Section com Carrossel --- */}
         <section className="relative h-screen overflow-hidden">
           {slides.map((slide, index) => (
@@ -56,18 +55,14 @@ const HomePage = () => {
                 backgroundPosition: 'center'
               }}
             >
-              <div className="relative z-10 container mx-auto px-4 h-full flex flex-col justify-center items-start text-left">
+              <div className="relative z-10 container mx-auto px-4 h-full flex flex-col justify-center items-center text-center">
                 <div className={`max-w-4xl carousel-text ${index === currentSlide ? 'animate-fade-in' : ''}`}>
                   <h1 className="heading-xl text-white mb-6 uppercase" style={{ textShadow: '2px 2px 8px rgba(0,0,0,0.7)' }}>
                     {slide.title}
                   </h1>
-                  <p className="text-refined text-white/95 max-w-3xl leading-relaxed mb-8" style={{ textShadow: '1px 1px 4px rgba(0,0,0,0.8)' }}>
+                  <p className="text-refined text-white/95 max-w-3xl leading-relaxed" style={{ textShadow: '1px 1px 4px rgba(0,0,0,0.8)' }}>
                     {slide.subtitle}
                   </p>
-                  <Link to="/cadastro" className="btn-secondary text-lg px-8 py-4 inline-flex items-center">
-                    COMEÇAR AGORA
-                    <ArrowRight className="ml-2" size={20} />
-                  </Link>
                 </div>
               </div>
             </div>

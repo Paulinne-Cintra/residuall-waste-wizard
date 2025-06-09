@@ -9,7 +9,7 @@ const AboutPage = () => {
     <div className="min-h-screen flex flex-col">
       <Header />
       
-      <main className="flex-grow pt-20">
+      <main className="flex-grow">
         {/* Hero Section with background */}
         <section 
           className="relative py-24 md:py-32 bg-cover bg-center"
