@@ -81,67 +81,74 @@ const LoginPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden">
-      {/* Fundo com degradê dinâmico */}
+      {/* Fundo com degradê dinâmico em tons terrosos */}
       <div 
         className="absolute inset-0 w-full h-full"
         style={{
-          background: 'linear-gradient(135deg, #2F4A3A 0%, #D87C4A 50%, #2F4A3A 100%)',
+          background: 'linear-gradient(135deg, #556B2F 0%, #D2691E 50%, #556B2F 100%)',
           backgroundSize: '200% 200%',
-          animation: 'gradient-shift 12s ease-in-out infinite'
+          animation: 'gradient-shift 15s ease-in-out infinite'
         }}
       />
       
-      {/* Película branca translúcida */}
-      <div className="absolute inset-0 w-full h-full bg-white/20" />
+      {/* Película branca translúcida como véu */}
+      <div className="absolute inset-0 w-full h-full bg-white/25 backdrop-blur-[0.5px]" />
       
-      {/* Elementos arquitetônicos geométricos */}
-      <div className="absolute inset-0 w-full h-full opacity-10">
+      {/* Elementos arquitetônicos geométricos de baixa opacidade */}
+      <div className="absolute inset-0 w-full h-full opacity-8">
         <svg width="100%" height="100%" className="absolute inset-0">
-          {/* Silhueta de prédio 1 */}
-          <path
-            d="M100 80 L100 20 L140 20 L140 80 M110 30 L130 30 M110 40 L130 40 M110 50 L130 50 M110 60 L130 60"
-            stroke="currentColor"
-            strokeWidth="1"
-            fill="none"
-            className="text-white/30"
-          />
-          
-          {/* Silhueta de casa */}
-          <path
-            d="M200 80 L200 50 L220 30 L240 50 L240 80 M210 60 L230 60 M215 70 L225 70"
-            stroke="currentColor"
-            strokeWidth="1"
-            fill="none"
-            className="text-white/30"
-          />
-          
-          {/* Linhas técnicas de planta */}
-          <g className="text-white/20">
-            <line x1="50%" y1="20%" x2="80%" y2="20%" strokeWidth="0.5" stroke="currentColor" strokeDasharray="2,2" />
-            <line x1="20%" y1="40%" x2="50%" y2="40%" strokeWidth="0.5" stroke="currentColor" strokeDasharray="2,2" />
-            <line x1="60%" y1="60%" x2="90%" y2="60%" strokeWidth="0.5" stroke="currentColor" strokeDasharray="2,2" />
-            <line x1="10%" y1="80%" x2="40%" y2="80%" strokeWidth="0.5" stroke="currentColor" strokeDasharray="2,2" />
+          {/* Silhuetas de prédios */}
+          <g className="text-white/15">
+            <rect x="8%" y="25%" width="4%" height="50%" fill="none" stroke="currentColor" strokeWidth="0.5" />
+            <rect x="8.5%" y="35%" width="1%" height="3%" fill="none" stroke="currentColor" strokeWidth="0.3" />
+            <rect x="10%" y="35%" width="1%" height="3%" fill="none" stroke="currentColor" strokeWidth="0.3" />
+            <rect x="8.5%" y="45%" width="1%" height="3%" fill="none" stroke="currentColor" strokeWidth="0.3" />
+            <rect x="10%" y="45%" width="1%" height="3%" fill="none" stroke="currentColor" strokeWidth="0.3" />
+            
+            <rect x="85%" y="20%" width="6%" height="55%" fill="none" stroke="currentColor" strokeWidth="0.5" />
+            <rect x="86%" y="30%" width="1.5%" height="4%" fill="none" stroke="currentColor" strokeWidth="0.3" />
+            <rect x="88.5%" y="30%" width="1.5%" height="4%" fill="none" stroke="currentColor" strokeWidth="0.3" />
+            <rect x="86%" y="45%" width="1.5%" height="4%" fill="none" stroke="currentColor" strokeWidth="0.3" />
+            <rect x="88.5%" y="45%" width="1.5%" height="4%" fill="none" stroke="currentColor" strokeWidth="0.3" />
           </g>
           
-          {/* Estruturas geométricas */}
-          <g className="text-white/25">
-            <circle cx="85%" cy="30%" r="20" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.3" />
-            <polygon points="300,200 320,180 340,200 320,220" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.3" />
+          {/* Plantas técnicas e linhas de construção */}
+          <g className="text-white/12">
+            <line x1="15%" y1="15%" x2="40%" y2="15%" strokeWidth="0.5" stroke="currentColor" strokeDasharray="3,2" />
+            <line x1="15%" y1="18%" x2="35%" y2="18%" strokeWidth="0.3" stroke="currentColor" strokeDasharray="2,2" />
+            <circle cx="45%" cy="16.5%" r="1.5" fill="none" stroke="currentColor" strokeWidth="0.3" />
+            
+            <line x1="60%" y1="85%" x2="85%" y2="85%" strokeWidth="0.5" stroke="currentColor" strokeDasharray="3,2" />
+            <line x1="65%" y1="88%" x2="80%" y2="88%" strokeWidth="0.3" stroke="currentColor" strokeDasharray="2,2" />
+            <rect x="70%" y="82%" width="8" height="8" fill="none" stroke="currentColor" strokeWidth="0.3" />
+          </g>
+          
+          {/* Estruturas geométricas sutis */}
+          <g className="text-white/10">
+            <polygon points="150,100 170,80 190,100 170,120" fill="none" stroke="currentColor" strokeWidth="0.5" />
+            <circle cx="92%" cy="25%" r="15" fill="none" stroke="currentColor" strokeWidth="0.4" />
+            
+            {/* Padrão de tijolos */}
+            <g transform="translate(5%, 60%)">
+              <rect width="20" height="8" fill="none" stroke="currentColor" strokeWidth="0.3" />
+              <rect x="10" y="8" width="20" height="8" fill="none" stroke="currentColor" strokeWidth="0.3" />
+              <rect y="16" width="20" height="8" fill="none" stroke="currentColor" strokeWidth="0.3" />
+            </g>
           </g>
         </svg>
       </div>
       
       <main className="flex-grow flex items-center justify-center py-12 relative z-10 px-4">
         <div className="w-full max-w-md">
-          {/* Card principal */}
-          <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl overflow-hidden border border-white/20">
+          {/* Card principal com sombra aprimorada */}
+          <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl overflow-hidden border border-white/30">
             <div className="p-8 md:p-10">
               {/* Header do formulário */}
               <div className="text-center mb-8">
-                <h1 className="brand-text text-3xl text-residuall-green mb-2">
+                <h1 className="brand-text text-3xl text-residuall-green mb-2 font-montserrat font-bold tracking-wide">
                   RESIDUALL
                 </h1>
-                <p className="text-residuall-gray font-medium">
+                <p className="text-residuall-gray font-medium font-lato">
                   Bem-vindo de volta!
                 </p>
               </div>
@@ -149,7 +156,7 @@ const LoginPage = () => {
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Campo E-mail */}
                 <div>
-                  <label htmlFor="email" className="block text-sm font-montserrat font-medium text-residuall-gray mb-2">
+                  <label htmlFor="email" className="block text-sm font-montserrat font-semibold text-residuall-gray mb-2">
                     E-mail
                   </label>
                   <div className="relative">
@@ -168,7 +175,7 @@ const LoginPage = () => {
                 
                 {/* Campo Senha */}
                 <div>
-                  <label htmlFor="password" className="block text-sm font-montserrat font-medium text-residuall-gray mb-2">
+                  <label htmlFor="password" className="block text-sm font-montserrat font-semibold text-residuall-gray mb-2">
                     Senha
                   </label>
                   <div className="relative">
@@ -202,13 +209,13 @@ const LoginPage = () => {
                       checked={rememberMe} 
                       onChange={() => setRememberMe(!rememberMe)} 
                     />
-                    <label htmlFor="remember-me" className="ml-2 block text-sm text-residuall-gray">
+                    <label htmlFor="remember-me" className="ml-2 block text-sm text-residuall-gray font-lato">
                       Lembrar-me
                     </label>
                   </div>
                   
                   <div className="text-sm">
-                    <a href="#" className="text-residuall-green hover:text-residuall-green-light transition-colors font-medium">
+                    <a href="#" className="text-residuall-green hover:text-residuall-green-light transition-colors font-medium font-lato">
                       Esqueceu a senha?
                     </a>
                   </div>
@@ -221,11 +228,15 @@ const LoginPage = () => {
                   </div>
                 )}
 
-                {/* Botão de login destacado */}
+                {/* Botão de login com destaque aprimorado */}
                 <button 
                   type="submit"
                   disabled={isSubmitting} 
-                  className="w-full bg-residuall-green-dark hover:bg-residuall-green text-white font-montserrat font-bold text-lg py-4 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  className="w-full bg-residuall-green-dark hover:bg-residuall-green text-white font-montserrat font-bold text-lg py-4 px-6 rounded-lg transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  style={{
+                    background: 'linear-gradient(135deg, #1F3127 0%, #2F4A3A 100%)',
+                    boxShadow: '0 4px 15px rgba(31, 49, 39, 0.3), 0 2px 8px rgba(0, 0, 0, 0.1)'
+                  }}
                 >
                   {isSubmitting ? 'Entrando...' : 'ACESSAR PLATAFORMA'}
                 </button>
@@ -233,7 +244,7 @@ const LoginPage = () => {
               
               {/* Link para cadastro */}
               <div className="text-center mt-8 pt-6 border-t border-gray-100">
-                <span className="text-residuall-gray">Não tem uma conta? </span>
+                <span className="text-residuall-gray font-lato">Não tem uma conta? </span>
                 <Link to="/cadastro" className="text-residuall-green hover:text-residuall-green-light font-montserrat font-semibold transition-colors">
                   Cadastre-se gratuitamente
                 </Link>
