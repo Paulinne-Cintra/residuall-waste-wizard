@@ -243,7 +243,7 @@ const LoginPage = () => {
         </div>
       </main>
       
-      <style jsx>{`
+      <style>{`
         @keyframes gradient-shift {
           0%, 100% {
             background-position: 0% 50%;
