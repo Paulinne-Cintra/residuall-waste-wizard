@@ -1,4 +1,3 @@
-
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import PlanCard from '../components/PlanCard';
@@ -9,7 +8,7 @@ const PlansPage = () => {
     <div className="min-h-screen flex flex-col">
       <Header />
       
-      <main className="flex-grow">
+      <main className="flex-grow pt-24">
         {/* Hero Section */}
         <section 
           className="relative py-24 md:py-32 bg-cover bg-center"
