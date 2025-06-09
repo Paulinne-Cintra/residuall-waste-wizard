@@ -16,7 +16,12 @@ const Header = () => {
   };
 
   return (
-    <header className="w-full bg-white shadow-md z-50">
+    <header 
+      className="w-full fixed top-0 left-0 z-50"
+      style={{
+        backgroundImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.6), transparent)'
+      }}
+    >
       <div className="container mx-auto px-4 flex items-center justify-between h-20">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3">
@@ -25,7 +30,7 @@ const Header = () => {
             alt="Logo Residuall" 
             className="h-10 w-auto" 
           />
-          <span className="font-bold text-3xl text-residuall-green">
+          <span className="font-bold text-3xl text-white">
             RESIDUALL
           </span>
         </Link>
@@ -36,8 +41,8 @@ const Header = () => {
             to="/" 
             className={({ isActive }) => 
               isActive 
-                ? "text-residuall-green font-bold" 
-                : "text-gray-600 hover:text-residuall-green"
+                ? "text-white font-bold" 
+                : "text-white/90 hover:text-white"
             }
           >
             HOME
@@ -46,8 +51,8 @@ const Header = () => {
             to="/sobre" 
             className={({ isActive }) => 
               isActive 
-                ? "text-residuall-green font-bold" 
-                : "text-gray-600 hover:text-residuall-green"
+                ? "text-white font-bold" 
+                : "text-white/90 hover:text-white"
             }
           >
             SOBRE
@@ -56,8 +61,8 @@ const Header = () => {
             to="/planos" 
             className={({ isActive }) => 
               isActive 
-                ? "text-residuall-green font-bold" 
-                : "text-gray-600 hover:text-residuall-green"
+                ? "text-white font-bold" 
+                : "text-white/90 hover:text-white"
             }
           >
             PLANOS
@@ -90,7 +95,7 @@ const Header = () => {
 
         {/* Mobile Menu Button */}
         <button 
-          className="md:hidden p-2 hover:scale-110 transition-transform text-gray-600" 
+          className="md:hidden p-2 hover:scale-110 transition-transform text-white/90" 
           onClick={toggleMenu} 
           aria-label="Menu"
         >
@@ -100,14 +105,14 @@ const Header = () => {
 
       {/* Mobile Navigation */}
       {isMenuOpen && (
-        <div className="md:hidden bg-white shadow-lg animate-fade-in border-t border-gray-100">
+        <div className="md:hidden bg-black/80 backdrop-blur-sm animate-fade-in border-t border-white/10">
           <div className="container mx-auto px-4 py-4 flex flex-col space-y-4">
             <NavLink 
               to="/" 
               className={({ isActive }) => 
                 isActive 
-                  ? "block py-2 text-residuall-green font-medium" 
-                  : "block py-2 text-residuall-gray hover:text-residuall-green"
+                  ? "block py-2 text-white font-medium" 
+                  : "block py-2 text-white/90 hover:text-white"
               }
               onClick={toggleMenu}
             >
@@ -117,8 +122,8 @@ const Header = () => {
               to="/sobre" 
               className={({ isActive }) => 
                 isActive 
-                  ? "block py-2 text-residuall-green font-medium" 
-                  : "block py-2 text-residuall-gray hover:text-residuall-green"
+                  ? "block py-2 text-white font-medium" 
+                  : "block py-2 text-white/90 hover:text-white"
               }
               onClick={toggleMenu}
             >
@@ -128,8 +133,8 @@ const Header = () => {
               to="/planos" 
               className={({ isActive }) => 
                 isActive 
-                  ? "block py-2 text-residuall-green font-medium" 
-                  : "block py-2 text-residuall-gray hover:text-residuall-green"
+                  ? "block py-2 text-white font-medium" 
+                  : "block py-2 text-white/90 hover:text-white"
               }
               onClick={toggleMenu}
             >
@@ -140,7 +145,7 @@ const Header = () => {
             {user ? (
               <Link 
                 to="/dashboard/perfil" 
-                className="flex items-center py-2 text-residuall-gray hover:text-residuall-green" 
+                className="flex items-center py-2 text-white/90 hover:text-white" 
                 onClick={toggleMenu}
               >
                 <Avatar className="h-6 w-6 mr-3">
@@ -154,7 +159,10 @@ const Header = () => {
             ) : (
               <Link 
                 to="/login" 
-                className="btn-secondary text-sm px-6 py-2 text-center" 
+                className="text-sm px-6 py-2 text-center rounded-lg font-bold text-gray-800"
+                style={{
+                  background: 'linear-gradient(to right, #e2c290, #c9ad7f)'
+                }}
                 onClick={toggleMenu}
               >
                 ENTRAR

@@ -43,7 +43,7 @@ const HomePage = () => {
     <div className="min-h-screen flex flex-col bg-residuall-gray-light">
       <Header />
 
-      <main className="flex-grow">
+      <main className="flex-grow pt-20">
         {/* --- Hero Section com Carrossel --- */}
         <section className="relative h-screen overflow-hidden">
           {slides.map((slide, index) => (
