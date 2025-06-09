@@ -1,8 +1,7 @@
+
 import { useState, useEffect } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, User, Building, Phone } from 'lucide-react';
-import Header from '../components/Header';
-import AnimatedBackground from '../components/AnimatedBackground';
 import { useAuth } from '@/hooks/useAuth';
 
 const RegisterPage = () => {
@@ -143,12 +142,59 @@ const RegisterPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden">
-      <AnimatedBackground />
-      <Header />
+      {/* Fundo com degradê dinâmico */}
+      <div 
+        className="absolute inset-0 w-full h-full"
+        style={{
+          background: 'linear-gradient(135deg, #2F4A3A 0%, #D87C4A 50%, #2F4A3A 100%)',
+          backgroundSize: '200% 200%',
+          animation: 'gradient-shift 12s ease-in-out infinite'
+        }}
+      />
       
-      <main className="flex-grow flex items-center justify-center py-12 relative z-10 px-4 pt-20 md:pt-24">
+      {/* Película branca translúcida */}
+      <div className="absolute inset-0 w-full h-full bg-white/20" />
+      
+      {/* Elementos arquitetônicos geométricos */}
+      <div className="absolute inset-0 w-full h-full opacity-10">
+        <svg width="100%" height="100%" className="absolute inset-0">
+          {/* Silhueta de prédio 1 */}
+          <path
+            d="M100 80 L100 20 L140 20 L140 80 M110 30 L130 30 M110 40 L130 40 M110 50 L130 50 M110 60 L130 60"
+            stroke="currentColor"
+            strokeWidth="1"
+            fill="none"
+            className="text-white/30"
+          />
+          
+          {/* Silhueta de casa */}
+          <path
+            d="M200 80 L200 50 L220 30 L240 50 L240 80 M210 60 L230 60 M215 70 L225 70"
+            stroke="currentColor"
+            strokeWidth="1"
+            fill="none"
+            className="text-white/30"
+          />
+          
+          {/* Linhas técnicas de planta */}
+          <g className="text-white/20">
+            <line x1="50%" y1="20%" x2="80%" y2="20%" strokeWidth="0.5" stroke="currentColor" strokeDasharray="2,2" />
+            <line x1="20%" y1="40%" x2="50%" y2="40%" strokeWidth="0.5" stroke="currentColor" strokeDasharray="2,2" />
+            <line x1="60%" y1="60%" x2="90%" y2="60%" strokeWidth="0.5" stroke="currentColor" strokeDasharray="2,2" />
+            <line x1="10%" y1="80%" x2="40%" y2="80%" strokeWidth="0.5" stroke="currentColor" strokeDasharray="2,2" />
+          </g>
+          
+          {/* Estruturas geométricas */}
+          <g className="text-white/25">
+            <circle cx="85%" cy="30%" r="20" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.3" />
+            <polygon points="300,200 320,180 340,200 320,220" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.3" />
+          </g>
+        </svg>
+      </div>
+      
+      <main className="flex-grow flex items-center justify-center py-12 relative z-10 px-4">
         <div className="w-full max-w-2xl">
-          <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl overflow-hidden">
+          <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl overflow-hidden border border-white/20">
             <div className="p-8 md:p-10">
               <div className="text-center mb-8">
                 <h1 className="brand-text text-3xl text-residuall-green mb-2">
@@ -351,10 +397,11 @@ const RegisterPage = () => {
                   </div>
                 )}
 
+                {/* Botão de cadastro destacado */}
                 <button 
                   type="submit"
                   disabled={isSubmitting} 
-                  className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed font-montserrat font-semibold text-lg py-4"
+                  className="w-full bg-residuall-green-dark hover:bg-residuall-green text-white font-montserrat font-bold text-lg py-4 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                 >
                   {isSubmitting ? 'Criando conta...' : 'CRIAR CONTA'}
                 </button>
@@ -370,6 +417,17 @@ const RegisterPage = () => {
           </div>
         </div>
       </main>
+      
+      <style>{`
+        @keyframes gradient-shift {
+          0%, 100% {
+            background-position: 0% 50%;
+          }
+          50% {
+            background-position: 100% 50%;
+          }
+        }
+      `}</style>
     </div>
   );
 };
