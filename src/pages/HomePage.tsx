@@ -43,7 +43,7 @@ const HomePage = () => {
     <div className="min-h-screen flex flex-col bg-residuall-gray-light">
       <Header />
 
-      <main className="flex-grow pt-20">
+      <main className="flex-grow">
         {/* --- Hero Section com Carrossel --- */}
         <section className="relative h-screen overflow-hidden">
           {slides.map((slide, index) => (
@@ -58,18 +58,16 @@ const HomePage = () => {
             >
               <div className="relative z-10 container mx-auto px-4 h-full flex flex-col justify-center items-start text-left">
                 <div className={`max-w-4xl carousel-text ${index === currentSlide ? 'animate-fade-in' : ''}`}>
-                  <h1 className="text-4xl md:text-5xl lg:text-6xl font-quicksand font-bold tracking-tight uppercase text-white mb-6" style={{ textShadow: '2px 2px 8px rgba(0,0,0,0.7)' }}>
+                  <h1 className="heading-xl text-white mb-6 uppercase" style={{ textShadow: '2px 2px 8px rgba(0,0,0,0.7)' }}>
                     {slide.title}
                   </h1>
-                  <p className="text-lg md:text-xl text-white/95 max-w-3xl font-quicksand leading-relaxed" style={{ textShadow: '1px 1px 4px rgba(0,0,0,0.8)' }}>
+                  <p className="text-refined text-white/95 max-w-3xl leading-relaxed mb-8" style={{ textShadow: '1px 1px 4px rgba(0,0,0,0.8)' }}>
                     {slide.subtitle}
                   </p>
-                  <div className="mt-8">
-                    <Link to="/cadastro" className="btn-secondary text-lg px-8 py-4 inline-flex items-center">
-                      COMEÇAR AGORA
-                      <ArrowRight className="ml-2" size={20} />
-                    </Link>
-                  </div>
+                  <Link to="/cadastro" className="btn-secondary text-lg px-8 py-4 inline-flex items-center">
+                    COMEÇAR AGORA
+                    <ArrowRight className="ml-2" size={20} />
+                  </Link>
                 </div>
               </div>
             </div>
@@ -108,10 +106,10 @@ const HomePage = () => {
                 <div className="icon-bg w-16 h-16 bg-residuall-green/10 rounded-full flex items-center justify-center mx-auto mb-6 transition-all duration-300">
                   <Leaf size={32} className="icon-svg text-residuall-green transition-all duration-300" />
                 </div>
-                <h3 className="card-title font-quicksand font-semibold text-xl text-residuall-green mb-4 transition-all duration-300">
+                <h3 className="card-title font-semibold text-xl text-residuall-green mb-4 transition-all duration-300">
                   Sustentabilidade Real
                 </h3>
-                <p className="text-residuall-gray leading-relaxed font-quicksand">
+                <p className="text-residuall-gray leading-relaxed">
                   Monitore e reduza o impacto ambiental dos seus projetos com dados precisos e ações efetivas.
                 </p>
               </div>
@@ -120,10 +118,10 @@ const HomePage = () => {
                 <div className="icon-bg w-16 h-16 bg-residuall-orange/10 rounded-full flex items-center justify-center mx-auto mb-6 transition-all duration-300">
                   <BarChart size={32} className="icon-svg text-residuall-orange transition-all duration-300" />
                 </div>
-                <h3 className="card-title font-quicksand font-semibold text-xl text-residuall-green mb-4 transition-all duration-300">
+                <h3 className="card-title font-semibold text-xl text-residuall-green mb-4 transition-all duration-300">
                   Análises Inteligentes
                 </h3>
-                <p className="text-residuall-gray leading-relaxed font-quicksand">
+                <p className="text-residuall-gray leading-relaxed">
                   Dashboards intuitivos e relatórios detalhados para decisões baseadas em dados.
                 </p>
               </div>
@@ -132,10 +130,10 @@ const HomePage = () => {
                 <div className="icon-bg w-16 h-16 bg-residuall-beige/20 rounded-full flex items-center justify-center mx-auto mb-6 transition-all duration-300">
                   <Award size={32} className="icon-svg text-residuall-green transition-all duration-300" />
                 </div>
-                <h3 className="card-title font-quicksand font-semibold text-xl text-residuall-green mb-4 transition-all duration-300">
+                <h3 className="card-title font-semibold text-xl text-residuall-green mb-4 transition-all duration-300">
                   Economia Comprovada
                 </h3>
-                <p className="text-residuall-gray leading-relaxed font-quicksand">
+                <p className="text-residuall-gray leading-relaxed">
                   Reduza custos operacionais e desperdícios com gestão eficiente de materiais.
                 </p>
               </div>
@@ -186,10 +184,10 @@ const HomePage = () => {
                   <div className="icon-bg w-20 h-20 bg-residuall-green/10 rounded-full flex items-center justify-center mx-auto mb-6 transition-all duration-300">
                     <item.icon size={40} className={`icon-svg ${item.color} transition-all duration-300`} />
                   </div>
-                  <h3 className="card-title font-quicksand font-semibold text-xl text-residuall-green mb-3 transition-all duration-300">
+                  <h3 className="card-title font-semibold text-xl text-residuall-green mb-3 transition-all duration-300">
                     {item.title}
                   </h3>
-                  <p className="text-residuall-gray leading-relaxed text-sm font-quicksand">
+                  <p className="text-residuall-gray leading-relaxed text-sm">
                     {item.description}
                   </p>
                 </div>
@@ -213,10 +211,10 @@ const HomePage = () => {
         {/* --- Seção CTA Final --- */}
         <section className="bg-residuall-green py-20 text-white">
           <div className="container mx-auto px-4 text-center">
-            <h2 className="heading-lg text-white mb-6 font-quicksand">
+            <h2 className="heading-lg text-white mb-6">
               Pronto para transformar a sua gestão de resíduos?
             </h2>
-            <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto font-quicksand">
+            <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
               Junte-se às empresas que já revolucionaram seus processos de construção
             </p>
             <Link to="/cadastro" className="btn-secondary bg-residuall-orange hover:bg-residuall-orange-light inline-flex items-center text-lg px-8 py-4">

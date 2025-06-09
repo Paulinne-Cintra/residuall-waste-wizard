@@ -82,11 +82,13 @@
 
   body {
     background: theme('colors.residuall-gray.light');
-    @apply text-foreground font-quicksand;
+    @apply text-foreground;
+    font-family: 'Quicksand', sans-serif;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-quicksand font-semibold;
+    font-family: 'Quicksand', sans-serif;
+    @apply font-semibold;
   }
 
   h1 { @apply text-4xl; }
@@ -94,7 +96,8 @@
   h3 { @apply text-2xl; }
 
   .brand-text {
-    @apply font-quicksand font-bold uppercase tracking-wide;
+    font-family: 'Quicksand', sans-serif;
+    @apply font-bold uppercase tracking-wide;
   }
 }
 
@@ -109,20 +112,28 @@
 
   /* Botões */
   .btn-primary {
-    @apply bg-residuall-green hover:bg-residuall-green-light text-white font-quicksand font-medium py-3 px-6 rounded-lg transition-all duration-300 shadow-card hover:shadow-card-hover hover:scale-105;
+    @apply bg-residuall-green hover:bg-residuall-green-light text-white py-3 px-6 rounded-lg transition-all duration-300 shadow-card hover:shadow-card-hover hover:scale-105;
+    font-family: 'Quicksand', sans-serif;
+    @apply font-medium;
   }
 
   .btn-secondary {
-    @apply bg-residuall-orange hover:bg-residuall-orange-light text-white font-quicksand font-medium py-3 px-6 rounded-lg transition-all duration-300 shadow-card hover:shadow-card-hover hover:scale-105;
+    @apply bg-residuall-orange hover:bg-residuall-orange-light text-white py-3 px-6 rounded-lg transition-all duration-300 shadow-card hover:shadow-card-hover hover:scale-105;
+    font-family: 'Quicksand', sans-serif;
+    @apply font-medium;
   }
 
   .btn-outline {
-    @apply border-2 border-residuall-green text-residuall-green font-quicksand font-medium py-3 px-6 rounded-lg hover:bg-residuall-green hover:text-white transition-all duration-300 hover:scale-105;
+    @apply border-2 border-residuall-green text-residuall-green py-3 px-6 rounded-lg hover:bg-residuall-green hover:text-white transition-all duration-300 hover:scale-105;
+    font-family: 'Quicksand', sans-serif;
+    @apply font-medium;
   }
 
   .btn-golden {
     background: linear-gradient(135deg, #e2c290, #d4a574);
-    @apply text-gray-800 font-quicksand font-medium py-3 px-6 rounded-lg transition-all duration-300 shadow-card hover:shadow-card-hover hover:scale-105;
+    @apply text-gray-800 py-3 px-6 rounded-lg transition-all duration-300 shadow-card hover:shadow-card-hover hover:scale-105;
+    font-family: 'Quicksand', sans-serif;
+    @apply font-medium;
   }
 
   /* Cards */
@@ -149,7 +160,9 @@
 
   /* Links de navegação */
   .nav-link {
-    @apply text-white font-quicksand font-medium hover:text-gray-200 transition-all duration-300 relative;
+    @apply text-white hover:text-gray-200 transition-all duration-300 relative;
+    font-family: 'Quicksand', sans-serif;
+    @apply font-medium;
   }
 
   .nav-link-scrolled {
@@ -227,15 +240,18 @@
 
   /* Tipografia refinada */
   .heading-xl {
-    @apply text-4xl md:text-5xl lg:text-6xl font-quicksand font-bold tracking-tight;
+    @apply text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight;
+    font-family: 'Quicksand', sans-serif;
   }
 
   .heading-lg {
-    @apply text-3xl md:text-4xl font-quicksand font-semibold tracking-tight;
+    @apply text-3xl md:text-4xl font-semibold tracking-tight;
+    font-family: 'Quicksand', sans-serif;
   }
 
   .text-refined {
-    @apply font-quicksand text-lg leading-relaxed;
+    @apply text-lg leading-relaxed;
+    font-family: 'Quicksand', sans-serif;
   }
 
   /* =======================
