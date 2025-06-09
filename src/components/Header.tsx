@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, User } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
@@ -8,9 +8,16 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [scrollY, setScrollY] = useState(0);
   const location = useLocation();
   const { user } = useAuth();
   const { profile } = useProfile();
+
+  useEffect(() => {
+    const handleScroll = () => setScrollY(window.scrollY);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
     
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -20,17 +27,30 @@ const Header = () => {
     return location.pathname === path;
   };
 
+  const isScrolled = scrollY > 50;
+  const headerClasses = isScrolled 
+    ? "fixed top-0 w-full z-50 header-glass transition-all duration-300" 
+    : "fixed top-0 w-full z-50 bg-transparent transition-all duration-300";
+  
+  const textClasses = isScrolled 
+    ? "text-residuall-gray" 
+    : "text-white";
+  
+  const logoClasses = isScrolled 
+    ? "text-residuall-green" 
+    : "text-white";
+
   return (
-    <header className="fixed top-0 w-full z-50 header-glass">
+    <header className={headerClasses}>
       <div className="container mx-auto px-4 flex items-center justify-between h-16 md:h-20">
         {/* Logo */}
         <Link to="/" className="logo-hover flex items-center">
           <img
-            src="/lovable-uploads/97cfa9a1-97a5-40dd-8412-f0c969634261.png"
+            src="/logo.png"
             alt="Logo Residuall"
             className="h-8 md:h-10 w-auto mr-3"
           />
-          <span className="brand-text text-2xl md:text-3xl text-residuall-green">
+          <span className={`brand-text text-2xl md:text-3xl ${logoClasses} transition-colors duration-300`}>
             RESIDUALL
           </span>
         </Link>
@@ -39,24 +59,24 @@ const Header = () => {
         <nav className="hidden md:flex items-center space-x-8">
           <Link 
             to="/" 
-            className={`nav-link ${isActiveRoute('/') ? 'nav-link-active' : ''}`}
+            className={`nav-link ${isActiveRoute('/') ? 'nav-link-active' : ''} ${textClasses} transition-colors duration-300`}
           >
             HOME
           </Link>
           <Link 
             to="/sobre" 
-            className={`nav-link ${isActiveRoute('/sobre') ? 'nav-link-active' : ''}`}
+            className={`nav-link ${isActiveRoute('/sobre') ? 'nav-link-active' : ''} ${textClasses} transition-colors duration-300`}
           >
             SOBRE
           </Link>
           <Link 
             to="/planos" 
-            className={`nav-link ${isActiveRoute('/planos') ? 'nav-link-active' : ''}`}
+            className={`nav-link ${isActiveRoute('/planos') ? 'nav-link-active' : ''} ${textClasses} transition-colors duration-300`}
           >
             PLANOS
           </Link>
           
-          {/* Avatar ou botão de login */}
+          {/* Avatar ou botões de ação */}
           {user ? (
             <Link to="/dashboard/perfil" className="flex items-center">
               <Avatar className="h-8 w-8">
@@ -67,18 +87,30 @@ const Header = () => {
               </Avatar>
             </Link>
           ) : (
-            <Link 
-              to="/login" 
-              className="btn-secondary text-sm px-6 py-2"
-            >
-              ENTRAR
-            </Link>
+            <div className="flex items-center space-x-4">
+              <Link 
+                to="/login" 
+                className={`font-montserrat font-medium px-4 py-2 rounded-lg transition-all duration-300 hover:scale-105 ${
+                  isScrolled 
+                    ? 'text-residuall-gray hover:text-residuall-green' 
+                    : 'text-white hover:text-gray-200'
+                }`}
+              >
+                ENTRAR
+              </Link>
+              <Link 
+                to="/cadastro" 
+                className="btn-secondary text-sm px-6 py-2"
+              >
+                CRIAR CONTA
+              </Link>
+            </div>
           )}
         </nav>
 
         {/* Mobile Menu Button */}
         <button 
-          className="md:hidden text-residuall-green p-2 hover:scale-110 transition-transform"
+          className={`md:hidden p-2 hover:scale-110 transition-transform ${textClasses}`}
           onClick={toggleMenu}
           aria-label="Menu"
         >
@@ -112,7 +144,7 @@ const Header = () => {
               PLANOS
             </Link>
             
-            {/* Avatar ou botão de login no mobile */}
+            {/* Avatar ou botões de ação no mobile */}
             {user ? (
               <Link 
                 to="/dashboard/perfil" 
@@ -128,13 +160,22 @@ const Header = () => {
                 PERFIL
               </Link>
             ) : (
-              <Link 
-                to="/login" 
-                className="btn-secondary text-sm px-6 py-2 text-center"
-                onClick={toggleMenu}
-              >
-                ENTRAR
-              </Link>
+              <div className="flex flex-col space-y-2">
+                <Link 
+                  to="/login" 
+                  className="text-residuall-gray hover:text-residuall-green py-2"
+                  onClick={toggleMenu}
+                >
+                  ENTRAR
+                </Link>
+                <Link 
+                  to="/cadastro" 
+                  className="btn-secondary text-sm px-6 py-2 text-center"
+                  onClick={toggleMenu}
+                >
+                  CRIAR CONTA
+                </Link>
+              </div>
             )}
           </div>
         </div>

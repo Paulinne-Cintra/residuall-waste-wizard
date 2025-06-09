@@ -1,3 +1,4 @@
+
 import { Link } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -9,17 +10,17 @@ const HomePage = () => {
     <div className="min-h-screen flex flex-col bg-residuall-gray-light">
       <Header />
 
-      <main className="flex-grow pt-16 md:pt-20">
+      <main className="flex-grow">
         {/* --- Hero Section Redesenhada --- */}
         <section 
           className="relative text-white bg-cover bg-center"
           style={{
             backgroundImage: 'linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url("https://images.unsplash.com/photo-1541976590-713941681591?ixlib=rb-4.0.3&auto=format&fit=crop&w=2069&q=80")',
-            height: 'calc(100vh - 5rem)', // Ajusta a altura da seção
+            height: '100vh',
             minHeight: '650px'
           }}
         >
-          <div className="relative z-10 container mx-auto px-4 h-full flex flex-col justify-center items-start text-left">
+          <div className="relative z-10 container mx-auto px-4 h-full flex flex-col justify-center items-start text-left pt-20">
             <div className="max-w-3xl">
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-montserrat font-bold tracking-tight uppercase" style={{ textShadow: '2px 2px 8px rgba(0,0,0,0.7)' }}>
                 Construa com propósito,
