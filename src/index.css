@@ -1,3 +1,4 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Lato:wght@300;400;500;700&family=Quicksand:wght@300;400;500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
@@ -77,10 +78,6 @@
   * {
     @apply border-border;
   }
-  /* Correção: Aplicar transição a todos os elementos EXCETO aos conteúdos dos dropdowns */
-  *:not([data-radix-dropdown-menu-content]) {
-    @apply transition-all duration-300 ease-in-out;
-  }
 
   body {
     background: theme('colors.residuall-gray.light');
@@ -97,6 +94,11 @@
 
   .brand-text {
     @apply font-quicksand font-bold uppercase tracking-wide;
+  }
+
+  /* Aplicar transições seletivamente apenas onde necessário */
+  button, a, .card-modern, .nav-link, input, select, textarea {
+    @apply transition-all duration-300 ease-in-out;
   }
 }
 
