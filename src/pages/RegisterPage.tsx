@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, User, Building, Phone } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import AnimatedArchitecturalBackground from '@/components/AnimatedArchitecturalBackground';
 
 const RegisterPage = () => {
   const { signUp, user, loading: authLoading } = useAuth();
@@ -142,70 +143,30 @@ const RegisterPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden">
-      {/* Fundo com degradê dinâmico */}
-      <div 
-        className="absolute inset-0 w-full h-full"
-        style={{
-          background: 'linear-gradient(135deg, #2F4A3A 0%, #D87C4A 50%, #2F4A3A 100%)',
-          backgroundSize: '200% 200%',
-          animation: 'gradient-shift 12s ease-in-out infinite'
-        }}
-      />
-      
-      {/* Película branca translúcida */}
-      <div className="absolute inset-0 w-full h-full bg-white/20" />
-      
-      {/* Elementos arquitetônicos geométricos */}
-      <div className="absolute inset-0 w-full h-full opacity-10">
-        <svg width="100%" height="100%" className="absolute inset-0">
-          {/* Silhueta de prédio 1 */}
-          <path
-            d="M100 80 L100 20 L140 20 L140 80 M110 30 L130 30 M110 40 L130 40 M110 50 L130 50 M110 60 L130 60"
-            stroke="currentColor"
-            strokeWidth="1"
-            fill="none"
-            className="text-white/30"
-          />
-          
-          {/* Silhueta de casa */}
-          <path
-            d="M200 80 L200 50 L220 30 L240 50 L240 80 M210 60 L230 60 M215 70 L225 70"
-            stroke="currentColor"
-            strokeWidth="1"
-            fill="none"
-            className="text-white/30"
-          />
-          
-          {/* Linhas técnicas de planta */}
-          <g className="text-white/20">
-            <line x1="50%" y1="20%" x2="80%" y2="20%" strokeWidth="0.5" stroke="currentColor" strokeDasharray="2,2" />
-            <line x1="20%" y1="40%" x2="50%" y2="40%" strokeWidth="0.5" stroke="currentColor" strokeDasharray="2,2" />
-            <line x1="60%" y1="60%" x2="90%" y2="60%" strokeWidth="0.5" stroke="currentColor" strokeDasharray="2,2" />
-            <line x1="10%" y1="80%" x2="40%" y2="80%" strokeWidth="0.5" stroke="currentColor" strokeDasharray="2,2" />
-          </g>
-          
-          {/* Estruturas geométricas */}
-          <g className="text-white/25">
-            <circle cx="85%" cy="30%" r="20" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.3" />
-            <polygon points="300,200 320,180 340,200 320,220" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.3" />
-          </g>
-        </svg>
-      </div>
+      {/* Animated Architectural Background */}
+      <AnimatedArchitecturalBackground />
       
       <main className="flex-grow flex items-center justify-center py-12 relative z-10 px-4">
         <div className="w-full max-w-2xl">
-          <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl overflow-hidden border border-white/20">
+          {/* Frosted Glass Card */}
+          <div 
+            className="rounded-3xl shadow-2xl overflow-hidden border backdrop-blur-[20px]"
+            style={{
+              backgroundColor: 'rgba(26, 26, 26, 0.4)',
+              border: '1px solid rgba(255, 255, 255, 0.1)'
+            }}
+          >
             <div className="p-8 md:p-10">
               <div className="text-center mb-8">
-                <h1 className="brand-text text-3xl text-residuall-green mb-2">
+                <h1 className="brand-text text-3xl text-white mb-2">
                   RESIDUALL
                 </h1>
-                <p className="text-residuall-gray font-medium">
+                <p className="text-gray-300 font-medium">
                   {selectedPlan ? `Cadastre-se para o ${selectedPlan.name}` : 'Criar sua conta'}
                 </p>
                 {selectedPlan && (
-                  <div className="mt-4 p-4 bg-residuall-green/10 rounded-lg">
-                    <p className="text-sm text-residuall-green font-semibold">
+                  <div className="mt-4 p-4 bg-residuall-green/20 rounded-lg border border-white/10">
+                    <p className="text-sm text-white font-semibold">
                       Plano selecionado: {selectedPlan.name} - {selectedPlan.price === 'Grátis' ? 'Grátis' : `R$ ${selectedPlan.price}/mês`}
                     </p>
                   </div>
@@ -216,158 +177,158 @@ const RegisterPage = () => {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label htmlFor="name" className="block text-sm font-montserrat font-medium text-residuall-gray mb-2">
+                    <label htmlFor="name" className="block text-sm font-montserrat font-medium text-gray-200 mb-2">
                       Nome Completo *
                     </label>
                     <div className="relative">
-                      <User size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-residuall-gray" />
+                      <User size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-300" />
                       <input 
                         id="name" 
                         name="name"
                         type="text" 
-                        className={`input-modern pl-11 ${errors.name ? 'border-red-500' : ''}`}
+                        className={`w-full pl-11 pr-4 py-3 bg-white/10 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-residuall-green focus:border-transparent transition-all ${errors.name ? 'border-red-500 focus:ring-red-500' : 'border-white/20'}`}
                         placeholder="Seu nome completo" 
                         value={formData.name} 
                         onChange={handleInputChange} 
                       />
                     </div>
-                    {errors.name && <p className="mt-2 text-sm text-red-500">{errors.name}</p>}
+                    {errors.name && <p className="mt-2 text-sm text-red-400">{errors.name}</p>}
                   </div>
 
                   <div>
-                    <label htmlFor="email" className="block text-sm font-montserrat font-medium text-residuall-gray mb-2">
+                    <label htmlFor="email" className="block text-sm font-montserrat font-medium text-gray-200 mb-2">
                       E-mail *
                     </label>
                     <div className="relative">
-                      <Mail size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-residuall-gray" />
+                      <Mail size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-300" />
                       <input 
                         id="email" 
                         name="email"
                         type="email" 
-                        className={`input-modern pl-11 ${errors.email ? 'border-red-500' : ''}`}
+                        className={`w-full pl-11 pr-4 py-3 bg-white/10 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-residuall-green focus:border-transparent transition-all ${errors.email ? 'border-red-500 focus:ring-red-500' : 'border-white/20'}`}
                         placeholder="seu@email.com" 
                         value={formData.email} 
                         onChange={handleInputChange} 
                       />
                     </div>
-                    {errors.email && <p className="mt-2 text-sm text-red-500">{errors.email}</p>}
+                    {errors.email && <p className="mt-2 text-sm text-red-400">{errors.email}</p>}
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label htmlFor="password" className="block text-sm font-montserrat font-medium text-residuall-gray mb-2">
+                    <label htmlFor="password" className="block text-sm font-montserrat font-medium text-gray-200 mb-2">
                       Senha *
                     </label>
                     <div className="relative">
-                      <Lock size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-residuall-gray" />
+                      <Lock size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-300" />
                       <input 
                         id="password" 
                         name="password"
                         type={showPassword ? "text" : "password"} 
-                        className={`input-modern pl-11 pr-11 ${errors.password ? 'border-red-500' : ''}`}
+                        className={`w-full pl-11 pr-11 py-3 bg-white/10 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-residuall-green focus:border-transparent transition-all ${errors.password ? 'border-red-500 focus:ring-red-500' : 'border-white/20'}`}
                         placeholder="••••••••" 
                         value={formData.password} 
                         onChange={handleInputChange} 
                       />
                       <button 
                         type="button" 
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-residuall-gray hover:text-residuall-green transition-colors" 
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-300 hover:text-white transition-colors" 
                         onClick={() => setShowPassword(!showPassword)}
                       >
                         {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                       </button>
                     </div>
-                    {errors.password && <p className="mt-2 text-sm text-red-500">{errors.password}</p>}
+                    {errors.password && <p className="mt-2 text-sm text-red-400">{errors.password}</p>}
                   </div>
 
                   <div>
-                    <label htmlFor="confirmPassword" className="block text-sm font-montserrat font-medium text-residuall-gray mb-2">
+                    <label htmlFor="confirmPassword" className="block text-sm font-montserrat font-medium text-gray-200 mb-2">
                       Confirmar Senha *
                     </label>
                     <div className="relative">
-                      <Lock size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-residuall-gray" />
+                      <Lock size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-300" />
                       <input 
                         id="confirmPassword" 
                         name="confirmPassword"
                         type={showConfirmPassword ? "text" : "password"} 
-                        className={`input-modern pl-11 pr-11 ${errors.confirmPassword ? 'border-red-500' : ''}`}
+                        className={`w-full pl-11 pr-11 py-3 bg-white/10 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-residuall-green focus:border-transparent transition-all ${errors.confirmPassword ? 'border-red-500 focus:ring-red-500' : 'border-white/20'}`}
                         placeholder="••••••••" 
                         value={formData.confirmPassword} 
                         onChange={handleInputChange} 
                       />
                       <button 
                         type="button" 
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-residuall-gray hover:text-residuall-green transition-colors" 
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-300 hover:text-white transition-colors" 
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                       >
                         {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                       </button>
                     </div>
-                    {errors.confirmPassword && <p className="mt-2 text-sm text-red-500">{errors.confirmPassword}</p>}
+                    {errors.confirmPassword && <p className="mt-2 text-sm text-red-400">{errors.confirmPassword}</p>}
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label htmlFor="company" className="block text-sm font-montserrat font-medium text-residuall-gray mb-2">
+                    <label htmlFor="company" className="block text-sm font-montserrat font-medium text-gray-200 mb-2">
                       Empresa *
                     </label>
                     <div className="relative">
-                      <Building size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-residuall-gray" />
+                      <Building size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-300" />
                       <input 
                         id="company" 
                         name="company"
                         type="text" 
-                        className={`input-modern pl-11 ${errors.company ? 'border-red-500' : ''}`}
+                        className={`w-full pl-11 pr-4 py-3 bg-white/10 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-residuall-green focus:border-transparent transition-all ${errors.company ? 'border-red-500 focus:ring-red-500' : 'border-white/20'}`}
                         placeholder="Nome da empresa" 
                         value={formData.company} 
                         onChange={handleInputChange} 
                       />
                     </div>
-                    {errors.company && <p className="mt-2 text-sm text-red-500">{errors.company}</p>}
+                    {errors.company && <p className="mt-2 text-sm text-red-400">{errors.company}</p>}
                   </div>
 
                   <div>
-                    <label htmlFor="phone" className="block text-sm font-montserrat font-medium text-residuall-gray mb-2">
+                    <label htmlFor="phone" className="block text-sm font-montserrat font-medium text-gray-200 mb-2">
                       Telefone *
                     </label>
                     <div className="relative">
-                      <Phone size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-residuall-gray" />
+                      <Phone size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-300" />
                       <input 
                         id="phone" 
                         name="phone"
                         type="tel" 
-                        className={`input-modern pl-11 ${errors.phone ? 'border-red-500' : ''}`}
+                        className={`w-full pl-11 pr-4 py-3 bg-white/10 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-residuall-green focus:border-transparent transition-all ${errors.phone ? 'border-red-500 focus:ring-red-500' : 'border-white/20'}`}
                         placeholder="(11) 99999-9999" 
                         value={formData.phone} 
                         onChange={handleInputChange} 
                       />
                     </div>
-                    {errors.phone && <p className="mt-2 text-sm text-red-500">{errors.phone}</p>}
+                    {errors.phone && <p className="mt-2 text-sm text-red-400">{errors.phone}</p>}
                   </div>
                 </div>
 
                 <div>
-                  <label htmlFor="professionalRole" className="block text-sm font-montserrat font-medium text-residuall-gray mb-2">
+                  <label htmlFor="professionalRole" className="block text-sm font-montserrat font-medium text-gray-200 mb-2">
                     Função Profissional *
                   </label>
                   <select
                     id="professionalRole"
                     name="professionalRole"
-                    className={`input-modern ${errors.professionalRole ? 'border-red-500' : ''}`}
+                    className={`w-full px-4 py-3 bg-white/10 border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-residuall-green focus:border-transparent transition-all ${errors.professionalRole ? 'border-red-500 focus:ring-red-500' : 'border-white/20'}`}
                     value={formData.professionalRole}
                     onChange={handleInputChange}
                   >
-                    <option value="">Selecione sua função</option>
-                    <option value="engenheiro">Engenheiro Civil</option>
-                    <option value="arquiteto">Arquiteto</option>
-                    <option value="construtor">Construtor</option>
-                    <option value="gestor">Gestor de Obras</option>
-                    <option value="coordenador">Coordenador</option>
-                    <option value="outro">Outro</option>
+                    <option value="" className="text-gray-800">Selecione sua função</option>
+                    <option value="engenheiro" className="text-gray-800">Engenheiro Civil</option>
+                    <option value="arquiteto" className="text-gray-800">Arquiteto</option>
+                    <option value="construtor" className="text-gray-800">Construtor</option>
+                    <option value="gestor" className="text-gray-800">Gestor de Obras</option>
+                    <option value="coordenador" className="text-gray-800">Coordenador</option>
+                    <option value="outro" className="text-gray-800">Outro</option>
                   </select>
-                  {errors.professionalRole && <p className="mt-2 text-sm text-red-500">{errors.professionalRole}</p>}
+                  {errors.professionalRole && <p className="mt-2 text-sm text-red-400">{errors.professionalRole}</p>}
                 </div>
 
                 <div className="flex items-center">
@@ -378,7 +339,7 @@ const RegisterPage = () => {
                     checked={acceptTerms} 
                     onChange={(e) => setAcceptTerms(e.target.checked)} 
                   />
-                  <label htmlFor="accept-terms" className="ml-2 block text-sm text-residuall-gray">
+                  <label htmlFor="accept-terms" className="ml-2 block text-sm text-gray-300">
                     Eu aceito os{' '}
                     <a href="#" className="text-residuall-green hover:text-residuall-green-light transition-colors font-medium">
                       termos e condições
@@ -389,11 +350,11 @@ const RegisterPage = () => {
                     </a>
                   </label>
                 </div>
-                {errors.terms && <p className="text-sm text-red-500">{errors.terms}</p>}
+                {errors.terms && <p className="text-sm text-red-400">{errors.terms}</p>}
                 
                 {errors.general && (
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                    <p className="text-sm text-red-600 text-center">{errors.general}</p>
+                  <div className="bg-red-500/20 border border-red-400/30 rounded-lg p-3">
+                    <p className="text-sm text-red-300 text-center">{errors.general}</p>
                   </div>
                 )}
 
@@ -407,8 +368,8 @@ const RegisterPage = () => {
                 </button>
               </form>
               
-              <div className="text-center mt-8 pt-6 border-t border-gray-100">
-                <span className="text-residuall-gray">Já tem uma conta? </span>
+              <div className="text-center mt-8 pt-6 border-t border-white/10">
+                <span className="text-gray-300">Já tem uma conta? </span>
                 <Link to="/login" className="text-residuall-green hover:text-residuall-green-light font-montserrat font-semibold transition-colors">
                   Faça login
                 </Link>
@@ -417,17 +378,6 @@ const RegisterPage = () => {
           </div>
         </div>
       </main>
-      
-      <style>{`
-        @keyframes gradient-shift {
-          0%, 100% {
-            background-position: 0% 50%;
-          }
-          50% {
-            background-position: 100% 50%;
-          }
-        }
-      `}</style>
     </div>
   );
 };
