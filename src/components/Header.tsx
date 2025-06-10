@@ -17,9 +17,9 @@ const Header = () => {
 
   return (
     <header 
-      className="w-full fixed top-0 left-0 z-50 transition-all duration-300"
+      className="w-full fixed top-0 left-0 z-50"
       style={{
-        backgroundImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.7), transparent)'
+        backgroundImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.4) 50%, transparent 100%)'
       }}
     >
       <div className="container mx-auto px-4 flex items-center justify-between h-20">

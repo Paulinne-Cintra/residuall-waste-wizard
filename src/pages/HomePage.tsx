@@ -42,7 +42,7 @@ const HomePage = () => {
     <div className="min-h-screen flex flex-col bg-residuall-gray-light">
       <Header />
 
-      <main className="flex-grow pt-24">
+      <main className="flex-grow">
         {/* --- Hero Section com Carrossel --- */}
         <section className="relative h-screen overflow-hidden">
           {slides.map((slide, index) => (
@@ -83,6 +83,7 @@ const HomePage = () => {
           </div>
         </section>
 
+        {/* --- Seção de Benefícios --- */}
         <section className="section-padding bg-white">
           <div className="container mx-auto px-4">
             <div className="text-center mb-16">
@@ -135,6 +136,7 @@ const HomePage = () => {
           </div>
         </section>
         
+        {/* --- Seção: Como Funciona (4 Passos) --- */}
         <section className="section-padding bg-residuall-gray-light">
           <div className="container mx-auto px-4">
             <div className="text-center mb-16">
@@ -189,6 +191,7 @@ const HomePage = () => {
           </div>
         </section>
 
+        {/* --- Seção de Depoimentos --- */}
         <section className="section-padding bg-white">
           <div className="container mx-auto px-4">
             <div className="text-center mb-16">
@@ -200,6 +203,7 @@ const HomePage = () => {
           </div>
         </section>
 
+        {/* --- Seção CTA Final --- */}
         <section className="bg-residuall-green py-20 text-white">
           <div className="container mx-auto px-4 text-center">
             <h2 className="heading-lg text-white mb-6">
