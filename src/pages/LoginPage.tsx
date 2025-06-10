@@ -81,6 +81,74 @@ const LoginPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden">
+      {/* Header fixo com fundo translúcido */}
+      <header 
+        className="w-full fixed top-0 left-0 z-50 backdrop-blur-md"
+        style={{
+          background: 'linear-gradient(to bottom, rgba(47, 74, 58, 0.9) 0%, rgba(47, 74, 58, 0.7) 50%, rgba(47, 74, 58, 0.5) 100%)'
+        }}
+      >
+        <div className="container mx-auto px-4 flex items-center justify-between h-16">
+          {/* Logo */}
+          <Link to="/" className="flex items-center gap-3">
+            <img 
+              src="/lovable-uploads/9488f0fd-b9a5-4e50-a2fc-3626b4d9adff.png" 
+              alt="Logo Residuall" 
+              className="h-8 w-auto" 
+            />
+            <span className="font-montserrat font-bold text-2xl text-white">
+              RESIDUALL
+            </span>
+          </Link>
+
+          {/* Navegação */}
+          <nav className="hidden md:flex items-center gap-8">
+            <Link 
+              to="/" 
+              className="text-white/90 hover:text-white text-sm font-montserrat font-medium transition-colors"
+            >
+              HOME
+            </Link>
+            <Link 
+              to="/sobre" 
+              className="text-white/90 hover:text-white text-sm font-montserrat font-medium transition-colors"
+            >
+              SOBRE
+            </Link>
+            <Link 
+              to="/planos" 
+              className="text-white/90 hover:text-white text-sm font-montserrat font-medium transition-colors"
+            >
+              PLANOS
+            </Link>
+            
+            {/* Botão de destaque */}
+            <Link 
+              to="/" 
+              className="py-2 px-4 rounded-lg font-montserrat font-semibold text-sm text-residuall-gray-dark transition-all duration-300 hover:scale-105"
+              style={{
+                background: 'linear-gradient(135deg, #E7C792 0%, #D87C4A 100%)'
+              }}
+            >
+              VOLTAR PARA HOME
+            </Link>
+          </nav>
+
+          {/* Menu mobile */}
+          <div className="md:hidden">
+            <Link 
+              to="/" 
+              className="py-2 px-4 rounded-lg font-montserrat font-semibold text-xs text-residuall-gray-dark"
+              style={{
+                background: 'linear-gradient(135deg, #E7C792 0%, #D87C4A 100%)'
+              }}
+            >
+              HOME
+            </Link>
+          </div>
+        </div>
+      </header>
+
       {/* Fundo com degradê dinâmico em tons terrosos */}
       <div 
         className="absolute inset-0 w-full h-full"
@@ -138,7 +206,7 @@ const LoginPage = () => {
         </svg>
       </div>
       
-      <main className="flex-grow flex items-center justify-center py-12 relative z-10 px-4">
+      <main className="flex-grow flex items-center justify-center py-12 relative z-10 px-4 pt-20">
         <div className="w-full max-w-md">
           {/* Card principal com sombra aprimorada */}
           <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl overflow-hidden border border-white/30">
