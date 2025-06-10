@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, User, Building, Phone } from 'lucide-react';
@@ -22,7 +21,7 @@ const RegisterPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
-  const [errors, setErrors] = useState<{[key: string]: string}>({});
+  const [errors, setErrors: React.Dispatch<React.SetStateAction<{[key: string]: string}>>] = useState<{[key: string]: string}>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   console.log('RegisterPage - user:', !!user, 'authLoading:', authLoading, 'selectedPlan:', selectedPlan);
@@ -142,6 +141,63 @@ const RegisterPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden">
+      {/* Header fixo seguindo o padrão das outras páginas */}
+      <header 
+        className="w-full fixed top-0 left-0 z-50"
+        style={{
+          backgroundImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.4) 50%, transparent 100%)'
+        }}
+      >
+        <div className="container mx-auto px-4 flex items-center justify-between h-20">
+          {/* Logo */}
+          <Link to="/" className="flex items-center gap-3">
+            <img 
+              src="/lovable-uploads/9488f0fd-b9a5-4e50-a2fc-3626b4d9adff.png" 
+              alt="Logo Residuall" 
+              className="h-10 w-auto" 
+            />
+            <span className="font-bold text-3xl text-white">
+              RESIDUALL
+            </span>
+          </Link>
+
+          {/* Navegação Desktop */}
+          <nav className="hidden md:flex items-center gap-8">
+            <Link 
+              to="/" 
+              className="text-white/90 hover:text-white text-lg transition-colors"
+            >
+              HOME
+            </Link>
+            <Link 
+              to="/sobre" 
+              className="text-white/90 hover:text-white text-lg transition-colors"
+            >
+              SOBRE
+            </Link>
+            <Link 
+              to="/planos" 
+              className="text-white/90 hover:text-white text-lg transition-colors"
+            >
+              PLANOS
+            </Link>
+          </nav>
+
+          {/* Botão de ação */}
+          <div className="flex items-center">
+            <Link 
+              to="/login" 
+              className="py-2 px-5 rounded-lg font-bold text-gray-800 text-lg transition-all duration-300 hover:scale-105"
+              style={{
+                background: 'linear-gradient(to right, #e2c290, #c9ad7f)'
+              }}
+            >
+              ENTRAR
+            </Link>
+          </div>
+        </div>
+      </header>
+
       {/* Fundo com degradê dinâmico */}
       <div 
         className="absolute inset-0 w-full h-full"
@@ -192,7 +248,7 @@ const RegisterPage = () => {
         </svg>
       </div>
       
-      <main className="flex-grow flex items-center justify-center py-12 relative z-10 px-4">
+      <main className="flex-grow flex items-center justify-center py-12 relative z-10 px-4 pt-24">
         <div className="w-full max-w-2xl">
           <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl overflow-hidden border border-white/20">
             <div className="p-8 md:p-10">
