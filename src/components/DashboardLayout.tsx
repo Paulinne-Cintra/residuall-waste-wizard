@@ -8,44 +8,6 @@ const AnimatedSidebar = React.lazy(() => import('./AnimatedSidebar'));
 const DashboardLayout: React.FC = () => {
   const location = useLocation();
 
-  // Mapear rotas para títulos de página
-  const getPageTitle = (pathname: string) => {
-    const routeTitles: { [key: string]: string } = {
-      '/dashboard': 'Visão Geral',
-      '/dashboard/projetos': 'Projetos',
-      '/dashboard/projetos/novo': 'Novo Projeto',
-      '/dashboard/materiais': 'Materiais',
-      '/dashboard/relatorios': 'Relatórios',
-      '/dashboard/time': 'Equipe',
-      '/dashboard/perfil': 'Meu Perfil',
-      '/dashboard/recomendacoes': 'Recomendações',
-      '/dashboard/configuracoes': 'Configurações',
-      '/dashboard/arquivados': 'Arquivados',
-      '/dashboard/ajuda': 'Ajuda & Suporte',
-    };
-
-    // Verificar rotas dinâmicas
-    if (pathname.startsWith('/dashboard/projetos/') && pathname !== '/dashboard/projetos/novo') {
-      return 'Detalhes do Projeto';
-    }
-    if (pathname.startsWith('/dashboard/relatorios/')) {
-      return 'Detalhes do Relatório';
-    }
-
-    return routeTitles[pathname] || 'Dashboard';
-  };
-
-  const pageTitle = getPageTitle(location.pathname);
-  
-  // Páginas que gerenciam o próprio header internamente
-  const pagesWithOwnHeader = [
-    '/dashboard', 
-    '/dashboard/ajuda', 
-    '/dashboard/arquivados', 
-    '/dashboard/relatorios'
-  ];
-  const shouldShowHeader = !pagesWithOwnHeader.includes(location.pathname);
-
   return (
     <div className="flex min-h-screen bg-gray-100">
       <Suspense 
@@ -62,7 +24,7 @@ const DashboardLayout: React.FC = () => {
         <AnimatedSidebar />
       </Suspense>
       <div className="flex-1 flex flex-col">
-        <main className="flex-1 p-6 overflow-auto">
+        <main className="flex-1 overflow-auto">
           <Outlet />
         </main>
       </div>

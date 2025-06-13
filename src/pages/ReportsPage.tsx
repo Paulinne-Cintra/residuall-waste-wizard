@@ -19,7 +19,8 @@ const ReportsPage = () => {
   if (loading) {
     return (
       <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
-        <div className="flex items-center justify-center h-64">
+        <DashboardHeader />
+        <div className="mt-6 flex items-center justify-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-residuall-green"></div>
         </div>
       </main>
@@ -70,16 +71,8 @@ const ReportsPage = () => {
     <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
       <DashboardHeader />
       
-      {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-1">Relatórios</h1>
-          <p className="text-base text-gray-600">Análise detalhada de desperdício e performance dos projetos</p>
-        </div>
-      </div>
-
       {/* Filters */}
-      <Card className="mb-6 shadow-sm border-none">
+      <Card className="mt-6 mb-6 shadow-sm border-none">
         <CardContent className="flex flex-wrap gap-4 items-center justify-between p-4">
           <div className="flex flex-wrap gap-2">
             <DropdownMenu>

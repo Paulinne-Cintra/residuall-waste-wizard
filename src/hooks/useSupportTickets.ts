@@ -33,8 +33,8 @@ export const useSupportTickets = () => {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  // Dados fictícios detalhados para demonstração
-  const mockTickets: SupportTicket[] = [
+  // Dados fictícios apenas para a conta de exemplo teste@exemplo.com
+  const getMockTicketsForExampleAccount = (): SupportTicket[] => [
     {
       id: 'ticket-1',
       user_id: user?.id || 'mock-user',
@@ -98,12 +98,20 @@ export const useSupportTickets = () => {
 
   const fetchTickets = async () => {
     if (!user) {
-      setTickets(mockTickets);
+      setTickets([]);
       setLoading(false);
       return;
     }
 
     try {
+      // Verificar se é a conta de exemplo
+      if (user.email === 'teste@exemplo.com') {
+        setTickets(getMockTicketsForExampleAccount());
+        setLoading(false);
+        return;
+      }
+
+      // Para contas reais, buscar do banco de dados
       const { data, error } = await supabase
         .from('support_tickets')
         .select('*')
@@ -112,21 +120,12 @@ export const useSupportTickets = () => {
 
       if (error) throw error;
       
-      // Se não há tickets reais, usar dados fictícios
-      if (!data || data.length === 0) {
-        setTickets(mockTickets);
-      } else {
-        setTickets(data as SupportTicket[]);
-      }
+      // Contas novas começam com lista vazia
+      setTickets(data || []);
     } catch (error) {
       console.error('Erro ao buscar chamados:', error);
-      // Em caso de erro, mostrar dados fictícios
-      setTickets(mockTickets);
-      toast({
-        title: "Informação",
-        description: "Exibindo dados de demonstração dos chamados.",
-        duration: 3000,
-      });
+      // Em caso de erro, contas não exemplo ficam vazias
+      setTickets([]);
     } finally {
       setLoading(false);
     }
