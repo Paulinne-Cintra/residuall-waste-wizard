@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -8,7 +9,6 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useArchivedProjects } from "@/hooks/useArchivedProjects";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import DashboardHeader from '@/components/DashboardHeader';
 
 const ArquivadosPage = () => {
   const { toast } = useToast();
@@ -37,11 +37,8 @@ const ArquivadosPage = () => {
     console.log('Busca projetos arquivados:', value);
   };
 
-  // Filtragem dos projetos com base na busca - apenas projetos reais do usuário
+  // Filtragem dos projetos com base na busca
   const filteredProjects = archivedProjects.filter(project => {
-    // Filtrar apenas projetos que não são mock (dados de exemplo)
-    if (project.id.startsWith('mock-')) return false;
-    
     const matchesSearch = project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          (project.location?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false) ||
                          (project.project_type?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false);
@@ -58,7 +55,6 @@ const ArquivadosPage = () => {
   if (loading) {
     return (
       <div className="flex-1 p-6 bg-residuall-gray-light">
-        <DashboardHeader />
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-residuall-green"></div>
         </div>
@@ -69,7 +65,6 @@ const ArquivadosPage = () => {
   if (error) {
     return (
       <div className="flex-1 p-6 bg-residuall-gray-light">
-        <DashboardHeader />
         <div className="text-center text-red-600">
           Erro ao carregar projetos arquivados: {error}
         </div>
@@ -79,15 +74,13 @@ const ArquivadosPage = () => {
 
   return (
     <div className="flex-1 p-6 bg-residuall-gray-light">
-      <DashboardHeader />
-      
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-residuall-gray-dark">Itens Arquivados</h1>
         <p className="text-residuall-gray">Gerencie itens arquivados e restaure quando necessário</p>
       </div>
 
-      {/* Estatísticas - apenas com dados reais do usuário */}
+      {/* Estatísticas */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <Card>
           <CardHeader className="pb-2">
@@ -97,7 +90,7 @@ const ArquivadosPage = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-gray-700">{filteredProjects.length}</div>
+            <div className="text-3xl font-bold text-gray-700">{archivedProjects.length}</div>
             <p className="text-sm text-gray-500 mt-1">projetos arquivados</p>
           </CardContent>
         </Card>
@@ -110,7 +103,7 @@ const ArquivadosPage = () => {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-blue-600">
-              {filteredProjects.filter(p => {
+              {archivedProjects.filter(p => {
                 const archiveDate = new Date(p.updated_at);
                 const now = new Date();
                 return archiveDate.getMonth() === now.getMonth() && archiveDate.getFullYear() === now.getFullYear();
@@ -128,7 +121,7 @@ const ArquivadosPage = () => {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-green-600">
-              {[...new Set(filteredProjects.map(p => p.project_type).filter(Boolean))].length}
+              {[...new Set(archivedProjects.map(p => p.project_type).filter(Boolean))].length}
             </div>
             <p className="text-sm text-gray-500 mt-1">categorias diferentes</p>
           </CardContent>
@@ -197,10 +190,13 @@ const ArquivadosPage = () => {
             <div className="text-center py-12">
               <Archive className="mx-auto h-16 w-16 text-gray-400 mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">
-                Nenhum projeto arquivado
+                {archivedProjects.length === 0 ? 'Nenhum projeto arquivado' : 'Nenhum projeto encontrado'}
               </h3>
               <p className="text-gray-500">
-                Nenhum projeto arquivado no momento.
+                {archivedProjects.length === 0 
+                  ? 'Nenhum projeto arquivado no momento.'
+                  : 'Tente ajustar os filtros de busca.'
+                }
               </p>
             </div>
           ) : (
