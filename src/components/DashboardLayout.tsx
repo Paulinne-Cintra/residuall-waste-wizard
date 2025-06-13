@@ -1,7 +1,6 @@
 
 import React, { Suspense } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
-import DashboardHeader from './DashboardHeader';
 
 // Lazy load do sidebar para melhor performance
 const AnimatedSidebar = React.lazy(() => import('./AnimatedSidebar'));
@@ -38,9 +37,14 @@ const DashboardLayout: React.FC = () => {
 
   const pageTitle = getPageTitle(location.pathname);
   
-  // Páginas que não devem exibir o header
-  const pagesWithoutHeader = ['/dashboard', '/dashboard/ajuda'];
-  const shouldShowHeader = !pagesWithoutHeader.includes(location.pathname);
+  // Páginas que gerenciam o próprio header internamente
+  const pagesWithOwnHeader = [
+    '/dashboard', 
+    '/dashboard/ajuda', 
+    '/dashboard/arquivados', 
+    '/dashboard/relatorios'
+  ];
+  const shouldShowHeader = !pagesWithOwnHeader.includes(location.pathname);
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -58,7 +62,6 @@ const DashboardLayout: React.FC = () => {
         <AnimatedSidebar />
       </Suspense>
       <div className="flex-1 flex flex-col">
-        {shouldShowHeader && <DashboardHeader pageTitle={pageTitle} />}
         <main className="flex-1 p-6 overflow-auto">
           <Outlet />
         </main>

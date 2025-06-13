@@ -7,56 +7,113 @@ interface DashboardMetrics {
   total_projects: number;
   active_projects: number;
   total_materials: number;
+  total_waste_entries: number;
   total_waste_quantity: number;
   total_economy_generated: number;
-  total_waste_entries: number;
 }
 
-interface UseDashboardMetricsResult {
-  metrics: DashboardMetrics | null;
-  loading: boolean;
-  error: string | null;
-}
-
-export const useDashboardMetrics = (): UseDashboardMetricsResult => {
+export const useDashboardMetrics = () => {
   const { user } = useAuth();
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchMetrics = async () => {
-      if (!user) {
-        setError("Usuário não autenticado.");
-        setLoading(false);
-        return;
-      }
-
-      try {
-        console.log('Buscando métricas do dashboard para o usuário:', user.id);
-        const { data, error } = await supabase
-          .from('dashboard_metrics')
-          .select('*')
-          .eq('user_id', user.id)
-          .single();
-
-        if (error) {
-          console.error('Erro ao buscar métricas:', error);
-          throw error;
-        }
-        
-        console.log('Métricas encontradas:', data);
-        setMetrics(data as DashboardMetrics);
-      } catch (err: any) {
-        console.error('Erro na busca de métricas:', err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMetrics();
+    if (user) {
+      fetchMetrics();
+    } else {
+      setMetrics(null);
+      setLoading(false);
+    }
   }, [user]);
 
-  return { metrics, loading, error };
+  const fetchMetrics = async () => {
+    if (!user) return;
+
+    try {
+      setLoading(true);
+      console.log('Buscando métricas para usuário:', user.id);
+
+      // Primeiro, buscar os projetos do usuário
+      const { data: projects, error: projectsError } = await supabase
+        .from('projects')
+        .select('id, status')
+        .eq('user_id', user.id)
+        .eq('arquivado', false);
+
+      if (projectsError) {
+        console.error('Erro ao buscar projetos:', projectsError);
+        throw projectsError;
+      }
+
+      const projectIds = projects?.map(p => p.id) || [];
+      
+      // Buscar materiais dos projetos do usuário
+      const { data: materials, error: materialsError } = await supabase
+        .from('project_materials')
+        .select('id, project_id')
+        .in('project_id', projectIds);
+
+      if (materialsError) {
+        console.error('Erro ao buscar materiais:', materialsError);
+        throw materialsError;
+      }
+
+      const materialIds = materials?.map(m => m.id) || [];
+      
+      // Buscar entradas de desperdício dos materiais
+      const { data: wasteEntries, error: wasteError } = await supabase
+        .from('waste_entries')
+        .select('id, wasted_quantity, project_material_id')
+        .in('project_material_id', materialIds);
+
+      if (wasteError) {
+        console.error('Erro ao buscar desperdícios:', wasteError);
+        throw wasteError;
+      }
+
+      const totalProjects = projects?.length || 0;
+      const activeProjects = projects?.filter(p => 
+        p.status === 'execução' || p.status === 'em_andamento' || p.status === 'planejamento'
+      ).length || 0;
+      
+      const totalMaterials = materials?.length || 0;
+      const totalWasteEntries = wasteEntries?.length || 0;
+      const totalWasteQuantity = wasteEntries?.reduce((sum, entry) => 
+        sum + (Number(entry.wasted_quantity) || 0), 0
+      ) || 0;
+      
+      // Cálculo básico de economia (placeholder - pode ser refinado)
+      const totalEconomyGenerated = totalWasteQuantity * 15; // R$ 15 por kg economizado
+
+      const metricsData: DashboardMetrics = {
+        total_projects: totalProjects,
+        active_projects: activeProjects,
+        total_materials: totalMaterials,
+        total_waste_entries: totalWasteEntries,
+        total_waste_quantity: totalWasteQuantity,
+        total_economy_generated: totalEconomyGenerated
+      };
+
+      console.log('Métricas calculadas:', metricsData);
+      setMetrics(metricsData);
+    } catch (error) {
+      console.error('Erro ao buscar métricas:', error);
+      setMetrics({
+        total_projects: 0,
+        active_projects: 0,
+        total_materials: 0,
+        total_waste_entries: 0,
+        total_waste_quantity: 0,
+        total_economy_generated: 0
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return {
+    metrics,
+    loading,
+    refetch: fetchMetrics
+  };
 };
