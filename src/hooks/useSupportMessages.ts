@@ -11,7 +11,7 @@ export const useSupportMessages = (ticketId: string | null) => {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  // Dados fictícios apenas para a conta de exemplo teste@exemplo.com
+  // Dados fictícios para demonstração
   const getMockMessages = (ticketId: string): SupportMessage[] => {
     const mockMessagesMap: { [key: string]: SupportMessage[] } = {
       'ticket-1': [
@@ -98,10 +98,10 @@ export const useSupportMessages = (ticketId: string | null) => {
   };
 
   const fetchMessages = async () => {
-    if (!ticketId || !user) return;
+    if (!ticketId) return;
 
-    // Se for conta de exemplo E ticket fictício, usar dados fictícios
-    if (user.email === 'teste@exemplo.com' && ticketId.startsWith('ticket-')) {
+    // Se for um ticket fictício, usar dados fictícios
+    if (ticketId.startsWith('ticket-')) {
       setMessages(getMockMessages(ticketId));
       setLoading(false);
       return;
@@ -132,8 +132,8 @@ export const useSupportMessages = (ticketId: string | null) => {
   const sendMessage = async (message: string, ticketId: string) => {
     if (!user) return false;
 
-    // Se for conta exemplo com ticket fictício, simular sucesso
-    if (user.email === 'teste@exemplo.com' && ticketId.startsWith('ticket-')) {
+    // Se for um ticket fictício, simular sucesso
+    if (ticketId.startsWith('ticket-')) {
       const newMessage: SupportMessage = {
         id: `msg-${Date.now()}`,
         ticket_id: ticketId,

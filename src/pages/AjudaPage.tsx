@@ -21,7 +21,7 @@ const AjudaPage = () => {
 
   return (
     <div className="flex-1 p-6 bg-residuall-gray-light">
-      <DashboardHeader />
+      <DashboardHeader pageTitle="Central de Ajuda" />
 
       <div className="mt-6 space-y-8">
         {/* Seção de Perguntas Frequentes */}
@@ -56,7 +56,7 @@ const AjudaPage = () => {
           <SupportTicketForm />
         </div>
 
-        {/* Seção de Registros de Chamados - apenas para usuários autenticados */}
+        {/* Seção de Registros de Chamados */}
         <div className="bg-white p-6 rounded-lg shadow">
           <h2 className="text-xl font-semibold mb-4 flex items-center text-residuall-gray-dark">
             <HelpCircle size={20} className="mr-2 text-residuall-green" /> Seus Chamados de Suporte

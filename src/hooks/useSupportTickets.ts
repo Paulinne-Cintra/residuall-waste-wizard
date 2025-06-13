@@ -33,8 +33,8 @@ export const useSupportTickets = () => {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  // Dados fictícios apenas para a conta de exemplo teste@exemplo.com
-  const getMockTicketsForExampleAccount = (): SupportTicket[] => [
+  // Dados fictícios detalhados para demonstração
+  const mockTickets: SupportTicket[] = [
     {
       id: 'ticket-1',
       user_id: user?.id || 'mock-user',
@@ -98,20 +98,12 @@ export const useSupportTickets = () => {
 
   const fetchTickets = async () => {
     if (!user) {
-      setTickets([]);
+      setTickets(mockTickets);
       setLoading(false);
       return;
     }
 
     try {
-      // Verificar se é a conta de exemplo
-      if (user.email === 'teste@exemplo.com') {
-        setTickets(getMockTicketsForExampleAccount());
-        setLoading(false);
-        return;
-      }
-
-      // Para contas reais, buscar do banco de dados
       const { data, error } = await supabase
         .from('support_tickets')
         .select('*')
@@ -120,18 +112,21 @@ export const useSupportTickets = () => {
 
       if (error) throw error;
       
-      // Contas novas começam com lista vazia
-      // Fazer type casting para garantir que o status seja do tipo correto
-      const typedTickets = (data || []).map(ticket => ({
-        ...ticket,
-        status: ticket.status as 'Aberto' | 'Respondido' | 'Encerrado'
-      }));
-      
-      setTickets(typedTickets);
+      // Se não há tickets reais, usar dados fictícios
+      if (!data || data.length === 0) {
+        setTickets(mockTickets);
+      } else {
+        setTickets(data as SupportTicket[]);
+      }
     } catch (error) {
       console.error('Erro ao buscar chamados:', error);
-      // Em caso de erro, contas não exemplo ficam vazias
-      setTickets([]);
+      // Em caso de erro, mostrar dados fictícios
+      setTickets(mockTickets);
+      toast({
+        title: "Informação",
+        description: "Exibindo dados de demonstração dos chamados.",
+        duration: 3000,
+      });
     } finally {
       setLoading(false);
     }

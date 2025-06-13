@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -25,13 +24,56 @@ export const useArchivedProjects = () => {
   const { user } = useAuth();
   const { toast } = useToast();
 
+  // Dados fictícios para demonstração quando não há projetos arquivados reais
+  const mockArchivedProjects: ArchivedProject[] = [
+    {
+      id: 'mock-1',
+      name: 'Edifício Residencial Sustentável',
+      location: 'São Paulo, SP',
+      project_type: 'Residencial',
+      status: 'concluído',
+      budget: 2500000.00,
+      start_date: '2023-01-15',
+      planned_end_date: '2023-12-20',
+      description_notes: 'Projeto de edifício residencial com foco em sustentabilidade e redução de desperdícios.',
+      created_at: '2023-01-10T08:00:00Z',
+      updated_at: '2024-01-15T17:30:00Z'
+    },
+    {
+      id: 'mock-2',
+      name: 'Centro Comercial EcoPlaza',
+      location: 'Rio de Janeiro, RJ',
+      project_type: 'Comercial',
+      status: 'concluído',
+      budget: 3800000.00,
+      start_date: '2022-06-01',
+      planned_end_date: '2023-08-30',
+      description_notes: 'Centro comercial com conceito de construção verde e gestão inteligente de resíduos.',
+      created_at: '2022-05-20T09:15:00Z',
+      updated_at: '2023-09-10T14:45:00Z'
+    },
+    {
+      id: 'mock-3',
+      name: 'Galpão Industrial Verde',
+      location: 'Campinas, SP',
+      project_type: 'Industrial',
+      status: 'finalização',
+      budget: 1200000.00,
+      start_date: '2023-03-01',
+      planned_end_date: '2023-11-15',
+      description_notes: 'Galpão industrial com tecnologias de redução de desperdício e otimização energética.',
+      created_at: '2023-02-15T10:30:00Z',
+      updated_at: '2023-12-01T16:20:00Z'
+    }
+  ];
+
   useEffect(() => {
     fetchArchivedProjects();
   }, [user]);
 
   const fetchArchivedProjects = async () => {
     if (!user) {
-      setArchivedProjects([]);
+      setArchivedProjects(mockArchivedProjects);
       setLoading(false);
       return;
     }
@@ -46,17 +88,35 @@ export const useArchivedProjects = () => {
 
       if (error) throw error;
 
-      setArchivedProjects(data || []);
+      // Se não há projetos arquivados reais, usar dados fictícios
+      if (!data || data.length === 0) {
+        setArchivedProjects(mockArchivedProjects);
+      } else {
+        setArchivedProjects(data);
+      }
     } catch (err: any) {
       console.error('Erro ao buscar projetos arquivados:', err);
       setError(err.message);
-      setArchivedProjects([]);
+      // Em caso de erro, mostrar dados fictícios
+      setArchivedProjects(mockArchivedProjects);
     } finally {
       setLoading(false);
     }
   };
 
   const restoreProject = async (projectId: string) => {
+    // Se for um projeto fictício, simular sucesso
+    if (projectId.startsWith('mock-')) {
+      // Remove o projeto fictício da lista local
+      setArchivedProjects(prev => prev.filter(project => project.id !== projectId));
+      
+      toast({
+        title: "Projeto restaurado!",
+        description: "Este é um projeto de demonstração. Em uma aplicação real, seria restaurado com sucesso.",
+      });
+      return true;
+    }
+
     try {
       const { error } = await supabase
         .from('projects')
@@ -90,6 +150,18 @@ export const useArchivedProjects = () => {
   };
 
   const deleteProject = async (projectId: string) => {
+    // Se for um projeto fictício, simular sucesso
+    if (projectId.startsWith('mock-')) {
+      // Remove o projeto fictício da lista local
+      setArchivedProjects(prev => prev.filter(project => project.id !== projectId));
+      
+      toast({
+        title: "Projeto excluído!",
+        description: "Este é um projeto de demonstração. Em uma aplicação real, seria excluído permanentemente.",
+      });
+      return true;
+    }
+
     try {
       // Primeiro, buscar os IDs dos materiais do projeto
       const { data: projectMaterials } = await supabase
