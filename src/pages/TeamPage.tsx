@@ -11,9 +11,12 @@ import { useTeamMembers } from '@/hooks/useTeamMembers';
 import { useToast } from "@/hooks/use-toast";
 import TeamMemberProfileModal from '@/components/TeamMemberProfileModal';
 import EditTeamMemberModal from '@/components/EditTeamMemberModal';
+import AddTeamMemberModal from '@/components/AddTeamMemberModal';
+import { useTranslation } from 'react-i18next';
 
 const TeamPage = () => {
-  const { members, loading, deleteMember, refetch } = useTeamMembers();
+  const { t } = useTranslation();
+  const { members, loading, addTeamMember, deleteMember, refetch } = useTeamMembers();
   const { toast } = useToast();
   
   const [searchQuery, setSearchQuery] = useState('');
@@ -23,6 +26,7 @@ const TeamPage = () => {
   const [selectedMember, setSelectedMember] = useState<any>(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
@@ -76,16 +80,14 @@ const TeamPage = () => {
   };
 
   const handleSaveMember = async (memberId: string, data: { name: string; role: string; status: string }) => {
-    // Aqui você implementaria a lógica para salvar as alterações
-    // Por enquanto, vamos simular uma operação bem-sucedida
     console.log('Salvando alterações do membro:', memberId, data);
-    
-    // Simular delay da API
     await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Simular sucesso
     await refetch();
     return true;
+  };
+
+  const handleAddMember = async (data: { name: string; email: string; role: string }) => {
+    await addTeamMember(data);
   };
 
   if (loading) {
@@ -106,7 +108,10 @@ const TeamPage = () => {
           <h1 className="text-2xl font-bold text-residuall-gray-tableText">Equipe</h1>
           <p className="text-residuall-gray">Gerencie os membros da sua equipe e suas funções</p>
         </div>
-        <Button className="flex items-center gap-2 bg-residuall-green hover:bg-residuall-green/90 mt-4 md:mt-0">
+        <Button 
+          className="flex items-center gap-2 bg-residuall-green hover:bg-residuall-green/90 mt-4 md:mt-0"
+          onClick={() => setIsAddModalOpen(true)}
+        >
           <Plus size={18} />
           Adicionar Membro
         </Button>
@@ -142,7 +147,7 @@ const TeamPage = () => {
             <CardDescription>Projetos Ativos</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-blue-600">6</div>
+            <div className="text-3xl font-bold text-blue-600">0</div>
             <p className="text-sm text-residuall-gray">em andamento</p>
           </CardContent>
         </Card>
@@ -152,70 +157,72 @@ const TeamPage = () => {
             <CardDescription>Taxa de Atividade</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-green-600">100%</div>
+            <div className="text-3xl font-bold text-green-600">{members.length > 0 ? '100%' : '0%'}</div>
             <p className="text-sm text-residuall-gray">membros ativos</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Filtros */}
-      <Card className="mb-6">
-        <CardContent className="flex flex-wrap gap-4 items-center justify-between p-4">
-          <div className="flex flex-wrap gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="flex items-center gap-2">
-                  <Filter size={16} />
-                  <span>{roleFilter}</span>
-                  <ChevronDown size={16} />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-white">
-                <DropdownMenuItem onClick={() => setRoleFilter('Todos')}>
-                  Todas as Funções
-                </DropdownMenuItem>
-                {roles.map(role => (
-                  <DropdownMenuItem key={role} onClick={() => setRoleFilter(role)}>
-                    {role}
+      {members.length > 0 && (
+        <Card className="mb-6">
+          <CardContent className="flex flex-wrap gap-4 items-center justify-between p-4">
+            <div className="flex flex-wrap gap-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="flex items-center gap-2">
+                    <Filter size={16} />
+                    <span>{roleFilter}</span>
+                    <ChevronDown size={16} />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="bg-white">
+                  <DropdownMenuItem onClick={() => setRoleFilter('Todos')}>
+                    Todas as Funções
                   </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+                  {roles.map(role => (
+                    <DropdownMenuItem key={role} onClick={() => setRoleFilter(role)}>
+                      {role}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
 
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="flex items-center gap-2">
-                  <Filter size={16} />
-                  <span>{statusFilter}</span>
-                  <ChevronDown size={16} />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-white">
-                <DropdownMenuItem onClick={() => setStatusFilter('Todos')}>
-                  Todos os Status
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setStatusFilter('active')}>
-                  Ativo
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setStatusFilter('inactive')}>
-                  Inativo
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="flex items-center gap-2">
+                    <Filter size={16} />
+                    <span>{statusFilter}</span>
+                    <ChevronDown size={16} />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="bg-white">
+                  <DropdownMenuItem onClick={() => setStatusFilter('Todos')}>
+                    Todos os Status
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setStatusFilter('active')}>
+                    Ativo
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setStatusFilter('inactive')}>
+                    Inativo
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
 
-          <div className="relative">
-            <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <Input
-              type="text"
-              placeholder="Buscar membros..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 w-64"
-            />
-          </div>
-        </CardContent>
-      </Card>
+            <div className="relative">
+              <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <Input
+                type="text"
+                placeholder="Buscar membros..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 w-64"
+              />
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Lista de membros da equipe */}
       <Card>
@@ -237,6 +244,15 @@ const TeamPage = () => {
                   : 'Tente ajustar os filtros de busca.'
                 }
               </p>
+              {members.length === 0 && (
+                <Button 
+                  onClick={() => setIsAddModalOpen(true)}
+                  className="bg-residuall-green hover:bg-residuall-green/90"
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Adicionar Primeiro Membro
+                </Button>
+              )}
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -287,11 +303,11 @@ const TeamPage = () => {
                       </div>
                       <div className="flex items-center gap-2">
                         <Phone size={14} />
-                        <span>Não informado</span>
+                        <span>{member.phone_number || 'Não informado'}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <MapPin size={14} />
-                        <span>Não informado</span>
+                        <span>{member.company_name || 'Não informado'}</span>
                       </div>
                     </div>
                   </CardContent>
@@ -312,6 +328,12 @@ const TeamPage = () => {
       </Card>
 
       {/* Modais */}
+      <AddTeamMemberModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onSave={handleAddMember}
+      />
+
       <TeamMemberProfileModal
         isOpen={isProfileModalOpen}
         onClose={() => setIsProfileModalOpen(false)}

@@ -7,7 +7,6 @@ import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useUserSettings } from "@/hooks/useUserSettings";
 import { TwoFactorModal } from "@/components/TwoFactorModal";
 import { useTranslation } from 'react-i18next';
@@ -24,7 +23,6 @@ const SettingsPage = () => {
   // Estado local para as configurações
   const [localSettings, setLocalSettings] = useState({
     language: 'pt-br',
-    theme: 'sistema',
     email_notifications: false,
     system_alerts: false,
     project_updates: true,
@@ -39,7 +37,6 @@ const SettingsPage = () => {
     if (settings) {
       setLocalSettings({
         language: settings.language,
-        theme: settings.theme,
         email_notifications: settings.email_notifications,
         system_alerts: settings.system_alerts,
         project_updates: settings.project_updates,
@@ -48,38 +45,6 @@ const SettingsPage = () => {
         browser_notifications: settings.browser_notifications,
         sms_notifications: settings.sms_notifications,
       });
-    }
-  }, [settings]);
-
-  // Apply theme to document
-  useEffect(() => {
-    if (!settings) return;
-
-    const applyTheme = () => {
-      const html = document.documentElement;
-      
-      if (settings.theme === "escuro") {
-        html.classList.add("dark");
-      } else if (settings.theme === "claro") {
-        html.classList.remove("dark");
-      } else if (settings.theme === "sistema") {
-        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-        if (prefersDark) {
-          html.classList.add("dark");
-        } else {
-          html.classList.remove("dark");
-        }
-      }
-    };
-
-    applyTheme();
-
-    if (settings.theme === "sistema") {
-      const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-      const handleChange = () => applyTheme();
-      mediaQuery.addEventListener("change", handleChange);
-      
-      return () => mediaQuery.removeEventListener("change", handleChange);
     }
   }, [settings]);
 
@@ -96,24 +61,9 @@ const SettingsPage = () => {
       [field]: value
     }));
 
-    // Aplicar imediatamente mudanças de idioma e tema
+    // Aplicar imediatamente mudanças de idioma
     if (field === 'language') {
       i18n.changeLanguage(value);
-    }
-    if (field === 'theme') {
-      const html = document.documentElement;
-      if (value === "escuro") {
-        html.classList.add("dark");
-      } else if (value === "claro") {
-        html.classList.remove("dark");
-      } else if (value === "sistema") {
-        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-        if (prefersDark) {
-          html.classList.add("dark");
-        } else {
-          html.classList.remove("dark");
-        }
-      }
     }
   };
 
@@ -122,7 +72,6 @@ const SettingsPage = () => {
     
     const success = await saveAllSettings(localSettings);
     if (success) {
-      // Configurações salvas com sucesso
       console.log('Configurações salvas com sucesso');
     }
   };
@@ -144,7 +93,7 @@ const SettingsPage = () => {
     return (
       <main className="p-6">
         <div className="flex items-center justify-center h-64">
-          <p className="text-gray-500">Carregando configurações...</p>
+          <p className="text-gray-500">{t('loading')}</p>
         </div>
       </main>
     );
@@ -154,7 +103,7 @@ const SettingsPage = () => {
     return (
       <main className="p-6">
         <div className="flex items-center justify-center h-64">
-          <p className="text-red-500">Erro ao carregar configurações.</p>
+          <p className="text-red-500">{t('errorLoading')}</p>
         </div>
       </main>
     );
@@ -223,37 +172,9 @@ const SettingsPage = () => {
                           <SelectItem value="es">Español</SelectItem>
                           <SelectItem value="fr">Français</SelectItem>
                           <SelectItem value="de">Deutsch</SelectItem>
-                          <SelectItem value="it">Italiano</SelectItem>
-                          <SelectItem value="zh">中文 (简体)</SelectItem>
-                          <SelectItem value="ja">日本語</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="shadow-sm">
-                <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold mb-4 text-gray-900">{t('theme')}</h3>
-                  
-                  <div>
-                    <p className="text-sm text-gray-600 mb-3">Selecione o tema de exibição do sistema:</p>
-                    <ToggleGroup 
-                      type="single" 
-                      value={localSettings.theme} 
-                      onValueChange={(value) => value && handleLocalSettingChange('theme', value)}
-                    >
-                      <ToggleGroupItem value="claro" className="data-[state=on]:bg-blue-500 data-[state=on]:text-white">
-                        {t('lightMode')}
-                      </ToggleGroupItem>
-                      <ToggleGroupItem value="escuro" className="data-[state=on]:bg-blue-500 data-[state=on]:text-white">
-                        {t('darkMode')}
-                      </ToggleGroupItem>
-                      <ToggleGroupItem value="sistema" className="data-[state=on]:bg-blue-500 data-[state=on]:text-white">
-                        {t('systemMode')}
-                      </ToggleGroupItem>
-                    </ToggleGroup>
                   </div>
                 </CardContent>
               </Card>
@@ -263,7 +184,7 @@ const SettingsPage = () => {
             <TabsContent value="notificacoes" className="space-y-6 mt-0">
               <Card className="shadow-sm">
                 <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold mb-4 text-gray-900">Preferências de Notificação</h3>
+                  <h3 className="text-lg font-semibold mb-4 text-gray-900">{t('notifications')}</h3>
                   
                   <div className="space-y-4">
                     <div className="flex items-center space-x-2">

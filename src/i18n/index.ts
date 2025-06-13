@@ -1,3 +1,4 @@
+
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
@@ -10,6 +11,17 @@ const resources = {
       settings: 'Configurações',
       profile: 'Perfil',
       archived: 'Arquivados',
+      team: 'Equipe',
+      materials: 'Materiais',
+      reports: 'Relatórios',
+      recommendations: 'Recomendações',
+      overview: 'Visão Geral',
+      
+      // Navigation
+      home: 'Início',
+      logout: 'Sair',
+      login: 'Entrar',
+      register: 'Cadastrar',
       
       // Settings
       general: 'Geral',
@@ -37,6 +49,30 @@ const resources = {
       newPassword: 'Nova Senha',
       confirmPassword: 'Confirmar Nova Senha',
       changePassword: 'Alterar Senha',
+      
+      // Team
+      teamMembers: 'Membros da Equipe',
+      addMember: 'Adicionar Membro',
+      totalMembers: 'Total de Membros',
+      activeMembers: 'Membros Ativos',
+      
+      // Projects
+      createProject: 'Criar Projeto',
+      projectName: 'Nome do Projeto',
+      projectDescription: 'Descrição do Projeto',
+      projectStatus: 'Status do Projeto',
+      
+      // Common
+      save: 'Salvar',
+      cancel: 'Cancelar',
+      edit: 'Editar',
+      delete: 'Excluir',
+      add: 'Adicionar',
+      remove: 'Remover',
+      view: 'Visualizar',
+      search: 'Buscar',
+      filter: 'Filtrar',
+      loading: 'Carregando...',
       
       // Success messages
       settingsSaved: 'Configurações salvas',
@@ -77,6 +113,17 @@ const resources = {
       settings: 'Settings',
       profile: 'Profile',
       archived: 'Archived',
+      team: 'Team',
+      materials: 'Materials',
+      reports: 'Reports',
+      recommendations: 'Recommendations',
+      overview: 'Overview',
+      
+      // Navigation
+      home: 'Home',
+      logout: 'Logout',
+      login: 'Login',
+      register: 'Register',
       
       // Settings
       general: 'General',
@@ -104,6 +151,30 @@ const resources = {
       newPassword: 'New Password',
       confirmPassword: 'Confirm New Password',
       changePassword: 'Change Password',
+      
+      // Team
+      teamMembers: 'Team Members',
+      addMember: 'Add Member',
+      totalMembers: 'Total Members',
+      activeMembers: 'Active Members',
+      
+      // Projects
+      createProject: 'Create Project',
+      projectName: 'Project Name',
+      projectDescription: 'Project Description',
+      projectStatus: 'Project Status',
+      
+      // Common
+      save: 'Save',
+      cancel: 'Cancel',
+      edit: 'Edit',
+      delete: 'Delete',
+      add: 'Add',
+      remove: 'Remove',
+      view: 'View',
+      search: 'Search',
+      filter: 'Filter',
+      loading: 'Loading...',
       
       // Success messages
       settingsSaved: 'Settings saved',
@@ -144,6 +215,17 @@ const resources = {
       settings: 'Configuración',
       profile: 'Perfil',
       archived: 'Archivados',
+      team: 'Equipo',
+      materials: 'Materiales',
+      reports: 'Informes',
+      recommendations: 'Recomendaciones',
+      overview: 'Resumen',
+      
+      // Navigation
+      home: 'Inicio',
+      logout: 'Cerrar Sesión',
+      login: 'Iniciar Sesión',
+      register: 'Registrarse',
       
       // Settings
       general: 'General',
@@ -156,6 +238,18 @@ const resources = {
       darkMode: 'Oscuro',
       systemMode: 'Sistema',
       saveChanges: 'Guardar Cambios',
+      
+      // Common
+      save: 'Guardar',
+      cancel: 'Cancelar',
+      edit: 'Editar',
+      delete: 'Eliminar',
+      add: 'Agregar',
+      remove: 'Remover',
+      view: 'Ver',
+      search: 'Buscar',
+      filter: 'Filtrar',
+      loading: 'Cargando...',
       
       // Success messages
       settingsSaved: 'Configuración guardada',
@@ -213,6 +307,17 @@ const resources = {
       settings: 'Paramètres',
       profile: 'Profil',
       archived: 'Archivés',
+      team: 'Équipe',
+      materials: 'Matériaux',
+      reports: 'Rapports',
+      recommendations: 'Recommandations',
+      overview: 'Aperçu',
+      
+      // Navigation
+      home: 'Accueil',
+      logout: 'Se Déconnecter',
+      login: 'Se Connecter',
+      register: 'S\'inscrire',
       
       // Settings
       general: 'Général',
@@ -225,6 +330,18 @@ const resources = {
       darkMode: 'Sombre',
       systemMode: 'Système',
       saveChanges: 'Enregistrer les modifications',
+      
+      // Common
+      save: 'Enregistrer',
+      cancel: 'Annuler',
+      edit: 'Modifier',
+      delete: 'Supprimer',
+      add: 'Ajouter',
+      remove: 'Retirer',
+      view: 'Voir',
+      search: 'Rechercher',
+      filter: 'Filtrer',
+      loading: 'Chargement...',
       
       // Success messages
       settingsSaved: 'Paramètres sauvegardés',
@@ -282,6 +399,17 @@ const resources = {
       settings: 'Einstellungen',
       profile: 'Profil',
       archived: 'Archiviert',
+      team: 'Team',
+      materials: 'Materialien',
+      reports: 'Berichte',
+      recommendations: 'Empfehlungen',
+      overview: 'Übersicht',
+      
+      // Navigation
+      home: 'Startseite',
+      logout: 'Abmelden',
+      login: 'Anmelden',
+      register: 'Registrieren',
       
       // Settings
       general: 'Allgemein',
@@ -294,6 +422,18 @@ const resources = {
       darkMode: 'Dunkel',
       systemMode: 'System',
       saveChanges: 'Änderungen speichern',
+      
+      // Common
+      save: 'Speichern',
+      cancel: 'Abbrechen',
+      edit: 'Bearbeiten',
+      delete: 'Löschen',
+      add: 'Hinzufügen',
+      remove: 'Entfernen',
+      view: 'Anzeigen',
+      search: 'Suchen',
+      filter: 'Filtern',
+      loading: 'Laden...',
       
       // Success messages
       settingsSaved: 'Einstellungen gespeichert',
