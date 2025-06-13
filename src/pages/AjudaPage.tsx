@@ -21,7 +21,7 @@ const AjudaPage = () => {
 
   return (
     <div className="flex-1 p-6 bg-residuall-gray-light">
-      <DashboardHeader pageTitle="Central de Ajuda" />
+      <DashboardHeader />
 
       <div className="mt-6 space-y-8">
         {/* Seção de Perguntas Frequentes */}

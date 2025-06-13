@@ -33,56 +33,54 @@ export const useDashboardMetrics = () => {
       setLoading(true);
       console.log('Buscando métricas para usuário:', user.id);
 
-      // Buscar métricas diretamente das tabelas com filtro por user_id
-      const [projectsResult, materialsResult, wasteResult] = await Promise.all([
-        // Projetos
-        supabase
-          .from('projects')
-          .select('id, status')
-          .eq('user_id', user.id)
-          .eq('arquivado', false),
-        
-        // Materiais
-        supabase
-          .from('project_materials')
-          .select('id, project_id')
-          .in('project_id', supabase
-            .from('projects')
-            .select('id')
-            .eq('user_id', user.id)
-            .eq('arquivado', false)
-          ),
-        
-        // Entradas de desperdício
-        supabase
-          .from('waste_entries')
-          .select('id, wasted_quantity, project_material_id')
-          .in('project_material_id', supabase
-            .from('project_materials')
-            .select('id')
-            .in('project_id', supabase
-              .from('projects')
-              .select('id')
-              .eq('user_id', user.id)
-              .eq('arquivado', false)
-            )
-          )
-      ]);
+      // Primeiro, buscar os projetos do usuário
+      const { data: projects, error: projectsError } = await supabase
+        .from('projects')
+        .select('id, status')
+        .eq('user_id', user.id)
+        .eq('arquivado', false);
 
-      const projects = projectsResult.data || [];
-      const materials = materialsResult.data || [];
-      const wasteEntries = wasteResult.data || [];
+      if (projectsError) {
+        console.error('Erro ao buscar projetos:', projectsError);
+        throw projectsError;
+      }
 
-      const totalProjects = projects.length;
-      const activeProjects = projects.filter(p => 
-        p.status === 'execução' || p.status === 'em_andamento' || p.status === 'planejamento'
-      ).length;
+      const projectIds = projects?.map(p => p.id) || [];
       
-      const totalMaterials = materials.length;
-      const totalWasteEntries = wasteEntries.length;
-      const totalWasteQuantity = wasteEntries.reduce((sum, entry) => 
+      // Buscar materiais dos projetos do usuário
+      const { data: materials, error: materialsError } = await supabase
+        .from('project_materials')
+        .select('id, project_id')
+        .in('project_id', projectIds);
+
+      if (materialsError) {
+        console.error('Erro ao buscar materiais:', materialsError);
+        throw materialsError;
+      }
+
+      const materialIds = materials?.map(m => m.id) || [];
+      
+      // Buscar entradas de desperdício dos materiais
+      const { data: wasteEntries, error: wasteError } = await supabase
+        .from('waste_entries')
+        .select('id, wasted_quantity, project_material_id')
+        .in('project_material_id', materialIds);
+
+      if (wasteError) {
+        console.error('Erro ao buscar desperdícios:', wasteError);
+        throw wasteError;
+      }
+
+      const totalProjects = projects?.length || 0;
+      const activeProjects = projects?.filter(p => 
+        p.status === 'execução' || p.status === 'em_andamento' || p.status === 'planejamento'
+      ).length || 0;
+      
+      const totalMaterials = materials?.length || 0;
+      const totalWasteEntries = wasteEntries?.length || 0;
+      const totalWasteQuantity = wasteEntries?.reduce((sum, entry) => 
         sum + (Number(entry.wasted_quantity) || 0), 0
-      );
+      ) || 0;
       
       // Cálculo básico de economia (placeholder - pode ser refinado)
       const totalEconomyGenerated = totalWasteQuantity * 15; // R$ 15 por kg economizado

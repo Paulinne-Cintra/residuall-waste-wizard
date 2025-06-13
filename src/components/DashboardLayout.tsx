@@ -58,7 +58,7 @@ const DashboardLayout: React.FC = () => {
         <AnimatedSidebar />
       </Suspense>
       <div className="flex-1 flex flex-col">
-        {shouldShowHeader && <DashboardHeader pageTitle={pageTitle} />}
+        {shouldShowHeader && <DashboardHeader />}
         <main className="flex-1 p-6 overflow-auto">
           <Outlet />
         </main>
