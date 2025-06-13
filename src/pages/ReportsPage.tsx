@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { useProjects } from '@/hooks/useProjects';
 import { useProjectStageWaste } from '@/hooks/useProjectStageWaste';
 import { Link } from 'react-router-dom';
+import DashboardHeader from '@/components/DashboardHeader';
 
 const ReportsPage = () => {
   const { projects, loading } = useProjects();
@@ -67,6 +68,8 @@ const ReportsPage = () => {
 
   return (
     <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
+      <DashboardHeader />
+      
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
         <div>

@@ -9,6 +9,7 @@ import AnimatedNumber from '@/components/ui/AnimatedNumber';
 import AnimatedCardWrapper from '@/components/ui/AnimatedCardWrapper';
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
 import { useOptimizedProjects } from '@/hooks/useOptimizedProjects';
+import DashboardHeader from '@/components/DashboardHeader';
 
 const Dashboard = () => {
   const { metrics, loading: metricsLoading } = useDashboardMetrics();
@@ -35,6 +36,8 @@ const Dashboard = () => {
 
   return (
     <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
+      <DashboardHeader />
+      
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-1">Dashboard</h1>

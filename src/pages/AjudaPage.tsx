@@ -56,7 +56,7 @@ const AjudaPage = () => {
           <SupportTicketForm />
         </div>
 
-        {/* Seção de Registros de Chamados */}
+        {/* Seção de Registros de Chamados - apenas para usuários autenticados */}
         <div className="bg-white p-6 rounded-lg shadow">
           <h2 className="text-xl font-semibold mb-4 flex items-center text-residuall-gray-dark">
             <HelpCircle size={20} className="mr-2 text-residuall-green" /> Seus Chamados de Suporte
