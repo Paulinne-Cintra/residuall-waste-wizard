@@ -35,15 +35,7 @@ export const useTeamMembers = () => {
 
   const fetchTeamMembers = async () => {
     try {
-      // Buscar membros reais (com conta na plataforma)
-      const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
-        .select('id, full_name, email, professional_role, avatar_url, created_at, phone_number, company_name, biografia, cargo')
-        .neq('id', user?.id); // Excluir o próprio usuário
-
-      if (profilesError) throw profilesError;
-
-      // Buscar convites pendentes/aceitos
+      // Buscar convites pendentes/aceitos apenas (não buscar todos os perfis)
       const { data: invitations, error: invitationsError } = await supabase
         .from('team_invitations')
         .select('*')
@@ -51,23 +43,7 @@ export const useTeamMembers = () => {
 
       if (invitationsError) throw invitationsError;
 
-      // Combinar dados
-      const realMembers: TeamMember[] = (profiles || []).map(profile => ({
-        id: profile.id,
-        name: profile.full_name || 'Nome não informado',
-        email: profile.email || '',
-        role: profile.professional_role || 'Cargo não informado',
-        status: 'active' as const,
-        created_at: profile.created_at,
-        profile_picture_url: profile.avatar_url,
-        has_account: true,
-        phone_number: profile.phone_number,
-        professional_role: profile.professional_role,
-        company_name: profile.company_name,
-        biografia: profile.biografia,
-        cargo: profile.cargo
-      }));
-
+      // Converter convites para formato TeamMember
       const invitedMembers: TeamMember[] = (invitations || []).map(invitation => ({
         id: invitation.id,
         name: invitation.name,
@@ -80,11 +56,10 @@ export const useTeamMembers = () => {
         invitation_status: invitation.status as 'pending' | 'accepted' | 'declined'
       }));
 
-      const allMembers = [...realMembers, ...invitedMembers];
-      setMembers(allMembers);
+      setMembers(invitedMembers);
     } catch (error) {
       console.error('Erro ao buscar membros:', error);
-      setMembers([]); // Lista vazia em caso de erro
+      setMembers([]);
     } finally {
       setLoading(false);
     }
@@ -94,13 +69,18 @@ export const useTeamMembers = () => {
     try {
       if (!user) throw new Error('Usuário não autenticado');
 
+      // Gerar token usando a função do banco de dados
+      const { data: tokenData, error: tokenError } = await supabase.rpc('generate_invitation_token');
+      if (tokenError) throw tokenError;
+
       const { data, error } = await supabase
         .from('team_invitations')
         .insert({
           email: memberData.email,
           name: memberData.name,
           invited_by_user_id: user.id,
-          status: 'pending'
+          status: 'pending',
+          token: tokenData
         })
         .select()
         .single();
