@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, Package, AlertTriangle, DollarSign } from "lucide-react";
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
-import { AnimatedNumber } from '@/components/ui/AnimatedNumber';
+import AnimatedNumber from '@/components/ui/AnimatedNumber';
 import DashboardHeader from '@/components/DashboardHeader';
 
 const Dashboard = () => {

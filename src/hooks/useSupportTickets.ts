@@ -121,7 +121,13 @@ export const useSupportTickets = () => {
       if (error) throw error;
       
       // Contas novas começam com lista vazia
-      setTickets(data || []);
+      // Fazer type casting para garantir que o status seja do tipo correto
+      const typedTickets = (data || []).map(ticket => ({
+        ...ticket,
+        status: ticket.status as 'Aberto' | 'Respondido' | 'Encerrado'
+      }));
+      
+      setTickets(typedTickets);
     } catch (error) {
       console.error('Erro ao buscar chamados:', error);
       // Em caso de erro, contas não exemplo ficam vazias
