@@ -277,7 +277,7 @@ const ProjectsPage = () => {
                             >
                               <Archive className="h-4 w-4 mr-2" />
                               Arquivar
-                            </Link>
+                            </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
