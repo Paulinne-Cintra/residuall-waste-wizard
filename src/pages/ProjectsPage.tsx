@@ -34,12 +34,20 @@ const ProjectsPage = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('Todos');
 
+  // Logs para debug
+  console.log('🏠 ProjectsPage renderizando:');
+  console.log('- Projects:', projects);
+  console.log('- Loading:', loading);
+  console.log('- Error:', error);
+  console.log('- Quantidade de projetos:', projects?.length);
+
   useEffect(() => {
-    // Refetch quando o filtro de status mudar
-    refetch();
-  }, [statusFilter, refetch]);
+    console.log('🔄 ProjectsPage useEffect - StatusFilter mudou:', statusFilter);
+    // Não precisamos refetch quando o filtro de status mudar, apenas quando o componente montar
+  }, []);
 
   const handleArchiveProject = async (project: any) => {
+    console.log('📦 Tentando arquivar projeto:', project);
     const success = await archiveProject(project.id);
     if (success) {
       refetch(); // Atualizar a lista após arquivar
@@ -47,18 +55,33 @@ const ProjectsPage = () => {
   };
 
   // Filtrar projetos por busca e status
-  const filteredProjects = projects.filter(project => {
-    const searchTerm = searchQuery.toLowerCase();
-    const matchesSearch = project.name.toLowerCase().includes(searchTerm) ||
-           (project.location && project.location.toLowerCase().includes(searchTerm)) ||
-           project.status.toLowerCase().includes(searchTerm);
+  const filteredProjects = React.useMemo(() => {
+    console.log('🔍 Filtrando projetos...');
+    console.log('- Array original:', projects);
+    console.log('- É array?', Array.isArray(projects));
     
-    const matchesStatus = statusFilter === 'Todos' || project.status === statusFilter;
-    
-    return matchesSearch && matchesStatus;
-  });
+    if (!Array.isArray(projects)) {
+      console.log('❌ Projects não é um array válido');
+      return [];
+    }
+
+    const filtered = projects.filter(project => {
+      const searchTerm = searchQuery.toLowerCase();
+      const matchesSearch = project.name.toLowerCase().includes(searchTerm) ||
+             (project.location && project.location.toLowerCase().includes(searchTerm)) ||
+             project.status.toLowerCase().includes(searchTerm);
+      
+      const matchesStatus = statusFilter === 'Todos' || project.status === statusFilter;
+      
+      return matchesSearch && matchesStatus;
+    });
+
+    console.log('✅ Projetos filtrados:', filtered);
+    return filtered;
+  }, [projects, searchQuery, statusFilter]);
 
   if (error) {
+    console.log('❌ Exibindo erro:', error);
     return (
       <div className="space-y-6">
         <div className="text-center py-12">
@@ -156,109 +179,112 @@ const ProjectsPage = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredProjects.map((project) => (
-                <Card key={project.id} className="hover:shadow-lg transition-shadow cursor-pointer">
-                  <Link to={`/dashboard/projetos/${project.id}`}>
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <CardTitle className="text-base font-semibold text-residuall-gray-dark line-clamp-2">
-                            {project.name}
-                          </CardTitle>
-                          <div className="flex items-center text-sm text-residuall-gray mt-1">
-                            <MapPin size={14} className="mr-1" />
-                            {project.location || 'Localização não informada'}
+              {filteredProjects.map((project) => {
+                console.log('🎨 Renderizando projeto:', project);
+                return (
+                  <Card key={project.id} className="hover:shadow-lg transition-shadow cursor-pointer">
+                    <Link to={`/dashboard/projetos/${project.id}`}>
+                      <CardHeader className="pb-3">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <CardTitle className="text-base font-semibold text-residuall-gray-dark line-clamp-2">
+                              {project.name}
+                            </CardTitle>
+                            <div className="flex items-center text-sm text-residuall-gray mt-1">
+                              <MapPin size={14} className="mr-1" />
+                              {project.location || 'Localização não informada'}
+                            </div>
                           </div>
+                          <Badge 
+                            className={`ml-2 ${
+                              project.status === 'execução' || project.status === 'em_andamento' 
+                                ? 'bg-green-100 text-green-800' 
+                                : project.status === 'planejamento'
+                                ? 'bg-blue-100 text-blue-800'
+                                : 'bg-gray-100 text-gray-800'
+                            }`}
+                          >
+                            {project.status}
+                          </Badge>
                         </div>
-                        <Badge 
-                          className={`ml-2 ${
-                            project.status === 'execução' || project.status === 'em_andamento' 
-                              ? 'bg-green-100 text-green-800' 
-                              : project.status === 'planejamento'
-                              ? 'bg-blue-100 text-blue-800'
-                              : 'bg-gray-100 text-gray-800'
-                          }`}
-                        >
-                          {project.status}
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="pt-0">
-                      <div className="space-y-3">
-                        <div>
-                          <div className="flex justify-between text-sm mb-1">
-                            <span className="text-residuall-gray">Progresso</span>
-                            <span className="font-medium">0%</span>
+                      </CardHeader>
+                      <CardContent className="pt-0">
+                        <div className="space-y-3">
+                          <div>
+                            <div className="flex justify-between text-sm mb-1">
+                              <span className="text-residuall-gray">Progresso</span>
+                              <span className="font-medium">0%</span>
+                            </div>
+                            <Progress value={0} className="h-2 bg-gray-200" />
                           </div>
-                          <Progress value={0} className="h-2 bg-gray-200" />
-                        </div>
-                        
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                          <div className="flex items-center text-residuall-gray">
-                            <Package size={14} className="mr-1" />
-                            <span>0 materiais</span>
+                          
+                          <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div className="flex items-center text-residuall-gray">
+                              <Package size={14} className="mr-1" />
+                              <span>0 materiais</span>
+                            </div>
+                            <div className="flex items-center text-residuall-gray">
+                              <AlertTriangle size={14} className="mr-1" />
+                              <span>0 registros</span>
+                            </div>
                           </div>
-                          <div className="flex items-center text-residuall-gray">
-                            <AlertTriangle size={14} className="mr-1" />
-                            <span>0 registros</span>
-                          </div>
-                        </div>
 
-                        <div className="text-xs text-residuall-gray">
-                          Criado em {new Date(project.created_at).toLocaleDateString('pt-BR')}
+                          <div className="text-xs text-residuall-gray">
+                            Criado em {new Date(project.created_at).toLocaleDateString('pt-BR')}
+                          </div>
                         </div>
+                      </CardContent>
+                    </Link>
+                    
+                    <CardContent className="pt-0 border-t">
+                      <div className="flex justify-between items-center">
+                        <Button variant="outline" size="sm" asChild>
+                          <Link to={`/dashboard/projetos/${project.id}`}>
+                            <Eye className="h-4 w-4 mr-1" />
+                            Ver Detalhes
+                          </Link>
+                        </Button>
+                        
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem asChild>
+                              <Link to={`/dashboard/projetos/${project.id}`}>
+                                <Eye className="h-4 w-4 mr-2" />
+                                Ver detalhes
+                              </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                              <Link to={`/dashboard/projetos/${project.id}`}>
+                                <Edit className="h-4 w-4 mr-2" />
+                                Editar
+                              </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                              <Link to={`/dashboard/relatorios/${project.id}`}>
+                                <FileText className="h-4 w-4 mr-2" />
+                                Gerar relatório
+                              </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem 
+                              className="text-orange-600"
+                              onClick={() => handleArchiveProject(project)}
+                            >
+                              <Archive className="h-4 w-4 mr-2" />
+                              Arquivar
+                            </Link>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     </CardContent>
-                  </Link>
-                  
-                  <CardContent className="pt-0 border-t">
-                    <div className="flex justify-between items-center">
-                      <Button variant="outline" size="sm" asChild>
-                        <Link to={`/dashboard/projetos/${project.id}`}>
-                          <Eye className="h-4 w-4 mr-1" />
-                          Ver Detalhes
-                        </Link>
-                      </Button>
-                      
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem asChild>
-                            <Link to={`/dashboard/projetos/${project.id}`}>
-                              <Eye className="h-4 w-4 mr-2" />
-                              Ver detalhes
-                            </Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem asChild>
-                            <Link to={`/dashboard/projetos/${project.id}`}>
-                              <Edit className="h-4 w-4 mr-2" />
-                              Editar
-                            </Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem asChild>
-                            <Link to={`/dashboard/relatorios/${project.id}`}>
-                              <FileText className="h-4 w-4 mr-2" />
-                              Gerar relatório
-                            </Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem 
-                            className="text-orange-600"
-                            onClick={() => handleArchiveProject(project)}
-                          >
-                            <Archive className="h-4 w-4 mr-2" />
-                            Arquivar
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                  </Card>
+                );
+              })}
             </div>
           )}
         </CardContent>
