@@ -44,34 +44,19 @@ export const useDashboardMetrics = (): UseDashboardMetricsResult => {
             .eq('user_id', user.id)
             .eq('arquivado', false),
           
-          // Total de materiais
+          // Total de materiais - buscar primeiro os project_ids do usuário
           supabase
-            .from('project_materials')
-            .select('id, project_id')
-            .in('project_id', 
-              supabase
-                .from('projects')
-                .select('id')
-                .eq('user_id', user.id)
-                .eq('arquivado', false)
-          ),
+            .from('projects')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('arquivado', false),
           
-          // Total de desperdício
+          // Para waste entries, também precisamos primeiro buscar os project_ids
           supabase
-            .from('waste_entries')
-            .select('wasted_quantity, project_material_id')
-            .in('project_material_id',
-              supabase
-                .from('project_materials')
-                .select('id')
-                .in('project_id',
-                  supabase
-                    .from('projects')
-                    .select('id')
-                    .eq('user_id', user.id)
-                    .eq('arquivado', false)
-                )
-            )
+            .from('projects')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('arquivado', false)
         ]);
 
         if (projectsResult.error) throw projectsResult.error;
@@ -79,8 +64,32 @@ export const useDashboardMetrics = (): UseDashboardMetricsResult => {
         if (wasteResult.error) throw wasteResult.error;
 
         const projects = projectsResult.data || [];
-        const materials = materialsResult.data || [];
-        const wasteEntries = wasteResult.data || [];
+        const projectIds = materialsResult.data?.map(p => p.id) || [];
+
+        // Agora buscar materiais com os project_ids
+        let materials: any[] = [];
+        if (projectIds.length > 0) {
+          const { data: materialsData, error: materialsError } = await supabase
+            .from('project_materials')
+            .select('id, project_id')
+            .in('project_id', projectIds);
+          
+          if (materialsError) throw materialsError;
+          materials = materialsData || [];
+        }
+
+        // Buscar waste entries com os material_ids
+        let wasteEntries: any[] = [];
+        if (materials.length > 0) {
+          const materialIds = materials.map(m => m.id);
+          const { data: wasteData, error: wasteError } = await supabase
+            .from('waste_entries')
+            .select('wasted_quantity, project_material_id')
+            .in('project_material_id', materialIds);
+          
+          if (wasteError) throw wasteError;
+          wasteEntries = wasteData || [];
+        }
 
         const totalProjects = projects.length;
         const activeProjects = projects.filter(p => 
