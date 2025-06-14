@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,6 +10,8 @@ import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ArrowLeft, ArrowRight, Upload, Plus, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 
 // Constantes para as etapas da obra
 const PROJECT_STAGES = [
@@ -65,6 +66,7 @@ interface ProjectFormData {
 const CreateProjectForm: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -176,11 +178,77 @@ const CreateProjectForm: React.FC = () => {
   };
 
   const handleSubmit = async () => {
+    if (!user) {
+      toast({
+        title: "Erro de autenticação",
+        description: "Você deve estar logado para criar um projeto.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      // Simular salvamento do projeto
+      console.log('Criando projeto para usuário:', user.id);
       console.log('Dados do projeto:', formData);
       
+      // 1. Criar o projeto principal
+      const { data: projectData, error: projectError } = await supabase
+        .from('projects')
+        .insert({
+          user_id: user.id,
+          name: formData.nome,
+          location: formData.localizacao,
+          dimensions_details: formData.dimensionamento,
+          project_type: formData.tipologia,
+          status: formData.status,
+          start_date: formData.dataInicio || null,
+          planned_end_date: formData.previsaoFinalizacao || null,
+          budget: formData.orcamento,
+          responsible_team_contacts: formData.equipeResponsavel,
+          description_notes: formData.observacoes,
+          arquivado: false
+        })
+        .select()
+        .single();
+
+      if (projectError) {
+        console.error('Erro ao criar projeto:', projectError);
+        throw projectError;
+      }
+
+      console.log('Projeto criado com sucesso:', projectData);
+
+      // 2. Criar materiais do projeto se existirem
+      if (formData.materiais.length > 0) {
+        const materialsToInsert = formData.materiais.map(material => ({
+          project_id: projectData.id,
+          material_type_name: material.tipo,
+          estimated_quantity: material.quantidade,
+          unit_of_measurement: material.unidade,
+          dimensions_specs: material.dimensoes,
+          cost_per_unit: 0, // Valor padrão
+          stock_quantity: 0,
+          minimum_quantity: 0
+        }));
+
+        const { error: materialsError } = await supabase
+          .from('project_materials')
+          .insert(materialsToInsert);
+
+        if (materialsError) {
+          console.error('Erro ao criar materiais:', materialsError);
+          // Não falha o processo, apenas avisa
+          toast({
+            title: "Aviso",
+            description: "Projeto criado, mas houve problemas ao salvar alguns materiais.",
+            variant: "default"
+          });
+        } else {
+          console.log('Materiais criados com sucesso');
+        }
+      }
+
       toast({
         title: "Projeto criado com sucesso!",
         description: "Seu projeto foi registrado e está pronto para o acompanhamento.",
@@ -191,7 +259,7 @@ const CreateProjectForm: React.FC = () => {
       console.error('Erro ao criar projeto:', error);
       toast({
         title: "Erro ao criar projeto",
-        description: "Ocorreu um erro inesperado. Tente novamente.",
+        description: error.message || "Ocorreu um erro inesperado. Tente novamente.",
         variant: "destructive"
       });
     } finally {

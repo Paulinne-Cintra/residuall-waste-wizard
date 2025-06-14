@@ -1,7 +1,7 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
+import { useProjects } from '@/hooks/useProjects';
 import { useToast } from "@/hooks/use-toast";
 import {
   Card,
@@ -28,104 +28,48 @@ import {
   Archive
 } from "lucide-react";
 
-interface ProjectWithProgress {
-  id: string;
-  user_id: string;
-  name: string;
-  location: string | null;
-  status: string;
-  progress_percentage: number;
-  materials_count: number;
-  waste_entries_count: number;
-  created_at: string;
-  updated_at: string | null;
-}
-
 const ProjectsPage = () => {
-  const { user } = useAuth();
+  const { projects, loading, error, archiveProject, refetch } = useProjects();
   const { toast } = useToast();
-  const [projects, setProjects] = useState<ProjectWithProgress[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('Todos');
 
   useEffect(() => {
-    fetchProjects();
-  }, [user, statusFilter]);
+    // Refetch quando o filtro de status mudar
+    refetch();
+  }, [statusFilter, refetch]);
 
-  const fetchProjects = async () => {
-    setLoading(true);
-    setError(null);
-
-    if (!user) {
-      setError("Usuário não autenticado.");
-      setLoading(false);
-      return;
-    }
-
-    try {
-      let query = supabase
-        .from('projects_with_progress')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('arquivado', false)
-        .order('created_at', { ascending: false });
-
-      if (statusFilter !== 'Todos') {
-        query = query.eq('status', statusFilter);
-      }
-
-      const { data, error } = await query;
-
-      if (error) {
-        console.error('Erro ao buscar projetos:', error);
-        throw error;
-      }
-
-      setProjects(data as ProjectWithProgress[]);
-    } catch (err: any) {
-      console.error('Erro na busca de projetos:', err);
-      setError(err.message);
-    } finally {
-      setLoading(false);
+  const handleArchiveProject = async (project: any) => {
+    const success = await archiveProject(project.id);
+    if (success) {
+      refetch(); // Atualizar a lista após arquivar
     }
   };
 
-  const handleArchiveProject = async (project: ProjectWithProgress) => {
-    try {
-      const { error } = await supabase
-        .from('projects')
-        .update({ arquivado: true })
-        .eq('id', project.id);
-
-      if (error) {
-        console.error('Erro ao arquivar projeto:', error);
-        throw error;
-      }
-
-      toast({
-        title: "Sucesso!",
-        description: "Projeto arquivado com sucesso!",
-      });
-
-      fetchProjects();
-    } catch (err: any) {
-      console.error('Erro ao arquivar projeto:', err);
-      toast({
-        title: "Erro",
-        description: "Erro ao arquivar projeto.",
-        variant: "destructive",
-      });
-    }
-  };
-
+  // Filtrar projetos por busca e status
   const filteredProjects = projects.filter(project => {
     const searchTerm = searchQuery.toLowerCase();
-    return project.name.toLowerCase().includes(searchTerm) ||
+    const matchesSearch = project.name.toLowerCase().includes(searchTerm) ||
            (project.location && project.location.toLowerCase().includes(searchTerm)) ||
            project.status.toLowerCase().includes(searchTerm);
+    
+    const matchesStatus = statusFilter === 'Todos' || project.status === statusFilter;
+    
+    return matchesSearch && matchesStatus;
   });
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="text-center py-12">
+          <AlertTriangle className="mx-auto h-16 w-16 text-red-400 mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Erro ao carregar projetos</h3>
+          <p className="text-gray-500 mb-4">{error}</p>
+          <Button onClick={refetch}>Tentar novamente</Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -182,10 +126,16 @@ const ProjectsPage = () => {
         <CardHeader>
           <CardTitle className="text-lg text-residuall-gray-tableText">
             Projetos ({filteredProjects.length})
+            {loading && <span className="text-sm font-normal text-gray-500 ml-2">(Carregando...)</span>}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {filteredProjects.length === 0 ? (
+          {loading ? (
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-residuall-green mx-auto"></div>
+              <p className="mt-4 text-gray-500">Carregando projetos...</p>
+            </div>
+          ) : filteredProjects.length === 0 ? (
             <div className="text-center py-12">
               <Building className="mx-auto h-16 w-16 text-gray-400 mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">
@@ -238,19 +188,19 @@ const ProjectsPage = () => {
                         <div>
                           <div className="flex justify-between text-sm mb-1">
                             <span className="text-residuall-gray">Progresso</span>
-                            <span className="font-medium">{project.progress_percentage}%</span>
+                            <span className="font-medium">0%</span>
                           </div>
-                          <Progress value={project.progress_percentage} className="h-2 bg-gray-200" />
+                          <Progress value={0} className="h-2 bg-gray-200" />
                         </div>
                         
                         <div className="grid grid-cols-2 gap-4 text-sm">
                           <div className="flex items-center text-residuall-gray">
                             <Package size={14} className="mr-1" />
-                            <span>{project.materials_count} materiais</span>
+                            <span>0 materiais</span>
                           </div>
                           <div className="flex items-center text-residuall-gray">
                             <AlertTriangle size={14} className="mr-1" />
-                            <span>{project.waste_entries_count} registros</span>
+                            <span>0 registros</span>
                           </div>
                         </div>
 

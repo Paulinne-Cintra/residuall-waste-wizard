@@ -53,7 +53,8 @@ export const useProjects = (): UseProjectsResult => {
         .from('projects')
         .select('*')
         .eq('user_id', user.id)
-        .eq('arquivado', false);
+        .eq('arquivado', false)
+        .order('created_at', { ascending: false });
 
       if (error) {
         console.error('Erro ao buscar projetos:', error);
