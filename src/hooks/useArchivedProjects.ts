@@ -24,48 +24,50 @@ export const useArchivedProjects = () => {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  // Dados fictícios para demonstração quando não há projetos arquivados reais
-  const mockArchivedProjects: ArchivedProject[] = [
-    {
-      id: 'mock-1',
-      name: 'Edifício Residencial Sustentável',
-      location: 'São Paulo, SP',
-      project_type: 'Residencial',
-      status: 'concluído',
-      budget: 2500000.00,
-      start_date: '2023-01-15',
-      planned_end_date: '2023-12-20',
-      description_notes: 'Projeto de edifício residencial com foco em sustentabilidade e redução de desperdícios.',
-      created_at: '2023-01-10T08:00:00Z',
-      updated_at: '2024-01-15T17:30:00Z'
-    },
-    {
-      id: 'mock-2',
-      name: 'Centro Comercial EcoPlaza',
-      location: 'Rio de Janeiro, RJ',
-      project_type: 'Comercial',
-      status: 'concluído',
-      budget: 3800000.00,
-      start_date: '2022-06-01',
-      planned_end_date: '2023-08-30',
-      description_notes: 'Centro comercial com conceito de construção verde e gestão inteligente de resíduos.',
-      created_at: '2022-05-20T09:15:00Z',
-      updated_at: '2023-09-10T14:45:00Z'
-    },
-    {
-      id: 'mock-3',
-      name: 'Galpão Industrial Verde',
-      location: 'Campinas, SP',
-      project_type: 'Industrial',
-      status: 'finalização',
-      budget: 1200000.00,
-      start_date: '2023-03-01',
-      planned_end_date: '2023-11-15',
-      description_notes: 'Galpão industrial com tecnologias de redução de desperdício e otimização energética.',
-      created_at: '2023-02-15T10:30:00Z',
-      updated_at: '2023-12-01T16:20:00Z'
-    }
-  ];
+  // Dados fictícios apenas para a conta de demonstração
+  const getDemoArchivedProjects = (): ArchivedProject[] => {
+    return [
+      {
+        id: 'demo-1',
+        name: 'Edifício Residencial Sustentável',
+        location: 'São Paulo, SP',
+        project_type: 'Residencial',
+        status: 'concluído',
+        budget: 2500000.00,
+        start_date: '2023-01-15',
+        planned_end_date: '2023-12-20',
+        description_notes: 'Projeto de edifício residencial com foco em sustentabilidade.',
+        created_at: '2023-01-10T08:00:00Z',
+        updated_at: '2024-01-15T17:30:00Z'
+      },
+      {
+        id: 'demo-2',
+        name: 'Centro Comercial EcoPlaza',
+        location: 'Rio de Janeiro, RJ',
+        project_type: 'Comercial',
+        status: 'concluído',
+        budget: 3800000.00,
+        start_date: '2022-06-01',
+        planned_end_date: '2023-08-30',
+        description_notes: 'Centro comercial com conceito de construção verde.',
+        created_at: '2022-05-20T09:15:00Z',
+        updated_at: '2023-09-10T14:45:00Z'
+      },
+      {
+        id: 'demo-3',
+        name: 'Galpão Industrial Verde',
+        location: 'Campinas, SP',
+        project_type: 'Industrial',
+        status: 'finalização',
+        budget: 1200000.00,
+        start_date: '2023-03-01',
+        planned_end_date: '2023-11-15',
+        description_notes: 'Galpão industrial com tecnologias de redução de desperdício.',
+        created_at: '2023-02-15T10:30:00Z',
+        updated_at: '2023-12-01T16:20:00Z'
+      }
+    ];
+  };
 
   useEffect(() => {
     fetchArchivedProjects();
@@ -73,7 +75,14 @@ export const useArchivedProjects = () => {
 
   const fetchArchivedProjects = async () => {
     if (!user) {
-      setArchivedProjects(mockArchivedProjects);
+      setArchivedProjects([]);
+      setLoading(false);
+      return;
+    }
+
+    // Verificar se é a conta de demonstração
+    if (user.email === 'teste@exemplo.com') {
+      setArchivedProjects(getDemoArchivedProjects());
       setLoading(false);
       return;
     }
@@ -88,26 +97,21 @@ export const useArchivedProjects = () => {
 
       if (error) throw error;
 
-      // Se não há projetos arquivados reais, usar dados fictícios
-      if (!data || data.length === 0) {
-        setArchivedProjects(mockArchivedProjects);
-      } else {
-        setArchivedProjects(data);
-      }
+      // Para usuários normais, mostrar apenas projetos reais (iniciar vazio)
+      setArchivedProjects(data || []);
     } catch (err: any) {
       console.error('Erro ao buscar projetos arquivados:', err);
       setError(err.message);
-      // Em caso de erro, mostrar dados fictícios
-      setArchivedProjects(mockArchivedProjects);
+      // Para usuários normais, em caso de erro, iniciar vazio
+      setArchivedProjects([]);
     } finally {
       setLoading(false);
     }
   };
 
   const restoreProject = async (projectId: string) => {
-    // Se for um projeto fictício, simular sucesso
-    if (projectId.startsWith('mock-')) {
-      // Remove o projeto fictício da lista local
+    // Se for um projeto fictício da conta demo, simular sucesso
+    if (projectId.startsWith('demo-') && user?.email === 'teste@exemplo.com') {
       setArchivedProjects(prev => prev.filter(project => project.id !== projectId));
       
       toast({
@@ -115,6 +119,11 @@ export const useArchivedProjects = () => {
         description: "Este é um projeto de demonstração. Em uma aplicação real, seria restaurado com sucesso.",
       });
       return true;
+    }
+
+    // Para projetos fictícios de usuários normais, não permitir ação
+    if (projectId.startsWith('demo-')) {
+      return false;
     }
 
     try {
@@ -129,12 +138,11 @@ export const useArchivedProjects = () => {
 
       if (error) throw error;
 
-      // Remove o projeto da lista local
       setArchivedProjects(prev => prev.filter(project => project.id !== projectId));
 
       toast({
         title: "Sucesso!",
-        description: "Projeto restaurado com sucesso! O projeto agora está disponível na página de projetos.",
+        description: "Projeto restaurado com sucesso!",
       });
 
       return true;
@@ -150,9 +158,8 @@ export const useArchivedProjects = () => {
   };
 
   const deleteProject = async (projectId: string) => {
-    // Se for um projeto fictício, simular sucesso
-    if (projectId.startsWith('mock-')) {
-      // Remove o projeto fictício da lista local
+    // Se for um projeto fictício da conta demo, simular sucesso
+    if (projectId.startsWith('demo-') && user?.email === 'teste@exemplo.com') {
       setArchivedProjects(prev => prev.filter(project => project.id !== projectId));
       
       toast({
@@ -162,14 +169,18 @@ export const useArchivedProjects = () => {
       return true;
     }
 
+    // Para projetos fictícios de usuários normais, não permitir ação
+    if (projectId.startsWith('demo-')) {
+      return false;
+    }
+
     try {
-      // Primeiro, buscar os IDs dos materiais do projeto
+      // ... keep existing code (real deletion logic)
       const { data: projectMaterials } = await supabase
         .from('project_materials')
         .select('id')
         .eq('project_id', projectId);
 
-      // Excluir entradas de desperdício relacionadas aos materiais do projeto
       if (projectMaterials && projectMaterials.length > 0) {
         const materialIds = projectMaterials.map(material => material.id);
         
@@ -183,7 +194,6 @@ export const useArchivedProjects = () => {
         }
       }
 
-      // Excluir materiais do projeto
       const { error: materialsError } = await supabase
         .from('project_materials')
         .delete()
@@ -193,7 +203,6 @@ export const useArchivedProjects = () => {
         console.error('Erro ao excluir materiais do projeto:', materialsError);
       }
 
-      // Excluir desperdício por etapa
       const { error: stageWasteError } = await supabase
         .from('project_stage_waste')
         .delete()
@@ -203,7 +212,6 @@ export const useArchivedProjects = () => {
         console.error('Erro ao excluir desperdício por etapa:', stageWasteError);
       }
 
-      // Excluir recomendações relacionadas
       const { error: recommendationsError } = await supabase
         .from('recomendacoes')
         .delete()
@@ -213,7 +221,6 @@ export const useArchivedProjects = () => {
         console.error('Erro ao excluir recomendações:', recommendationsError);
       }
 
-      // Excluir relatórios relacionados
       const { error: reportsError } = await supabase
         .from('reports')
         .delete()
@@ -223,7 +230,6 @@ export const useArchivedProjects = () => {
         console.error('Erro ao excluir relatórios:', reportsError);
       }
 
-      // Finalmente, excluir o projeto
       const { error } = await supabase
         .from('projects')
         .delete()
@@ -232,7 +238,6 @@ export const useArchivedProjects = () => {
 
       if (error) throw error;
 
-      // Remove o projeto da lista local
       setArchivedProjects(prev => prev.filter(project => project.id !== projectId));
 
       toast({

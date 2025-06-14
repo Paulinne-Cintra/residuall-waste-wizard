@@ -11,17 +11,17 @@ export const useSupportMessages = (ticketId: string | null) => {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  // Dados fictícios para demonstração
-  const getMockMessages = (ticketId: string): SupportMessage[] => {
+  // Dados fictícios apenas para a conta de demonstração
+  const getDemoMessages = (ticketId: string): SupportMessage[] => {
     const mockMessagesMap: { [key: string]: SupportMessage[] } = {
       'ticket-1': [
         {
           id: 'msg-1',
           ticket_id: 'ticket-1',
-          user_id: user?.id || 'mock-user',
+          user_id: user?.id || 'demo-user',
           sender_name: 'Ana Silva',
           sender_email: 'ana.silva@residuall.com',
-          message: 'Estou enfrentando dificuldades para registrar corretamente o desperdício de concreto na obra do Edifício Residencial Sustentável. O sistema não está calculando adequadamente a economia gerada pela redução do desperdício.',
+          message: 'Estou enfrentando dificuldades para registrar corretamente o desperdício de concreto na obra.',
           is_from_user: true,
           created_at: '2024-01-15T09:30:00Z'
         }
@@ -30,10 +30,10 @@ export const useSupportMessages = (ticketId: string | null) => {
         {
           id: 'msg-2',
           ticket_id: 'ticket-2',
-          user_id: user?.id || 'mock-user',
+          user_id: user?.id || 'demo-user',
           sender_name: 'Carlos Mendes',
           sender_email: 'carlos.mendes@residuall.com',
-          message: 'Gostaria de solicitar uma funcionalidade para integração do sistema Residuall com softwares de modelagem BIM como Revit e ArchiCAD.',
+          message: 'Gostaria de solicitar uma funcionalidade para integração com BIM.',
           is_from_user: true,
           created_at: '2024-01-10T14:20:00Z'
         },
@@ -43,7 +43,7 @@ export const useSupportMessages = (ticketId: string | null) => {
           user_id: null,
           sender_name: 'Suporte Técnico Residuall',
           sender_email: 'suporte@residuall.com',
-          message: 'Olá Carlos! Obrigado pelo feedback. Já temos essa funcionalidade em nosso roadmap de desenvolvimento para o próximo trimestre. A integração com Revit será priorizada, seguida pelo ArchiCAD.',
+          message: 'Já temos essa funcionalidade em nosso roadmap para o próximo trimestre.',
           is_from_user: false,
           created_at: '2024-01-12T11:45:00Z'
         }
@@ -52,32 +52,22 @@ export const useSupportMessages = (ticketId: string | null) => {
         {
           id: 'msg-4',
           ticket_id: 'ticket-3',
-          user_id: user?.id || 'mock-user',
+          user_id: user?.id || 'demo-user',
           sender_name: 'Maria Santos',
           sender_email: 'maria.santos@residuall.com',
-          message: 'Tentei gerar um relatório personalizado de desperdício por etapa da obra, mas o sistema apresenta erro interno.',
+          message: 'Tentei gerar um relatório personalizado mas apresenta erro.',
           is_from_user: true,
           created_at: '2024-01-08T16:15:00Z'
-        },
-        {
-          id: 'msg-5',
-          ticket_id: 'ticket-3',
-          user_id: user?.id || 'mock-user',
-          sender_name: 'Maria Santos',
-          sender_email: 'maria.santos@residuall.com',
-          message: 'Complementando: o erro ocorre especificamente com projetos que têm mais de 500 registros de desperdício.',
-          is_from_user: true,
-          created_at: '2024-01-09T08:15:00Z'
         }
       ],
       'ticket-5': [
         {
           id: 'msg-6',
           ticket_id: 'ticket-5',
-          user_id: user?.id || 'mock-user',
+          user_id: user?.id || 'demo-user',
           sender_name: 'Fernanda Costa',
           sender_email: 'fernanda.costa@residuall.com',
-          message: 'Durante as visitas às obras, frequentemente não temos internet estável. Seria possível implementar uma funcionalidade offline?',
+          message: 'Seria possível implementar uma funcionalidade offline?',
           is_from_user: true,
           created_at: '2023-12-28T13:45:00Z'
         },
@@ -87,7 +77,7 @@ export const useSupportMessages = (ticketId: string | null) => {
           user_id: null,
           sender_name: 'Suporte Técnico Residuall',
           sender_email: 'suporte@residuall.com',
-          message: 'Fernanda, implementamos a funcionalidade offline básica na versão 2.1. Agora você pode visualizar dados dos últimos 30 dias e inserir novos registros que serão sincronizados automaticamente.',
+          message: 'Implementamos a funcionalidade offline básica na versão 2.1.',
           is_from_user: false,
           created_at: '2024-01-03T09:20:00Z'
         }
@@ -100,9 +90,16 @@ export const useSupportMessages = (ticketId: string | null) => {
   const fetchMessages = async () => {
     if (!ticketId) return;
 
-    // Se for um ticket fictício, usar dados fictícios
+    // Verificar se é a conta de demonstração e ticket fictício
+    if (user?.email === 'teste@exemplo.com' && ticketId.startsWith('ticket-')) {
+      setMessages(getDemoMessages(ticketId));
+      setLoading(false);
+      return;
+    }
+
+    // Para tickets fictícios de usuários normais, não mostrar mensagens
     if (ticketId.startsWith('ticket-')) {
-      setMessages(getMockMessages(ticketId));
+      setMessages([]);
       setLoading(false);
       return;
     }
@@ -119,11 +116,7 @@ export const useSupportMessages = (ticketId: string | null) => {
       setMessages(data || []);
     } catch (error) {
       console.error('Erro ao buscar mensagens:', error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível carregar as mensagens.",
-        variant: "destructive",
-      });
+      setMessages([]);
     } finally {
       setLoading(false);
     }
@@ -132,25 +125,28 @@ export const useSupportMessages = (ticketId: string | null) => {
   const sendMessage = async (message: string, ticketId: string) => {
     if (!user) return false;
 
-    // Se for um ticket fictício, simular sucesso
+    // Se for um ticket fictício, simular sucesso apenas para conta demo
     if (ticketId.startsWith('ticket-')) {
-      const newMessage: SupportMessage = {
-        id: `msg-${Date.now()}`,
-        ticket_id: ticketId,
-        user_id: user.id,
-        sender_name: user.user_metadata?.full_name || user.email || '',
-        sender_email: user.email || '',
-        message,
-        is_from_user: true,
-        created_at: new Date().toISOString()
-      };
-      
-      setMessages(prev => [...prev, newMessage]);
-      toast({
-        title: "Sucesso",
-        description: "Mensagem enviada! (Demonstração)",
-      });
-      return true;
+      if (user.email === 'teste@exemplo.com') {
+        const newMessage: SupportMessage = {
+          id: `msg-${Date.now()}`,
+          ticket_id: ticketId,
+          user_id: user.id,
+          sender_name: user.user_metadata?.full_name || user.email || '',
+          sender_email: user.email || '',
+          message,
+          is_from_user: true,
+          created_at: new Date().toISOString()
+        };
+        
+        setMessages(prev => [...prev, newMessage]);
+        toast({
+          title: "Sucesso",
+          description: "Mensagem enviada! (Demonstração)",
+        });
+        return true;
+      }
+      return false;
     }
 
     try {
