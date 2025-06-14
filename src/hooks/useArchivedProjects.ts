@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -97,7 +98,7 @@ export const useArchivedProjects = () => {
 
       if (error) throw error;
 
-      // Para usuários normais, mostrar apenas projetos reais (iniciar vazio)
+      // Para usuários normais, mostrar apenas projetos reais
       setArchivedProjects(data || []);
     } catch (err: any) {
       console.error('Erro ao buscar projetos arquivados:', err);
@@ -175,7 +176,7 @@ export const useArchivedProjects = () => {
     }
 
     try {
-      // ... keep existing code (real deletion logic)
+      // Excluir todas as dependências primeiro
       const { data: projectMaterials } = await supabase
         .from('project_materials')
         .select('id')
@@ -184,51 +185,31 @@ export const useArchivedProjects = () => {
       if (projectMaterials && projectMaterials.length > 0) {
         const materialIds = projectMaterials.map(material => material.id);
         
-        const { error: wasteError } = await supabase
+        await supabase
           .from('waste_entries')
           .delete()
           .in('project_material_id', materialIds);
-
-        if (wasteError) {
-          console.error('Erro ao excluir entradas de desperdício:', wasteError);
-        }
       }
 
-      const { error: materialsError } = await supabase
+      await supabase
         .from('project_materials')
         .delete()
         .eq('project_id', projectId);
 
-      if (materialsError) {
-        console.error('Erro ao excluir materiais do projeto:', materialsError);
-      }
-
-      const { error: stageWasteError } = await supabase
+      await supabase
         .from('project_stage_waste')
         .delete()
         .eq('project_id', projectId);
 
-      if (stageWasteError) {
-        console.error('Erro ao excluir desperdício por etapa:', stageWasteError);
-      }
-
-      const { error: recommendationsError } = await supabase
+      await supabase
         .from('recomendacoes')
         .delete()
         .eq('projeto_id', projectId);
 
-      if (recommendationsError) {
-        console.error('Erro ao excluir recomendações:', recommendationsError);
-      }
-
-      const { error: reportsError } = await supabase
+      await supabase
         .from('reports')
         .delete()
         .eq('project_id', projectId);
-
-      if (reportsError) {
-        console.error('Erro ao excluir relatórios:', reportsError);
-      }
 
       const { error } = await supabase
         .from('projects')

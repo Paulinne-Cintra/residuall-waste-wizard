@@ -18,11 +18,9 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-residuall-green"></div>
-        </div>
-      </main>
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-residuall-green"></div>
+      </div>
     );
   }
 

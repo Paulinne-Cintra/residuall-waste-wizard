@@ -46,6 +46,22 @@ const DashboardHeader = ({ pageTitle }: DashboardHeaderProps) => {
   const userDisplayName = profile?.full_name || user?.email || 'Usuário';
   const userEmail = profile?.email || user?.email || '';
 
+  // Notificações específicas do usuário (exemplo básico)
+  const userNotifications = [
+    {
+      id: 1,
+      title: "Bem-vindo ao sistema",
+      description: "Configure seu primeiro projeto",
+      time: "Agora"
+    },
+    {
+      id: 2,
+      title: "Lembrete",
+      description: "Complete seu perfil",
+      time: "1 hora atrás"
+    }
+  ];
+
   return (
     <header className="bg-white border-b border-gray-200 py-3 px-4 md:px-6 flex items-center justify-between">
       {/* Page Title */}
@@ -80,9 +96,11 @@ const DashboardHeader = ({ pageTitle }: DashboardHeaderProps) => {
             onClick={toggleNotifications}
           >
             <Bell size={20} />
-            <span className="absolute top-0 right-0 bg-residuall-brown text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-              3
-            </span>
+            {userNotifications.length > 0 && (
+              <span className="absolute top-0 right-0 bg-residuall-brown text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                {userNotifications.length}
+              </span>
+            )}
           </button>
           
           {/* Dropdown de Notificações */}
@@ -92,18 +110,19 @@ const DashboardHeader = ({ pageTitle }: DashboardHeaderProps) => {
                 <h3 className="text-sm font-semibold">Notificações</h3>
               </div>
               <div className="max-h-80 overflow-y-auto">
-                <div className="p-3 border-b border-gray-100 hover:bg-gray-50">
-                  <p className="text-sm font-medium">Novo relatório disponível</p>
-                  <p className="text-xs text-residuall-gray mt-1">Há 5 minutos</p>
-                </div>
-                <div className="p-3 border-b border-gray-100 hover:bg-gray-50">
-                  <p className="text-sm font-medium">Projeto atualizado: Torre B</p>
-                  <p className="text-xs text-residuall-gray mt-1">Há 2 horas</p>
-                </div>
-                <div className="p-3 hover:bg-gray-50">
-                  <p className="text-sm font-medium">5 novas recomendações</p>
-                  <p className="text-xs text-residuall-gray mt-1">Há 1 dia</p>
-                </div>
+                {userNotifications.length === 0 ? (
+                  <div className="p-4 text-center text-gray-500">
+                    <p className="text-sm">Nenhuma notificação</p>
+                  </div>
+                ) : (
+                  userNotifications.map((notification) => (
+                    <div key={notification.id} className="p-3 border-b border-gray-100 hover:bg-gray-50">
+                      <p className="text-sm font-medium">{notification.title}</p>
+                      <p className="text-xs text-gray-600 mt-1">{notification.description}</p>
+                      <p className="text-xs text-residuall-gray mt-1">{notification.time}</p>
+                    </div>
+                  ))
+                )}
               </div>
               <div className="p-2 text-center border-t border-gray-200">
                 <Link to="#" className="text-xs text-residuall-green-secondary hover:underline">
@@ -114,7 +133,7 @@ const DashboardHeader = ({ pageTitle }: DashboardHeaderProps) => {
           )}
         </div>
 
-        {/* Menu do Perfil - CORRIGIDO */}
+        {/* Menu do Perfil */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="flex items-center space-x-2 p-2 rounded-lg text-residuall-gray-username hover:bg-gray-100 transition-colors focus:outline-none">

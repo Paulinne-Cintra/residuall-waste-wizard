@@ -56,7 +56,7 @@ export const useReports = (): UseReportsResult => {
     try {
       console.log('Buscando relatórios para o usuário:', user.id);
       
-      // Buscar projetos com materiais e desperdícios
+      // Buscar apenas projetos do usuário autenticado
       const { data: projectsData, error: projectsError } = await supabase
         .from('projects')
         .select(`
@@ -137,6 +137,14 @@ export const useReports = (): UseReportsResult => {
     } catch (err: any) {
       console.error('Erro na busca de relatórios:', err);
       setError(err.message);
+      // Definir dados vazios em caso de erro
+      setReports([]);
+      setMetrics({
+        reuseRate: 0,
+        totalSavings: 0,
+        avgSavingsPerProject: 0,
+        totalProjects: 0
+      });
     } finally {
       setLoading(false);
     }

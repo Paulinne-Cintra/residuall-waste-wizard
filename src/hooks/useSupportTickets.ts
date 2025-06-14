@@ -121,7 +121,7 @@ export const useSupportTickets = () => {
 
       if (error) throw error;
       
-      // Para usuários normais, mostrar apenas tickets reais (iniciar vazio)
+      // Para usuários normais, mostrar apenas tickets reais
       setTickets((data as SupportTicket[]) || []);
     } catch (error) {
       console.error('Erro ao buscar chamados:', error);
