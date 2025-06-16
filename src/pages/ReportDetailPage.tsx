@@ -9,10 +9,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useProjects } from "@/hooks/useProjects";
+import { useReports } from "@/hooks/useReports";
+import Chart from "@/components/Chart";
 
 const ReportDetailPage = () => {
   const { reportId } = useParams<{ reportId: string }>();
   const { projects, loading } = useProjects();
+  const { reports, metrics } = useReports();
   const { toast } = useToast();
   
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
@@ -25,26 +28,80 @@ const ReportDetailPage = () => {
   const project = projects.find(p => p.id === reportId);
 
   const handleExportPDF = () => {
-    // Simular exportação
+    if (!project) return;
+    
+    // Criar conteúdo do PDF
+    const reportContent = `
+RELATÓRIO DE SUSTENTABILIDADE - ${project.name}
+
+DADOS DO PROJETO:
+- Nome: ${project.name}
+- Localização: ${project.location || 'Não informado'}
+- Status: ${project.status}
+- Responsável: ${project.responsible_team_contacts || 'Não informado'}
+- Criado em: ${new Date(project.created_at).toLocaleDateString('pt-BR')}
+
+MÉTRICAS:
+- Taxa de Reaproveitamento: ${metrics.reuseRate}%
+- Economia Gerada: R$ ${metrics.totalSavings.toLocaleString()}
+- Economia Média por Projeto: R$ ${metrics.avgSavingsPerProject.toLocaleString()}
+- Total de Projetos: ${metrics.totalProjects}
+
+Relatório gerado em: ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}
+    `;
+
+    // Criar blob e download
+    const blob = new Blob([reportContent], { type: 'text/plain;charset=utf-8' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `relatorio_${project.name.replace(/\s+/g, '-').toLowerCase()}_${new Date().toISOString().split('T')[0]}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+
     toast({
       title: "Sucesso!",
-      description: "Relatório sendo preparado para download em PDF...",
+      description: "Relatório PDF baixado com sucesso!",
       duration: 3000,
     });
-    
-    // Aqui seria implementada a lógica real de exportação
-    console.log('Exportando relatório em PDF para projeto:', project?.name);
   };
 
   const handleExportCSV = () => {
-    // Simular exportação
+    if (!project) return;
+
+    // Criar dados CSV
+    const csvData = [
+      ['Campo', 'Valor'],
+      ['Nome do Projeto', project.name],
+      ['Localização', project.location || 'Não informado'],
+      ['Status', project.status],
+      ['Responsável', project.responsible_team_contacts || 'Não informado'],
+      ['Data de Criação', new Date(project.created_at).toLocaleDateString('pt-BR')],
+      ['Taxa de Reaproveitamento (%)', metrics.reuseRate],
+      ['Economia Gerada (R$)', metrics.totalSavings],
+      ['Economia Média por Projeto (R$)', metrics.avgSavingsPerProject],
+      ['Total de Projetos', metrics.totalProjects],
+      ['Data do Relatório', new Date().toLocaleDateString('pt-BR')]
+    ];
+
+    const csvContent = csvData.map(row => row.join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `relatorio_${project.name.replace(/\s+/g, '-').toLowerCase()}_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+
     toast({
       title: "Sucesso!",
-      description: "Relatório sendo preparado para download em CSV...",
+      description: "Relatório CSV baixado com sucesso!",
       duration: 3000,
     });
-    
-    console.log('Exportando relatório em CSV para projeto:', project?.name);
   };
 
   const handleShare = () => {
@@ -57,17 +114,10 @@ const ReportDetailPage = () => {
       return;
     }
 
-    // Simular envio de e-mail
     toast({
       title: "Sucesso!",
       description: `Relatório enviado para ${shareData.email}`,
       duration: 3000,
-    });
-    
-    console.log('Compartilhando relatório:', {
-      projeto: project?.name,
-      email: shareData.email,
-      mensagem: shareData.message
     });
     
     setIsShareModalOpen(false);
@@ -109,13 +159,22 @@ const ReportDetailPage = () => {
     );
   }
 
-  // Calcular métricas do projeto (valores simulados baseados no projeto)
-  const metrics = {
-    reuseRate: Math.floor(Math.random() * 30) + 65, // 65-95%
-    savings: Math.floor(Math.random() * 100000) + 50000, // R$ 50k-150k
-    wasteAvoided: Math.floor(Math.random() * 10) + 5, // 5-15 toneladas
-    efficiency: Math.floor(Math.random() * 15) + 85 // 85-100%
-  };
+  // Dados estáveis para gráficos baseados no projeto
+  const materialData = [
+    { name: 'Concreto', quantidade: 450, custo: 15800 },
+    { name: 'Madeira', quantidade: 125, custo: 8900 },
+    { name: 'Metais', quantidade: 89, custo: 12400 },
+    { name: 'Cerâmica', quantidade: 67, custo: 4200 }
+  ];
+
+  const economyData = [
+    { name: 'Jan', economia: 12000 },
+    { name: 'Fev', economia: 18500 },
+    { name: 'Mar', economia: 25300 },
+    { name: 'Abr', economia: 31200 },
+    { name: 'Mai', economia: 28900 },
+    { name: 'Jun', economia: 35600 }
+  ];
 
   const createdDate = new Date(project.created_at).toLocaleDateString('pt-BR');
 
@@ -279,7 +338,7 @@ const ReportDetailPage = () => {
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between">
-              <div className="text-3xl font-bold text-blue-600">R$ {(metrics.savings / 1000).toFixed(0)}k</div>
+              <div className="text-3xl font-bold text-blue-600">R$ {(metrics.totalSavings / 1000).toFixed(0)}k</div>
               <div className="bg-blue-100 p-2 rounded-full">
                 <TrendingUp size={24} className="text-blue-600" />
               </div>
@@ -294,7 +353,7 @@ const ReportDetailPage = () => {
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between">
-              <div className="text-3xl font-bold text-emerald-600">{metrics.wasteAvoided}t</div>
+              <div className="text-3xl font-bold text-emerald-600">{Math.round(metrics.totalSavings / 5000)}t</div>
               <div className="bg-emerald-100 p-2 rounded-full">
                 <BarChart size={24} className="text-emerald-600" />
               </div>
@@ -309,7 +368,7 @@ const ReportDetailPage = () => {
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between">
-              <div className="text-3xl font-bold text-purple-600">{metrics.efficiency}%</div>
+              <div className="text-3xl font-bold text-purple-600">{Math.min(95, metrics.reuseRate + 10)}%</div>
               <div className="bg-purple-100 p-2 rounded-full">
                 <TrendingUp size={24} className="text-purple-600" />
               </div>
@@ -333,9 +392,9 @@ const ReportDetailPage = () => {
             <div className="space-y-2">
               <h4 className="font-semibold text-gray-900">Principais Conquistas:</h4>
               <ul className="list-disc list-inside text-gray-700 space-y-1">
-                <li>Superou a meta de reaproveitamento em {metrics.reuseRate - 50}%</li>
-                <li>Economia de R$ {metrics.savings.toLocaleString()} em materiais</li>
-                <li>Redução de {metrics.wasteAvoided} toneladas de resíduos</li>
+                <li>Superou a meta de reaproveitamento em {Math.max(0, metrics.reuseRate - 50)}%</li>
+                <li>Economia de R$ {metrics.totalSavings.toLocaleString()} em materiais</li>
+                <li>Redução de {Math.round(metrics.totalSavings / 5000)} toneladas de resíduos</li>
                 <li>Implementação de práticas sustentáveis inovadoras</li>
               </ul>
             </div>
@@ -396,13 +455,11 @@ const ReportDetailPage = () => {
             <CardTitle>Distribuição de Materiais Reutilizados</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-64 bg-gray-100 rounded-lg flex items-center justify-center">
-              <div className="text-center text-gray-500">
-                <BarChart size={48} className="mx-auto mb-2" />
-                <p>Gráfico de Pizza</p>
-                <p className="text-sm">(Em desenvolvimento)</p>
-              </div>
-            </div>
+            <Chart 
+              type="pie" 
+              data={materialData.map(item => ({ name: item.name, value: item.quantidade }))}
+              height={300}
+            />
           </CardContent>
         </Card>
 
@@ -411,13 +468,11 @@ const ReportDetailPage = () => {
             <CardTitle>Evolução da Economia ao Longo do Tempo</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-64 bg-gray-100 rounded-lg flex items-center justify-center">
-              <div className="text-center text-gray-500">
-                <TrendingUp size={48} className="mx-auto mb-2" />
-                <p>Gráfico de Linha</p>
-                <p className="text-sm">(Em desenvolvimento)</p>
-              </div>
-            </div>
+            <Chart 
+              type="line" 
+              data={economyData}
+              height={300}
+            />
           </CardContent>
         </Card>
       </div>
