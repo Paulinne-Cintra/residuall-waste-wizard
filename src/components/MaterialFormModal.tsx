@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,6 +46,8 @@ const units = [
   'Peça'
 ];
 
+const STORAGE_KEY = 'materialForm_data';
+
 const MaterialFormModal: React.FC<MaterialFormModalProps> = ({ isOpen, onClose, onSubmit, projectId }) => {
   const { suppliers, createSupplier } = useSuppliers();
   const { projects } = useProjects();
@@ -70,6 +73,31 @@ const MaterialFormModal: React.FC<MaterialFormModalProps> = ({ isOpen, onClose, 
   });
   
   const [loading, setLoading] = useState(false);
+
+  // Carregar dados salvos quando o modal abrir
+  useEffect(() => {
+    if (isOpen) {
+      const savedData = localStorage.getItem(STORAGE_KEY);
+      if (savedData) {
+        try {
+          const parsed = JSON.parse(savedData);
+          setFormData({
+            ...parsed,
+            project_id: projectId || parsed.project_id
+          });
+        } catch (error) {
+          console.error('Erro ao carregar dados salvos:', error);
+        }
+      }
+    }
+  }, [isOpen, projectId]);
+
+  // Salvar dados quando houver mudanças
+  useEffect(() => {
+    if (isOpen) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
+    }
+  }, [formData, isOpen]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -111,6 +139,9 @@ const MaterialFormModal: React.FC<MaterialFormModalProps> = ({ isOpen, onClose, 
       });
       
       if (success) {
+        // Limpar dados salvos após sucesso
+        localStorage.removeItem(STORAGE_KEY);
+        
         // Reset form
         setFormData({
           material_type_name: '',
@@ -121,7 +152,7 @@ const MaterialFormModal: React.FC<MaterialFormModalProps> = ({ isOpen, onClose, 
           minimum_quantity: '',
           category: '',
           supplier_id: '',
-          project_id: '',
+          project_id: projectId || '',
           dimensions_specs: ''
         });
         onClose();
@@ -131,10 +162,31 @@ const MaterialFormModal: React.FC<MaterialFormModalProps> = ({ isOpen, onClose, 
     }
   };
 
+  const handleClose = () => {
+    // Manter dados salvos quando fechar o modal
+    onClose();
+  };
+
+  const clearForm = () => {
+    localStorage.removeItem(STORAGE_KEY);
+    setFormData({
+      material_type_name: '',
+      estimated_quantity: '',
+      unit_of_measurement: '',
+      cost_per_unit: '',
+      stock_quantity: '',
+      minimum_quantity: '',
+      category: '',
+      supplier_id: '',
+      project_id: projectId || '',
+      dimensions_specs: ''
+    });
+  };
+
   const activeProjects = projects.filter(p => !p.arquivado);
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Cadastrar Novo Material</DialogTitle>
@@ -227,7 +279,6 @@ const MaterialFormModal: React.FC<MaterialFormModalProps> = ({ isOpen, onClose, 
             </div>
           </div>
 
-          {/* Quantidade Mínima */}
           <div className="space-y-2">
             <Label htmlFor="minimum">Quantidade Mínima em Estoque</Label>
             <Input
@@ -340,7 +391,10 @@ const MaterialFormModal: React.FC<MaterialFormModalProps> = ({ isOpen, onClose, 
 
           {/* Botões */}
           <div className="flex gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={onClose} className="flex-1">
+            <Button type="button" variant="outline" onClick={clearForm} className="flex-1">
+              Limpar
+            </Button>
+            <Button type="button" variant="outline" onClick={handleClose} className="flex-1">
               Cancelar
             </Button>
             <Button type="submit" disabled={loading} className="flex-1 bg-residuall-green hover:bg-residuall-green/90">
