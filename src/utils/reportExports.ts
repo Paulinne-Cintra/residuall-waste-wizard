@@ -35,10 +35,10 @@ export const exportToPDF = (reportData: any[], title: string) => {
         yPosition = 20;
       }
       
-      pdf.text(report.project_name.substring(0, 25), 20, yPosition);
-      pdf.text(report.material_type_name.substring(0, 25), 60, yPosition);
-      pdf.text(report.total_wasted_quantity.toFixed(1), 110, yPosition);
-      pdf.text(report.total_economy_generated.toFixed(2), 150, yPosition);
+      pdf.text(report.project_name?.substring(0, 25) || 'N/A', 20, yPosition);
+      pdf.text(report.material_type_name?.substring(0, 25) || 'N/A', 60, yPosition);
+      pdf.text((report.total_wasted_quantity || 0).toFixed(1), 110, yPosition);
+      pdf.text((report.total_economy_generated || 0).toFixed(2), 150, yPosition);
       
       yPosition += 8;
     });
@@ -72,14 +72,14 @@ export const exportToCSV = (reportData: any[], filename: string) => {
   const csvContent = [
     headers.join(','),
     ...reportData.map(report => [
-      `"${report.project_name}"`,
-      `"${report.material_type_name}"`,
-      report.total_wasted_quantity.toFixed(2),
-      report.total_economy_generated.toFixed(2),
+      `"${report.project_name || 'N/A'}"`,
+      `"${report.material_type_name || 'N/A'}"`,
+      (report.total_wasted_quantity || 0).toFixed(2),
+      (report.total_economy_generated || 0).toFixed(2),
       `"${new Date(report.created_at).toLocaleDateString('pt-BR')}"`,
-      `"${report.project_status}"`,
-      `"${report.project_location}"`,
-      `"${report.responsible}"`
+      `"${report.project_status || 'N/A'}"`,
+      `"${report.project_location || 'N/A'}"`,
+      `"${report.responsible || 'N/A'}"`
     ].join(','))
   ].join('\n');
 
