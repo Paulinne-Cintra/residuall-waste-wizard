@@ -7,6 +7,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Badge } from "@/components/ui/badge";
 import { useProjects } from '@/hooks/useProjects';
 import { useProjectStageWaste } from '@/hooks/useProjectStageWaste';
+import { exportReportToPDF, exportReportToCSV } from '@/utils/reportExport';
 import { Link } from 'react-router-dom';
 
 const ReportsPage = () => {
@@ -63,6 +64,14 @@ const ReportsPage = () => {
   const getProjectStatus = (projectId: string) => {
     const project = projects.find(p => p.id === projectId);
     return project?.status || 'indefinido';
+  };
+
+  const handleDownloadPDF = (report: any) => {
+    exportReportToPDF(report);
+  };
+
+  const handleDownloadCSV = (report: any) => {
+    exportReportToCSV(report);
   };
 
   return (
@@ -169,9 +178,21 @@ const ReportsPage = () => {
                               Ver
                             </Button>
                           </Link>
-                          <Button variant="outline" size="sm">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleDownloadPDF(report)}
+                          >
                             <Download className="h-4 w-4 mr-1" />
                             PDF
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleDownloadCSV(report)}
+                          >
+                            <Download className="h-4 w-4 mr-1" />
+                            CSV
                           </Button>
                         </div>
                       </td>
