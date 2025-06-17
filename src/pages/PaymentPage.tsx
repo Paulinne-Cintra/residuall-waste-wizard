@@ -535,10 +535,6 @@ const PaymentPage = () => {
                           Escaneie o QR Code com seu app bancário
                         </p>
                         <div className="bg-white p-3 rounded border">
-                          <p className="text-xs text-gray-500 mb-1">Chave PIX:</p>
-                          <p className="font-mono text-sm">73988372697</p>
-                        </div>
-                        <div className="bg-white p-3 rounded border">
                           <p className="text-xs text-gray-500 mb-1">Valor:</p>
                           <p className="font-semibold text-lg text-residuall-green">
                             R$ {currentPlanData.price}
