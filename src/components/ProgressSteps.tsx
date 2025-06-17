@@ -7,7 +7,7 @@ export const ProgressSteps = ({
   currentStep,
   steps
 }: ProgressStepsProps) => {
-  return <div className="flex items-center justify-center mb-8 bg-[sidebar-item-active-bg] bg-sidebar-ring rounded-none">
+  return <div className="flex items-center justify-center mb-8 bg-[sidebar-item-active-bg] rounded-none bg-transparent">
       <div className="flex items-center space-x-4">
         {steps.map((step, index) => {
         const stepNumber = index + 1;
