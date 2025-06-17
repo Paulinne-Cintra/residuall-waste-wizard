@@ -242,35 +242,22 @@ export const useTeamMembers = () => {
         console.log(`Removendo membro com conta: ${memberId}`);
         
         // ETAPA 1: Remover associações de projetos primeiro
-        const { data: projectAssignments, error: checkError } = await supabase
+        console.log(`Removendo associações de projeto para membro: ${memberId}`);
+        
+        const { error: deleteProjectsError } = await supabase
           .from('team_member_projects')
-          .select('id')
+          .delete()
           .eq('user_id', memberId);
 
-        if (checkError) {
-          console.error('Erro ao verificar associações de projeto:', checkError);
-          // Continuar mesmo se não conseguir verificar
-        }
-
-        // Tentar remover associações de projeto se existirem
-        if (projectAssignments && projectAssignments.length > 0) {
-          console.log(`Encontradas ${projectAssignments.length} associações de projeto para remover`);
-          
-          const { error: deleteProjectsError } = await supabase
-            .from('team_member_projects')
-            .delete()
-            .eq('user_id', memberId);
-
-          if (deleteProjectsError) {
-            console.error('Erro ao remover associações de projeto:', deleteProjectsError);
-            // Continuar mesmo se houver erro - pode não ter permissão mas ainda conseguir deletar o perfil
-          } else {
-            console.log(`Removidas ${projectAssignments.length} associações de projeto`);
-          }
+        if (deleteProjectsError) {
+          console.error('Erro ao remover associações de projeto:', deleteProjectsError);
+          // Continuar mesmo se houver erro - pode não ter associações
+        } else {
+          console.log(`Associações de projeto removidas para membro: ${memberId}`);
         }
 
         // ETAPA 2: Remover o perfil do membro da tabela profiles - AÇÃO PRINCIPAL
-        console.log(`Tentando remover perfil do membro: ${memberId}`);
+        console.log(`Removendo perfil do membro: ${memberId}`);
         
         const { error: profileError } = await supabase
           .from('profiles')
@@ -279,7 +266,15 @@ export const useTeamMembers = () => {
 
         if (profileError) {
           console.error('Erro ao remover perfil do membro:', profileError);
-          throw new Error(`Não foi possível remover o perfil do membro: ${profileError.message}`);
+          
+          // Tratamento específico de erros de permissão
+          if (profileError.code === '42501') {
+            throw new Error('Você não tem permissão para remover este membro. Apenas quem convidou pode removê-lo.');
+          } else if (profileError.code === 'PGRST301') {
+            throw new Error('Permissão negada para remover este perfil.');
+          } else {
+            throw new Error(`Erro ao remover perfil: ${profileError.message}`);
+          }
         }
 
         console.log(`Perfil do membro ${memberId} removido com sucesso`);
@@ -296,7 +291,7 @@ export const useTeamMembers = () => {
             .eq('invited_by_user_id', user.id);
 
           if (invitationCleanupError) {
-            console.error('Erro ao limpar convites pendentes:', invitationCleanupError);
+            console.error('Aviso: Não foi possível limpar convites pendentes:', invitationCleanupError);
             // Não interromper - é apenas limpeza
           }
         }
@@ -318,7 +313,12 @@ export const useTeamMembers = () => {
 
         if (invitationError) {
           console.error('Erro ao remover convite:', invitationError);
-          throw new Error(`Não foi possível remover o convite: ${invitationError.message}`);
+          
+          if (invitationError.code === '42501') {
+            throw new Error('Você não tem permissão para remover este convite.');
+          } else {
+            throw new Error(`Erro ao remover convite: ${invitationError.message}`);
+          }
         }
 
         console.log(`Convite ${memberId} removido com sucesso`);
@@ -339,7 +339,9 @@ export const useTeamMembers = () => {
       // Mensagens de erro específicas e detalhadas
       let errorMessage = "Ocorreu um erro inesperado.";
       
-      if (error.code === 'PGRST301') {
+      if (error.message && error.message.includes('permissão')) {
+        errorMessage = error.message;
+      } else if (error.code === 'PGRST301') {
         errorMessage = "Você não tem permissão para remover este membro.";
       } else if (error.code === 'PGRST116') {
         errorMessage = "Membro não encontrado ou já foi removido.";
