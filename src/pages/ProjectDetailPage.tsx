@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,8 +29,8 @@ const ProjectDetailPage = () => {
   const { projectId } = useParams<{ projectId: string }>();
   const { projects, loading } = useOptimizedProjects();
   const { materials, loading: materialsLoading } = useProjectMaterials();
-  const { teamMembers, loading: teamLoading } = useProjectTeamMembers();
-  const { timeline, loading: timelineLoading } = useProjectTimeline();
+  const { teamMembers, loading: teamLoading } = useProjectTeamMembers(projectId);
+  const { timeline, loading: timelineLoading } = useProjectTimeline(projectId);
   const [project, setProject] = useState<any>(null);
   const [isEditing, setIsEditing] = useState<boolean>(false);
 
@@ -60,18 +59,14 @@ const ProjectDetailPage = () => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
   };
 
-  // Filter materials and team members for current project
+  // Filter materials for current project
   const projectMaterials = materials.filter(material => 
     material.project_id === projectId
   );
 
-  const projectTeamMembers = teamMembers.filter(member => 
-    member.project_id === projectId
-  );
-
-  const projectTimeline = timeline.filter(item => 
-    item.project_id === projectId
-  );
+  // teamMembers and timeline are already filtered by projectId in their hooks
+  const projectTeamMembers = teamMembers;
+  const projectTimeline = timeline;
 
   if (loading) {
     return (
