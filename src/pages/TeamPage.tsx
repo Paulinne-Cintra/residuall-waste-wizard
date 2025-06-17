@@ -1,397 +1,337 @@
 
 import React, { useState } from 'react';
-import { Plus, Users, Mail, Phone, MapPin, MoreHorizontal, Search, Filter, ChevronDown } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Skeleton } from '@/components/ui/skeleton';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Plus, UserMinus, Mail, Phone, Building, User, Trash2 } from 'lucide-react';
 import { useTeamMembers } from '@/hooks/useTeamMembers';
-import { useToast } from "@/hooks/use-toast";
-import TeamMemberProfileModal from '@/components/TeamMemberProfileModal';
-import EditTeamMemberModal from '@/components/EditTeamMemberModal';
-import AddTeamMemberModal from '@/components/AddTeamMemberModal';
-import { useTranslation } from 'react-i18next';
 
 const TeamPage = () => {
-  const { t } = useTranslation();
-  const { members, loading, addTeamMember, deleteMember, refetch } = useTeamMembers();
-  const { toast } = useToast();
-  
-  const [searchQuery, setSearchQuery] = useState('');
-  const [roleFilter, setRoleFilter] = useState('Todos');
-  const [statusFilter, setStatusFilter] = useState('Todos');
-  
-  const [selectedMember, setSelectedMember] = useState<any>(null);
-  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const { members, loading, addTeamMember, deleteMember } = useTeamMembers();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-
-  const getInitials = (name: string) => {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase();
-  };
-
-  const getRoleColor = (role: string) => {
-    switch (role) {
-      case 'Engenheiro Civil':
-        return 'bg-blue-100 text-blue-800';
-      case 'Arquiteta':
-        return 'bg-purple-100 text-purple-800';
-      case 'Técnico em Edificações':
-        return 'bg-green-100 text-green-800';
-      case 'Gerente de Projetos':
-        return 'bg-orange-100 text-orange-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const filteredMembers = members.filter(member => {
-    const matchesSearch = member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         member.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         member.role.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const matchesRole = roleFilter === 'Todos' || member.role === roleFilter;
-    const matchesStatus = statusFilter === 'Todos' || member.status === statusFilter;
-    
-    return matchesSearch && matchesRole && matchesStatus;
+  const [addingMember, setAddingMember] = useState(false);
+  const [newMember, setNewMember] = useState({
+    name: '',
+    email: '',
+    role: ''
   });
 
-  const roles = [...new Set(members.map(member => member.role))];
-
-  const handleViewProfile = (member: any) => {
-    setSelectedMember(member);
-    setIsProfileModalOpen(true);
-  };
-
-  const handleEditMember = (member: any) => {
-    setSelectedMember(member);
-    setIsEditModalOpen(true);
-  };
-
-  const handleRemoveMember = async (member: any) => {
-    const memberName = member.name;
-    const confirmMessage = `Tem certeza que deseja remover ${memberName} da equipe?`;
+  const handleAddMember = async (e: React.FormEvent) => {
+    e.preventDefault();
     
-    if (window.confirm(confirmMessage)) {
-      console.log('🗑️ Iniciando remoção do membro:', member);
-      
-      try {
-        const success = await deleteMember(member.id, member.has_account);
-        
-        if (success) {
-          console.log('✅ Membro removido com sucesso');
-          // A lista já é atualizada automaticamente pela função deleteMember
-        } else {
-          console.log('❌ Falha ao remover membro');
-        }
-      } catch (error) {
-        console.error('💥 Erro durante remoção:', error);
-        toast({
-          title: "Erro",
-          description: "Ocorreu um erro inesperado ao remover o membro.",
-          variant: "destructive",
-        });
-      }
+    if (!newMember.name.trim() || !newMember.email.trim() || !newMember.role.trim()) {
+      return;
+    }
+
+    setAddingMember(true);
+    const success = await addTeamMember(newMember);
+    
+    if (success) {
+      setNewMember({ name: '', email: '', role: '' });
+      setIsAddModalOpen(false);
+    }
+    
+    setAddingMember(false);
+  };
+
+  const handleDeleteMember = async (memberId: string, hasAccount: boolean) => {
+    await deleteMember(memberId, hasAccount);
+  };
+
+  const getStatusBadgeVariant = (status: string) => {
+    switch (status) {
+      case 'active':
+        return 'default';
+      case 'inactive':
+        return 'secondary';
+      default:
+        return 'outline';
     }
   };
 
-  const handleSaveMember = async (memberId: string, data: { name: string; role: string; status: string }) => {
-    console.log('💾 Salvando alterações do membro:', memberId, data);
-    
-    try {
-      // Simular salvamento
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      toast({
-        title: "Alterações salvas",
-        description: "As informações do membro foram atualizadas com sucesso.",
-      });
-      
-      await refetch();
-      return true;
-    } catch (error) {
-      console.error('💥 Erro ao salvar alterações:', error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível salvar as alterações.",
-        variant: "destructive",
-      });
-      return false;
-    }
-  };
-
-  const handleAddMember = async (data: { name: string; email: string; role: string }) => {
-    console.log('➕ Adicionando novo membro:', data);
-    
-    try {
-      await addTeamMember(data);
-      // A função addTeamMember já atualiza a lista automaticamente
-      console.log('✅ Membro adicionado com sucesso');
-    } catch (error) {
-      console.error('💥 Erro ao adicionar membro:', error);
-      // O erro já é tratado dentro da função addTeamMember
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'active':
+        return 'Ativo';
+      case 'inactive':
+        return 'Pendente';
+      default:
+        return 'Desconhecido';
     }
   };
 
   if (loading) {
     return (
-      <main className="flex-1 overflow-y-auto p-4 md:p-6">
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-residuall-green"></div>
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <Skeleton className="h-8 w-48 mb-2" />
+            <Skeleton className="h-4 w-96" />
+          </div>
+          <Skeleton className="h-10 w-32" />
         </div>
-      </main>
+        
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3].map((i) => (
+            <Card key={i}>
+              <CardHeader className="flex flex-row items-center space-y-0 pb-2">
+                <Skeleton className="h-12 w-12 rounded-full mr-4" />
+                <div className="flex-1">
+                  <Skeleton className="h-4 w-32 mb-2" />
+                  <Skeleton className="h-3 w-24" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <Skeleton className="h-3 w-full" />
+                  <Skeleton className="h-3 w-3/4" />
+                  <Skeleton className="h-3 w-1/2" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
     );
   }
 
   return (
-    <main className="flex-1 overflow-y-auto p-4 md:p-6">
-      {/* Cabeçalho */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-residuall-gray-tableText">Equipe</h1>
-          <p className="text-residuall-gray">Gerencie os membros da sua equipe e suas funções</p>
+          <h1 className="text-3xl font-bold text-gray-900">Equipe</h1>
+          <p className="text-gray-600 mt-1">
+            Gerencie os membros da sua equipe e suas permissões
+          </p>
         </div>
-        <Button 
-          className="flex items-center gap-2 bg-residuall-green hover:bg-residuall-green/90 mt-4 md:mt-0"
-          onClick={() => setIsAddModalOpen(true)}
-        >
-          <Plus size={18} />
-          Adicionar Membro
-        </Button>
-      </div>
 
-      {/* Estatísticas da equipe */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription className="flex items-center gap-2">
-              <Users size={16} className="text-residuall-green" />
-              Total de Membros
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-residuall-gray-tableText">{members.length}</div>
-            <p className="text-sm text-residuall-gray">membros ativos</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Funções Diferentes</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-residuall-green">{roles.length}</div>
-            <p className="text-sm text-residuall-gray">especialidades</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Projetos Ativos</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-blue-600">0</div>
-            <p className="text-sm text-residuall-gray">em andamento</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Taxa de Atividade</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-green-600">{members.length > 0 ? '100%' : '0%'}</div>
-            <p className="text-sm text-residuall-gray">membros ativos</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Filtros */}
-      {members.length > 0 && (
-        <Card className="mb-6">
-          <CardContent className="flex flex-wrap gap-4 items-center justify-between p-4">
-            <div className="flex flex-wrap gap-2">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="flex items-center gap-2">
-                    <Filter size={16} />
-                    <span>{roleFilter}</span>
-                    <ChevronDown size={16} />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="bg-white">
-                  <DropdownMenuItem onClick={() => setRoleFilter('Todos')}>
-                    Todas as Funções
-                  </DropdownMenuItem>
-                  {roles.map(role => (
-                    <DropdownMenuItem key={role} onClick={() => setRoleFilter(role)}>
-                      {role}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="flex items-center gap-2">
-                    <Filter size={16} />
-                    <span>{statusFilter}</span>
-                    <ChevronDown size={16} />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="bg-white">
-                  <DropdownMenuItem onClick={() => setStatusFilter('Todos')}>
-                    Todos os Status
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setStatusFilter('active')}>
-                    Ativo
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setStatusFilter('inactive')}>
-                    Inativo
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-
-            <div className="relative">
-              <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <Input
-                type="text"
-                placeholder="Buscar membros..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 w-64"
-              />
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Lista de membros da equipe */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg text-residuall-gray-tableText">
-            Membros da Equipe ({filteredMembers.length})
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {filteredMembers.length === 0 ? (
-            <div className="text-center py-12">
-              <Users className="mx-auto h-16 w-16 text-gray-400 mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                {members.length === 0 ? 'Nenhum membro cadastrado' : 'Nenhum membro encontrado'}
-              </h3>
-              <p className="text-gray-500 mb-6">
-                {members.length === 0 
-                  ? 'Comece adicionando membros à sua equipe.' 
-                  : 'Tente ajustar os filtros de busca.'
-                }
-              </p>
-              {members.length === 0 && (
+        <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
+          <DialogTrigger asChild>
+            <Button className="bg-residuall-green hover:bg-residuall-green/90">
+              <Plus className="h-4 w-4 mr-2" />
+              Adicionar Membro
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-md">
+            <form onSubmit={handleAddMember}>
+              <DialogHeader>
+                <DialogTitle>Adicionar Novo Membro</DialogTitle>
+                <DialogDescription>
+                  Convide um novo membro para sua equipe preenchendo as informações abaixo.
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Nome Completo *</Label>
+                  <Input
+                    id="name"
+                    placeholder="Digite o nome completo"
+                    value={newMember.name}
+                    onChange={(e) => setNewMember(prev => ({ ...prev, name: e.target.value }))}
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email *</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="Digite o email"
+                    value={newMember.email}
+                    onChange={(e) => setNewMember(prev => ({ ...prev, email: e.target.value }))}
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="role">Função/Cargo *</Label>
+                  <Input
+                    id="role"
+                    placeholder="Ex: Engenheiro Civil, Arquiteto"
+                    value={newMember.role}
+                    onChange={(e) => setNewMember(prev => ({ ...prev, role: e.target.value }))}
+                    required
+                  />
+                </div>
+              </div>
+              
+              <DialogFooter>
                 <Button 
-                  onClick={() => setIsAddModalOpen(true)}
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setIsAddModalOpen(false)}
+                >
+                  Cancelar
+                </Button>
+                <Button 
+                  type="submit" 
+                  disabled={addingMember}
                   className="bg-residuall-green hover:bg-residuall-green/90"
                 >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Adicionar Primeiro Membro
+                  {addingMember ? 'Enviando...' : 'Enviar Convite'}
                 </Button>
-              )}
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {/* Team Stats */}
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total de Membros</CardTitle>
+            <User className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{members.length}</div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Membros Ativos</CardTitle>
+            <User className="h-4 w-4 text-green-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">
+              {members.filter(m => m.status === 'active').length}
             </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredMembers.map((member) => (
-                <Card key={member.id} className="hover:shadow-md transition-shadow">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center space-x-3">
-                      <Avatar className="h-12 w-12">
-                        <AvatarImage src={member.profile_picture_url || undefined} />
-                        <AvatarFallback className="bg-residuall-green text-white">
-                          {getInitials(member.name)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <CardTitle className="text-base">{member.name}</CardTitle>
-                        <Badge className={`text-xs ${getRoleColor(member.role)}`}>
-                          {member.role}
-                        </Badge>
-                      </div>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm">
-                            <MoreHorizontal size={16} />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="bg-white">
-                          <DropdownMenuItem onClick={() => handleViewProfile(member)}>
-                            Ver Perfil
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleEditMember(member)}>
-                            Editar
-                          </DropdownMenuItem>
-                          <DropdownMenuItem 
-                            onClick={() => handleRemoveMember(member)}
-                            className="text-red-600 focus:text-red-600"
-                          >
-                            Remover
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <div className="space-y-2 text-sm text-gray-600">
-                      <div className="flex items-center gap-2">
-                        <Mail size={14} />
-                        <span className="truncate">{member.email}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Phone size={14} />
-                        <span>{member.phone_number || 'Não informado'}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <MapPin size={14} />
-                        <span>{member.company_name || 'Não informado'}</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                  <CardFooter className="pt-0">
-                    <div className="w-full flex items-center justify-between text-xs text-gray-500">
-                      <span>Desde {new Date(member.created_at).toLocaleDateString('pt-BR')}</span>
-                      <Badge className={member.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
-                        {member.status === 'active' ? 'Ativo' : 
-                         member.status === 'away' ? 'Ausente' : 'Inativo'}
-                      </Badge>
-                    </div>
-                  </CardFooter>
-                </Card>
-              ))}
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Convites Pendentes</CardTitle>
+            <Mail className="h-4 w-4 text-yellow-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-yellow-600">
+              {members.filter(m => m.status === 'inactive').length}
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
 
-      {/* Modais */}
-      <AddTeamMemberModal
-        isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
-        onSave={handleAddMember}
-      />
+      {/* Team Members Grid */}
+      {members.length === 0 ? (
+        <Card className="text-center py-12">
+          <CardContent>
+            <User className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              Nenhum membro encontrado
+            </h3>
+            <p className="text-gray-600 mb-4">
+              Comece adicionando membros à sua equipe para colaborar em projetos.
+            </p>
+            <Button 
+              onClick={() => setIsAddModalOpen(true)}
+              className="bg-residuall-green hover:bg-residuall-green/90"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Adicionar Primeiro Membro
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {members.map((member) => (
+            <Card key={member.id} className="group hover:shadow-lg transition-shadow">
+              <CardHeader className="flex flex-row items-center space-y-0 pb-2">
+                <Avatar className="h-12 w-12 mr-4">
+                  <AvatarImage src={member.profile_picture_url} alt={member.name} />
+                  <AvatarFallback className="bg-residuall-green text-white">
+                    {member.name.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                
+                <div className="flex-1 min-w-0">
+                  <CardTitle className="text-lg truncate">{member.name}</CardTitle>
+                  <CardDescription className="text-sm text-gray-600">
+                    {member.role}
+                  </CardDescription>
+                </div>
 
-      <TeamMemberProfileModal
-        isOpen={isProfileModalOpen}
-        onClose={() => setIsProfileModalOpen(false)}
-        member={selectedMember}
-      />
-
-      <EditTeamMemberModal
-        isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        member={selectedMember}
-        onSave={handleSaveMember}
-      />
-    </main>
+                <div className="flex items-center space-x-2">
+                  <Badge variant={getStatusBadgeVariant(member.status)}>
+                    {getStatusText(member.status)}
+                  </Badge>
+                  
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="opacity-0 group-hover:opacity-100 transition-opacity text-red-600 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Remover membro</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Tem certeza que deseja remover <strong>{member.name}</strong> da equipe?
+                          {member.has_account && (
+                            <span className="block mt-2 text-red-600">
+                              Atenção: Este membro possui uma conta e será removido permanentemente do sistema.
+                            </span>
+                          )}
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => handleDeleteMember(member.id, member.has_account)}
+                          className="bg-red-600 hover:bg-red-700"
+                        >
+                          Remover
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              </CardHeader>
+              
+              <CardContent className="space-y-3">
+                <div className="flex items-center text-sm text-gray-600">
+                  <Mail className="h-4 w-4 mr-2 flex-shrink-0" />
+                  <span className="truncate">{member.email}</span>
+                </div>
+                
+                {member.phone_number && (
+                  <div className="flex items-center text-sm text-gray-600">
+                    <Phone className="h-4 w-4 mr-2 flex-shrink-0" />
+                    <span>{member.phone_number}</span>
+                  </div>
+                )}
+                
+                {member.company_name && (
+                  <div className="flex items-center text-sm text-gray-600">
+                    <Building className="h-4 w-4 mr-2 flex-shrink-0" />
+                    <span className="truncate">{member.company_name}</span>
+                  </div>
+                )}
+                
+                <div className="pt-2 border-t text-xs text-gray-500">
+                  {member.has_account ? 'Membro com conta' : 'Convite pendente'} • 
+                  Adicionado em {new Date(member.created_at).toLocaleDateString('pt-BR')}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
   );
 };
 

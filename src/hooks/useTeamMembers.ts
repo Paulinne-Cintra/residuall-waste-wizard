@@ -57,17 +57,6 @@ export const useTeamMembers = () => {
         company_name: 'Técnica DEF',
         created_at: '2024-01-08T09:15:00Z',
         has_account: false
-      },
-      {
-        id: 'member-4',
-        name: 'João Oliveira',
-        email: 'joao.oliveira@residuall.com',
-        role: 'Gerente de Projetos',
-        status: 'active',
-        phone_number: '(11) 99999-4444',
-        company_name: 'Gestão GHI',
-        created_at: '2024-01-05T16:45:00Z',
-        has_account: true
       }
     ];
   };
@@ -85,7 +74,7 @@ export const useTeamMembers = () => {
 
     try {
       setLoading(true);
-      console.log('🔍 Buscando membros da equipe para usuário:', user.id);
+      console.log('🔍 Fetching team members for user:', user.id);
       
       // Para conta de demonstração
       if (user.email === 'teste@exemplo.com') {
@@ -95,21 +84,17 @@ export const useTeamMembers = () => {
       }
 
       // Buscar perfis de membros reais
-      console.log('📋 Buscando perfis existentes...');
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('*')
         .neq('id', user.id);
 
       if (profilesError) {
-        console.error('❌ Erro ao buscar perfis:', profilesError);
+        console.error('❌ Error fetching profiles:', profilesError);
         throw profilesError;
       }
 
-      console.log('✅ Perfis encontrados:', profiles);
-
       // Buscar convites pendentes
-      console.log('📮 Buscando convites pendentes...');
       const { data: invitations, error: invitationsError } = await supabase
         .from('team_invitations')
         .select('*')
@@ -117,11 +102,9 @@ export const useTeamMembers = () => {
         .eq('status', 'pending');
 
       if (invitationsError) {
-        console.error('❌ Erro ao buscar convites:', invitationsError);
+        console.error('❌ Error fetching invitations:', invitationsError);
         throw invitationsError;
       }
-
-      console.log('✅ Convites encontrados:', invitations);
 
       const profileMembers: TeamMember[] = (profiles || []).map(profile => ({
         id: profile.id,
@@ -147,10 +130,10 @@ export const useTeamMembers = () => {
       }));
 
       const allMembers = [...profileMembers, ...invitationMembers];
-      console.log('👥 Total de membros carregados:', allMembers.length);
+      console.log('✅ Team members loaded:', allMembers.length);
       setMembers(allMembers);
     } catch (error: any) {
-      console.error('💥 Erro ao buscar membros:', error);
+      console.error('💥 Error fetching team members:', error);
       toast({
         title: "Erro",
         description: "Não foi possível carregar os membros da equipe.",
@@ -175,7 +158,7 @@ export const useTeamMembers = () => {
         description: "Usuário não autenticado.",
         variant: "destructive",
       });
-      return;
+      return false;
     }
 
     // Validação dos campos obrigatórios
@@ -185,7 +168,7 @@ export const useTeamMembers = () => {
         description: "Por favor, preencha todos os campos obrigatórios.",
         variant: "destructive",
       });
-      return;
+      return false;
     }
 
     // Validação básica de email
@@ -196,11 +179,11 @@ export const useTeamMembers = () => {
         description: "Por favor, insira um email válido.",
         variant: "destructive",
       });
-      return;
+      return false;
     }
 
     try {
-      console.log('➕ Adicionando membro:', memberData);
+      console.log('➕ Adding team member:', memberData);
 
       // Para conta demo
       if (user.email === 'teste@exemplo.com') {
@@ -219,11 +202,10 @@ export const useTeamMembers = () => {
           title: "Membro adicionado com sucesso!",
           description: `${memberData.name} foi adicionado à equipe.`,
         });
-        return;
+        return true;
       }
 
       // Verificar se já existe convite para este email
-      console.log('🔍 Verificando convites existentes para:', memberData.email);
       const { data: existingInvitation, error: checkError } = await supabase
         .from('team_invitations')
         .select('id')
@@ -233,7 +215,7 @@ export const useTeamMembers = () => {
         .maybeSingle();
 
       if (checkError) {
-        console.error('❌ Erro ao verificar convites existentes:', checkError);
+        console.error('❌ Error checking existing invitations:', checkError);
         throw checkError;
       }
 
@@ -243,7 +225,7 @@ export const useTeamMembers = () => {
           description: `Já existe um convite pendente para ${memberData.email}.`,
           variant: "destructive",
         });
-        return;
+        return false;
       }
 
       // Verificar se já existe perfil com este email
@@ -254,7 +236,7 @@ export const useTeamMembers = () => {
         .maybeSingle();
 
       if (profileCheckError) {
-        console.error('❌ Erro ao verificar perfils existentes:', profileCheckError);
+        console.error('❌ Error checking existing profiles:', profileCheckError);
         throw profileCheckError;
       }
 
@@ -264,11 +246,10 @@ export const useTeamMembers = () => {
           description: `Um usuário com o email ${memberData.email} já existe na equipe.`,
           variant: "destructive",
         });
-        return;
+        return false;
       }
 
       // Criar convite
-      console.log('📨 Criando novo convite...');
       const { data: newInvitation, error: insertError } = await supabase
         .from('team_invitations')
         .insert([
@@ -284,11 +265,9 @@ export const useTeamMembers = () => {
         .single();
 
       if (insertError) {
-        console.error('❌ Erro ao criar convite:', insertError);
+        console.error('❌ Error creating invitation:', insertError);
         throw insertError;
       }
-
-      console.log('✅ Convite criado com sucesso:', newInvitation);
 
       // Atualizar lista de membros imediatamente
       const newMember: TeamMember = {
@@ -308,8 +287,9 @@ export const useTeamMembers = () => {
         description: `Convite enviado para ${memberData.email}.`,
       });
 
+      return true;
     } catch (error: any) {
-      console.error('💥 Erro ao adicionar membro:', error);
+      console.error('💥 Error adding team member:', error);
       
       let errorMessage = "Ocorreu um erro inesperado.";
       if (error.code === '42501') {
@@ -325,6 +305,8 @@ export const useTeamMembers = () => {
         description: errorMessage,
         variant: "destructive",
       });
+
+      return false;
     }
   };
 
@@ -339,7 +321,7 @@ export const useTeamMembers = () => {
     }
 
     try {
-      console.log(`🗑️ Iniciando exclusão do membro: ${memberId}, tem conta: ${hasAccount}`);
+      console.log(`🗑️ Deleting member: ${memberId}, has account: ${hasAccount}`);
       
       // Para conta demo, apenas remover da lista local
       if (user.email === 'teste@exemplo.com') {
@@ -352,28 +334,24 @@ export const useTeamMembers = () => {
       }
 
       if (hasAccount) {
-        // Remover membro com conta - primeiro remover associações de projetos
-        console.log(`🔗 Removendo associações de projeto para membro: ${memberId}`);
-        
+        // Primeiro, remover associações de projetos
         const { error: deleteProjectsError } = await supabase
           .from('team_member_projects')
           .delete()
           .eq('user_id', memberId);
 
         if (deleteProjectsError) {
-          console.error('⚠️ Erro ao remover associações de projeto:', deleteProjectsError);
+          console.error('⚠️ Error removing project associations:', deleteProjectsError);
         }
 
         // Remover o perfil
-        console.log(`🗂️ Removendo perfil do membro: ${memberId}`);
-        
         const { error: profileError } = await supabase
           .from('profiles')
           .delete()
           .eq('id', memberId);
 
         if (profileError) {
-          console.error('❌ Erro ao remover perfil do membro:', profileError);
+          console.error('❌ Error removing profile:', profileError);
           throw new Error(`Erro ao remover perfil: ${profileError.message}`);
         }
 
@@ -387,11 +365,10 @@ export const useTeamMembers = () => {
             .eq('invited_by_user_id', user.id);
 
           if (invitationCleanupError) {
-            console.error('⚠️ Aviso: Não foi possível limpar convites pendentes:', invitationCleanupError);
+            console.error('⚠️ Warning: Could not clean up invitations:', invitationCleanupError);
           }
         }
 
-        console.log(`✅ Membro com conta ${memberId} removido com sucesso`);
         toast({
           title: "Membro removido com sucesso!",
           description: "O membro foi removido da equipe e de todos os projetos associados.",
@@ -399,8 +376,6 @@ export const useTeamMembers = () => {
 
       } else {
         // Remover convite pendente
-        console.log(`📮 Removendo convite pendente: ${memberId}`);
-        
         const { error: invitationError } = await supabase
           .from('team_invitations')
           .delete()
@@ -408,11 +383,10 @@ export const useTeamMembers = () => {
           .eq('invited_by_user_id', user.id);
 
         if (invitationError) {
-          console.error('❌ Erro ao remover convite:', invitationError);
+          console.error('❌ Error removing invitation:', invitationError);
           throw new Error(`Erro ao remover convite: ${invitationError.message}`);
         }
 
-        console.log(`✅ Convite ${memberId} removido com sucesso`);
         toast({
           title: "Convite removido com sucesso!",
           description: "O convite foi removido com sucesso.",
@@ -424,7 +398,7 @@ export const useTeamMembers = () => {
       return true;
       
     } catch (error: any) {
-      console.error('💥 Erro ao remover membro:', error);
+      console.error('💥 Error removing team member:', error);
       
       let errorMessage = "Ocorreu um erro inesperado.";
       

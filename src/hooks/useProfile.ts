@@ -24,7 +24,6 @@ export const useProfile = () => {
   const [updating, setUpdating] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
-  // Carregar perfil do usuário
   const loadProfile = async () => {
     if (!user) {
       setLoading(false);
@@ -32,23 +31,25 @@ export const useProfile = () => {
     }
 
     try {
-      console.log('Carregando perfil do usuário:', user.id);
+      console.log('📋 Loading profile for user:', user.id);
       
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') { // PGRST116 = not found
+      if (error) {
+        console.error('❌ Error loading profile:', error);
         throw error;
       }
 
       if (data) {
         setProfile(data);
-        console.log('Perfil carregado:', data);
+        console.log('✅ Profile loaded successfully:', data);
       } else {
         // Criar perfil padrão se não existir
+        console.log('🔧 Creating default profile...');
         const defaultProfile = {
           id: user.id,
           full_name: user.user_metadata?.full_name || '',
@@ -66,13 +67,16 @@ export const useProfile = () => {
           .select()
           .single();
 
-        if (insertError) throw insertError;
+        if (insertError) {
+          console.error('❌ Error creating default profile:', insertError);
+          throw insertError;
+        }
         
         setProfile(newProfile);
-        console.log('Perfil padrão criado:', newProfile);
+        console.log('✅ Default profile created:', newProfile);
       }
     } catch (err: any) {
-      console.error('Erro ao carregar perfil:', err);
+      console.error('💥 Error in loadProfile:', err);
       toast({
         title: "Erro ao carregar perfil",
         description: "Não foi possível carregar seus dados. Tente novamente.",
@@ -83,13 +87,19 @@ export const useProfile = () => {
     }
   };
 
-  // Atualizar dados do perfil
   const updateProfile = async (updates: Partial<Profile>) => {
-    if (!user || !profile) return false;
+    if (!user || !profile) {
+      toast({
+        title: "Erro",
+        description: "Usuário não autenticado ou perfil não carregado.",
+        variant: "destructive",
+      });
+      return false;
+    }
 
     setUpdating(true);
     try {
-      console.log('Atualizando perfil:', updates);
+      console.log('📝 Updating profile with data:', updates);
       
       const { data, error } = await supabase
         .from('profiles')
@@ -98,9 +108,13 @@ export const useProfile = () => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Error updating profile:', error);
+        throw error;
+      }
 
       setProfile(data);
+      console.log('✅ Profile updated successfully:', data);
       
       toast({
         title: "Perfil atualizado",
@@ -109,10 +123,18 @@ export const useProfile = () => {
 
       return true;
     } catch (err: any) {
-      console.error('Erro ao atualizar perfil:', err);
+      console.error('💥 Error updating profile:', err);
+      
+      let errorMessage = "Não foi possível salvar suas alterações. Tente novamente.";
+      if (err.code === '42501') {
+        errorMessage = "Você não tem permissão para atualizar este perfil.";
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
       toast({
         title: "Erro ao salvar",
-        description: "Não foi possível salvar suas alterações. Tente novamente.",
+        description: errorMessage,
         variant: "destructive",
       });
       return false;
@@ -121,9 +143,15 @@ export const useProfile = () => {
     }
   };
 
-  // Upload de avatar
   const uploadAvatar = async (file: File) => {
-    if (!user) return false;
+    if (!user) {
+      toast({
+        title: "Erro",
+        description: "Usuário não autenticado.",
+        variant: "destructive",
+      });
+      return false;
+    }
 
     // Validar tipo de arquivo
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
@@ -148,31 +176,30 @@ export const useProfile = () => {
 
     setUploadingAvatar(true);
     try {
-      console.log('Fazendo upload do avatar:', file.name);
+      console.log('📤 Uploading avatar:', file.name);
 
-      // Obter extensão do arquivo
       const fileExt = file.name.split('.').pop();
       const fileName = `avatar.${fileExt}`;
       const filePath = `${user.id}/${fileName}`;
 
-      // Upload do arquivo com upsert para substituir arquivo anterior
       const { error: uploadError } = await supabase.storage
         .from('avatars')
         .upload(filePath, file, {
           cacheControl: '3600',
-          upsert: true // Substitui arquivo existente
+          upsert: true
         });
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('❌ Error uploading avatar:', uploadError);
+        throw uploadError;
+      }
 
-      // Obter URL pública
       const { data: { publicUrl } } = supabase.storage
         .from('avatars')
         .getPublicUrl(filePath);
 
-      console.log('URL pública gerada:', publicUrl);
+      console.log('🔗 Public URL generated:', publicUrl);
 
-      // Atualizar perfil com nova URL
       const success = await updateProfile({ avatar_url: publicUrl });
       
       if (success) {
@@ -184,7 +211,7 @@ export const useProfile = () => {
 
       return success;
     } catch (err: any) {
-      console.error('Erro ao fazer upload do avatar:', err);
+      console.error('💥 Error uploading avatar:', err);
       toast({
         title: "Erro no upload",
         description: `Não foi possível fazer upload da foto: ${err.message}`,
@@ -196,16 +223,18 @@ export const useProfile = () => {
     }
   };
 
-  // Alterar senha
   const changePassword = async (newPassword: string) => {
     try {
-      console.log('Alterando senha...');
+      console.log('🔐 Changing password...');
       
       const { error } = await supabase.auth.updateUser({
         password: newPassword
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Error changing password:', error);
+        throw error;
+      }
 
       toast({
         title: "Senha alterada",
@@ -214,7 +243,7 @@ export const useProfile = () => {
 
       return true;
     } catch (err: any) {
-      console.error('Erro ao alterar senha:', err);
+      console.error('💥 Error changing password:', err);
       toast({
         title: "Erro ao alterar senha",
         description: err.message || "Não foi possível alterar sua senha. Tente novamente.",

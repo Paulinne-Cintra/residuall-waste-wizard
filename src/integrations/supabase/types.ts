@@ -936,6 +936,10 @@ export type Database = {
         Args: { target_user_id: string }
         Returns: boolean
       }
+      can_manage_team_member_profile: {
+        Args: { target_user_id: string }
+        Returns: boolean
+      }
       generate_invitation_token: {
         Args: Record<PropertyKey, never>
         Returns: string

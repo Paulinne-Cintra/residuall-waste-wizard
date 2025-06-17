@@ -1,529 +1,406 @@
-import { useState, useEffect } from "react";
-import { Lock, Mail, Phone, User, Camera, Save, X, Calendar, CreditCard, ArrowRight } from "lucide-react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useAuth } from "@/hooks/useAuth";
-import { useProfile } from "@/hooks/useProfile";
-import { usePaymentStatus } from "@/hooks/usePaymentStatus";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { toast } from 'sonner';
+
+import React, { useState, useRef } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Separator } from '@/components/ui/separator';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Camera, Save, Key, User, Mail, Phone, Briefcase, FileText, Lock } from 'lucide-react';
+import { useProfile } from '@/hooks/useProfile';
 
 const ProfilePage = () => {
-  const { user } = useAuth();
-  const location = useLocation();
   const { profile, loading, updating, uploadingAvatar, updateProfile, uploadAvatar, changePassword } = useProfile();
-  const { hasActivePlan, selectedPlan, subscriptionActive, subscriptionExpiresAt, loading: paymentLoading } = usePaymentStatus();
-  const navigate = useNavigate();
-  const [isEditing, setIsEditing] = useState(false);
-  const [editData, setEditData] = useState({
-    full_name: "",
-    phone_number: "",
-    cargo: "",
-    professional_role: "",
-    biografia: ""
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  const [formData, setFormData] = useState({
+    full_name: '',
+    email: '',
+    phone_number: '',
+    professional_role: '',
+    biografia: ''
   });
-
+  
   const [passwordData, setPasswordData] = useState({
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: ""
+    newPassword: '',
+    confirmPassword: ''
   });
+  
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [changingPassword, setChangingPassword] = useState(false);
 
-  // Atualizar dados de edição quando o perfil carrega
-  useEffect(() => {
+  // Atualizar formData quando o profile carregar
+  React.useEffect(() => {
     if (profile) {
-      setEditData({
-        full_name: profile.full_name || "",
-        phone_number: profile.phone_number || "",
-        cargo: profile.cargo || profile.professional_role || "",
-        professional_role: profile.professional_role || profile.cargo || "",
-        biografia: profile.biografia || ""
+      setFormData({
+        full_name: profile.full_name || '',
+        email: profile.email || '',
+        phone_number: profile.phone_number || '',
+        professional_role: profile.professional_role || '',
+        biografia: profile.biografia || ''
       });
     }
   }, [profile]);
 
-  // Mostrar mensagem de sucesso se veio da página de pagamento
-  useEffect(() => {
-    if (location.state?.successMessage) {
-      toast.success(location.state.successMessage);
-      // Limpar o state para não mostrar a mensagem novamente
-      window.history.replaceState({}, document.title);
-    }
-  }, [location.state]);
-
-  const handleEdit = () => {
-    setIsEditing(true);
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
-  const handleCancel = () => {
-    setIsEditing(false);
-    if (profile) {
-      setEditData({
-        full_name: profile.full_name || "",
-        phone_number: profile.phone_number || "",
-        cargo: profile.cargo || profile.professional_role || "",
-        professional_role: profile.professional_role || profile.cargo || "",
-        biografia: profile.biografia || ""
-      });
-    }
-  };
-
-  const handleSave = async () => {
-    const success = await updateProfile(editData);
-    if (success) {
-      setIsEditing(false);
-    }
-  };
-
-  const handlePasswordChange = async () => {
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Validação básica
+    if (!formData.full_name.trim()) {
       return;
     }
 
-    if (passwordData.newPassword.length < 6) {
-      return;
-    }
-
-    const success = await changePassword(passwordData.newPassword);
-    if (success) {
-      setPasswordData({
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: ""
-      });
-    }
+    await updateProfile(formData);
   };
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (file) {
-      // Validar tipo de arquivo
-      if (!file.type.startsWith('image/')) {
-        return;
-      }
-
-      // Validar tamanho (5MB máximo)
-      if (file.size > 5 * 1024 * 1024) {
-        return;
-      }
-
       await uploadAvatar(file);
     }
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('pt-BR', { 
-      year: 'numeric', 
-      month: 'long'
-    });
-  };
-
-  const handleChangePlan = () => {
-    navigate('/planos');
-  };
-
-  const getPlanDisplayName = (planId: string | null) => {
-    if (!planId) return 'Nenhum plano ativo';
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
     
-    switch (planId.toLowerCase()) {
-      case 'basico':
-      case 'plano-básico':
-        return 'Plano Básico';
-      case 'profissional':
-      case 'plano-profissional':
-        return 'Plano Profissional';
-      case 'empresarial':
-      case 'plano-empresarial':
-        return 'Plano Empresarial';
-      default:
-        return planId;
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      return;
     }
+    
+    if (passwordData.newPassword.length < 6) {
+      return;
+    }
+
+    setChangingPassword(true);
+    const success = await changePassword(passwordData.newPassword);
+    
+    if (success) {
+      setPasswordData({ newPassword: '', confirmPassword: '' });
+      setIsPasswordModalOpen(false);
+    }
+    
+    setChangingPassword(false);
   };
 
-  const formatSubscriptionStatus = () => {
-    if (!hasActivePlan) return 'Inativo';
-    if (!subscriptionExpiresAt) return 'Ativo';
-    
-    const expiryDate = new Date(subscriptionExpiresAt);
-    const now = new Date();
-    
-    if (expiryDate < now) return 'Expirado';
-    
-    return `Ativo até ${expiryDate.toLocaleDateString('pt-BR')}`;
-  };
-
-  if (loading || paymentLoading) {
+  if (loading) {
     return (
-      <main className="flex-1 p-6 md:p-8 overflow-y-auto">
-        <div className="max-w-4xl mx-auto flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-residuall-green"></div>
+      <div className="max-w-4xl mx-auto space-y-6">
+        <div>
+          <Skeleton className="h-8 w-48 mb-2" />
+          <Skeleton className="h-4 w-96" />
         </div>
-      </main>
+        
+        <div className="grid gap-6 md:grid-cols-3">
+          <Card className="md:col-span-1">
+            <CardHeader className="text-center">
+              <Skeleton className="h-24 w-24 rounded-full mx-auto mb-4" />
+              <Skeleton className="h-6 w-32 mx-auto mb-2" />
+              <Skeleton className="h-4 w-24 mx-auto" />
+            </CardHeader>
+          </Card>
+          
+          <Card className="md:col-span-2">
+            <CardHeader>
+              <Skeleton className="h-6 w-48 mb-2" />
+              <Skeleton className="h-4 w-64" />
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="space-y-2">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-10 w-full" />
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div className="max-w-4xl mx-auto">
+        <Card className="text-center py-12">
+          <CardContent>
+            <User className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              Perfil não encontrado
+            </h3>
+            <p className="text-gray-600">
+              Não foi possível carregar as informações do seu perfil.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
   return (
-    <ProtectedRoute>
-      <main className="flex-1 p-6 md:p-8 overflow-y-auto">
-        <div className="max-w-4xl mx-auto space-y-6">
-          {/* Personal Information Card */}
-          <Card className="shadow-residuall hover:shadow-residuall-hover transition-all">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-xl text-residuall-gray-tableText">Informações Pessoais</CardTitle>
-              {!isEditing ? (
-                <Button onClick={handleEdit} variant="outline" className="flex items-center gap-2">
-                  <User size={16} />
-                  Editar Perfil
+    <div className="max-w-4xl mx-auto space-y-6">
+      {/* Header */}
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900">Meu Perfil</h1>
+        <p className="text-gray-600 mt-1">
+          Gerencie suas informações pessoais e configurações de conta
+        </p>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-3">
+        {/* Avatar Section */}
+        <Card className="md:col-span-1">
+          <CardHeader className="text-center">
+            <div className="relative mx-auto">
+              <Avatar className="h-24 w-24 mx-auto">
+                <AvatarImage src={profile.avatar_url} alt={profile.full_name || 'Avatar'} />
+                <AvatarFallback className="bg-residuall-green text-white text-2xl">
+                  {profile.full_name?.charAt(0).toUpperCase() || 'U'}
+                </AvatarFallback>
+              </Avatar>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                className="absolute -bottom-2 -right-2 rounded-full h-8 w-8 p-0"
+                onClick={handleAvatarClick}
+                disabled={uploadingAvatar}
+              >
+                <Camera className="h-4 w-4" />
+              </Button>
+              
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/jpg,image/png,image/webp"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+            </div>
+            
+            <CardTitle className="text-xl">{profile.full_name || 'Nome não informado'}</CardTitle>
+            <CardDescription>{profile.professional_role || 'Função não definida'}</CardDescription>
+            
+            {uploadingAvatar && (
+              <p className="text-sm text-blue-600">Enviando foto...</p>
+            )}
+          </CardHeader>
+          
+          <CardContent className="space-y-3">
+            <Separator />
+            
+            <Dialog open={isPasswordModalOpen} onOpenChange={setIsPasswordModalOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="w-full">
+                  <Key className="h-4 w-4 mr-2" />
+                  Alterar Senha
                 </Button>
-              ) : (
-                <div className="flex gap-2">
-                  <Button 
-                    onClick={handleSave} 
-                    disabled={updating}
-                    className="flex items-center gap-2 bg-residuall-brown hover:bg-residuall-brown/90"
-                  >
-                    <Save size={16} />
-                    {updating ? 'Salvando...' : 'Salvar'}
-                  </Button>
-                  <Button onClick={handleCancel} variant="outline" className="flex items-center gap-2">
-                    <X size={16} />
-                    Cancelar
-                  </Button>
-                </div>
-              )}
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Avatar */}
-              <div className="flex justify-center">
-                <div className="relative">
-                  <div className="w-24 h-24 rounded-full bg-residuall-green flex items-center justify-center text-white overflow-hidden">
-                    {profile?.avatar_url ? (
-                      <img 
-                        src={profile.avatar_url} 
-                        alt="Avatar" 
-                        className="w-full h-full object-cover"
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <form onSubmit={handlePasswordChange}>
+                  <DialogHeader>
+                    <DialogTitle>Alterar Senha</DialogTitle>
+                    <DialogDescription>
+                      Digite sua nova senha. Ela deve ter pelo menos 6 caracteres.
+                    </DialogDescription>
+                  </DialogHeader>
+                  
+                  <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="newPassword">Nova Senha</Label>
+                      <Input
+                        id="newPassword"
+                        type="password"
+                        value={passwordData.newPassword}
+                        onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
+                        required
+                        minLength={6}
                       />
-                    ) : (
-                      <User size={40} />
-                    )}
-                  </div>
-                  {isEditing && (
-                    <label className={`absolute bottom-0 right-0 bg-residuall-brown hover:bg-residuall-brown/90 text-white p-2 rounded-full cursor-pointer ${uploadingAvatar ? 'opacity-50' : ''}`}>
-                      <Camera size={16} />
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleFileUpload}
-                        disabled={uploadingAvatar}
-                        className="hidden"
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="confirmPassword">Confirmar Nova Senha</Label>
+                      <Input
+                        id="confirmPassword"
+                        type="password"
+                        value={passwordData.confirmPassword}
+                        onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                        required
+                        minLength={6}
                       />
-                    </label>
-                  )}
-                  {uploadingAvatar && (
-                    <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Form Fields */}
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <label htmlFor="name" className="block text-sm font-medium text-residuall-gray-tableText">
-                    Nome Completo
-                  </label>
-                  <div className="relative">
-                    <Input
-                      id="name"
-                      type="text"
-                      value={isEditing ? editData.full_name : profile?.full_name || ''}
-                      onChange={(e) => isEditing && setEditData(prev => ({ ...prev, full_name: e.target.value }))}
-                      className={`pl-10 input-field ${!isEditing ? 'bg-gray-50' : ''}`}
-                      readOnly={!isEditing}
-                    />
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <User size={18} className="text-residuall-gray" />
+                      {passwordData.newPassword && passwordData.confirmPassword && 
+                       passwordData.newPassword !== passwordData.confirmPassword && (
+                        <p className="text-sm text-red-600">As senhas não coincidem</p>
+                      )}
                     </div>
                   </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label htmlFor="email" className="block text-sm font-medium text-residuall-gray-tableText">
-                    E-mail
-                  </label>
-                  <div className="relative">
-                    <Input
-                      id="email"
-                      type="email"
-                      value={profile?.email || user?.email || ''}
-                      className="pl-10 input-field bg-gray-50"
-                      readOnly
-                    />
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Mail size={18} className="text-residuall-gray" />
-                    </div>
-                  </div>
-                  <p className="text-xs text-gray-500">O email não pode ser alterado</p>
-                </div>
-
-                <div className="space-y-2">
-                  <label htmlFor="phone" className="block text-sm font-medium text-residuall-gray-tableText">
-                    Telefone
-                  </label>
-                  <div className="relative">
-                    <Input
-                      id="phone"
-                      type="tel"
-                      value={isEditing ? editData.phone_number : profile?.phone_number || ''}
-                      onChange={(e) => isEditing && setEditData(prev => ({ ...prev, phone_number: e.target.value }))}
-                      className={`pl-10 input-field ${!isEditing ? 'bg-gray-50' : ''}`}
-                      readOnly={!isEditing}
-                      placeholder="(11) 99999-9999"
-                    />
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Phone size={18} className="text-residuall-gray" />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label htmlFor="professional_role" className="block text-sm font-medium text-residuall-gray-tableText">
-                    Função Profissional
-                  </label>
-                  {isEditing ? (
-                    <Select 
-                      value={editData.professional_role} 
-                      onValueChange={(value) => setEditData(prev => ({ ...prev, professional_role: value, cargo: value }))}
+                  
+                  <DialogFooter>
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      onClick={() => setIsPasswordModalOpen(false)}
                     >
-                      <SelectTrigger className="input-field">
-                        <SelectValue placeholder="Selecione sua função profissional" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="arquiteto">Arquiteto(a)</SelectItem>
-                        <SelectItem value="engenheiro">Engenheiro(a)</SelectItem>
-                        <SelectItem value="tecnico">Técnico(a)</SelectItem>
-                        <SelectItem value="estudante">Estudante</SelectItem>
-                        <SelectItem value="gerente">Gerente de Projeto</SelectItem>
-                        <SelectItem value="consultor">Consultor(a)</SelectItem>
-                        <SelectItem value="outros">Outros</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <Input
-                      id="professional_role"
-                      type="text"
-                      value={profile?.professional_role || profile?.cargo || ''}
-                      readOnly
-                      className="bg-gray-50 input-field"
-                    />
-                  )}
-                </div>
+                      Cancelar
+                    </Button>
+                    <Button 
+                      type="submit" 
+                      disabled={changingPassword || passwordData.newPassword !== passwordData.confirmPassword}
+                      className="bg-residuall-green hover:bg-residuall-green/90"
+                    >
+                      {changingPassword ? 'Alterando...' : 'Alterar Senha'}
+                    </Button>
+                  </DialogFooter>
+                </form>
+              </DialogContent>
+            </Dialog>
+          </CardContent>
+        </Card>
 
+        {/* Profile Form */}
+        <Card className="md:col-span-2">
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <User className="h-5 w-5 mr-2" />
+              Informações Pessoais
+            </CardTitle>
+            <CardDescription>
+              Atualize suas informações pessoais e profissionais
+            </CardDescription>
+          </CardHeader>
+          
+          <CardContent>
+            <form onSubmit={handleSaveProfile} className="space-y-6">
+              <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <label htmlFor="biografia" className="block text-sm font-medium text-residuall-gray-tableText">
-                    Biografia
-                  </label>
-                  <Textarea
-                    id="biografia"
-                    value={isEditing ? editData.biografia : profile?.biografia || ''}
-                    onChange={(e) => isEditing && setEditData(prev => ({ ...prev, biografia: e.target.value }))}
-                    className={`input-field resize-none ${!isEditing ? 'bg-gray-50' : ''}`}
-                    readOnly={!isEditing}
-                    placeholder="Fale um pouco sobre você e sua experiência profissional..."
-                    maxLength={300}
-                    rows={3}
+                  <Label htmlFor="full_name" className="flex items-center">
+                    <User className="h-4 w-4 mr-2" />
+                    Nome Completo *
+                  </Label>
+                  <Input
+                    id="full_name"
+                    value={formData.full_name}
+                    onChange={(e) => handleInputChange('full_name', e.target.value)}
+                    placeholder="Digite seu nome completo"
+                    required
                   />
-                  {isEditing && (
-                    <p className="text-xs text-gray-500">
-                      {editData.biografia.length}/300 caracteres
-                    </p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-residuall-gray-tableText">
-                    Membro desde
-                  </label>
-                  <div className="relative">
-                    <Input
-                      type="text"
-                      value={profile?.created_at ? `${formatDate(profile.created_at)}` : 'Data não disponível'}
-                      readOnly
-                      className="pl-10 bg-gray-100 input-field"
-                    />
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Calendar size={18} className="text-residuall-gray" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Subscription Plan Card */}
-          <Card className="shadow-residuall hover:shadow-residuall-hover transition-all">
-            <CardHeader>
-              <CardTitle className="text-xl text-residuall-gray-tableText flex items-center gap-2">
-                <CreditCard size={20} />
-                Plano de Assinatura
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-residuall-gray-tableText">
-                    Plano Atual
-                  </label>
-                  <div className="p-3 bg-gray-50 rounded-lg border">
-                    <p className="font-medium text-residuall-green">
-                      {getPlanDisplayName(selectedPlan)}
-                    </p>
-                  </div>
                 </div>
                 
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-residuall-gray-tableText">
-                    Status da Assinatura
-                  </label>
-                  <div className="p-3 bg-gray-50 rounded-lg border">
-                    <p className={`font-medium ${hasActivePlan ? 'text-green-600' : 'text-red-600'}`}>
-                      {formatSubscriptionStatus()}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {hasActivePlan && (
-                <div className="pt-4 border-t">
-                  <Button
-                    onClick={handleChangePlan}
-                    className="bg-residuall-brown hover:bg-residuall-brown/90 text-white flex items-center gap-2"
-                  >
-                    <CreditCard size={16} />
-                    Mudar de plano
-                    <ArrowRight size={16} />
-                  </Button>
-                  <p className="text-sm text-gray-500 mt-2">
-                    Escolha um novo plano que melhor atenda às suas necessidades
-                  </p>
-                </div>
-              )}
-
-              {!hasActivePlan && (
-                <div className="pt-4 border-t">
-                  <Button
-                    onClick={handleChangePlan}
-                    className="bg-residuall-green hover:bg-residuall-green/90 text-white flex items-center gap-2"
-                  >
-                    <CreditCard size={16} />
-                    Escolher plano
-                    <ArrowRight size={16} />
-                  </Button>
-                  <p className="text-sm text-gray-500 mt-2">
-                    Assine um plano para acessar todos os recursos da plataforma
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Security Card */}
-          <Card className="shadow-residuall hover:shadow-residuall-hover transition-all">
-            <CardHeader>
-              <CardTitle className="text-xl text-residuall-gray-tableText">Segurança da Conta</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <label htmlFor="current-password" className="block text-sm font-medium text-residuall-gray-tableText">
-                  Senha Atual
-                </label>
-                <div className="relative">
+                  <Label htmlFor="email" className="flex items-center">
+                    <Mail className="h-4 w-4 mr-2" />
+                    Email
+                  </Label>
                   <Input
-                    id="current-password"
-                    type="password"
-                    value={passwordData.currentPassword}
-                    onChange={(e) => setPasswordData(prev => ({ ...prev, currentPassword: e.target.value }))}
-                    className="pl-10 input-field"
-                    placeholder="Digite sua senha atual"
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => handleInputChange('email', e.target.value)}
+                    placeholder="seu.email@exemplo.com"
                   />
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Lock size={18} className="text-residuall-gray" />
-                  </div>
                 </div>
               </div>
-
-              <div className="space-y-2">
-                <label htmlFor="new-password" className="block text-sm font-medium text-residuall-gray-tableText">
-                  Nova Senha
-                </label>
-                <div className="relative">
+              
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="phone_number" className="flex items-center">
+                    <Phone className="h-4 w-4 mr-2" />
+                    Telefone
+                  </Label>
                   <Input
-                    id="new-password"
-                    type="password"
-                    value={passwordData.newPassword}
-                    onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
-                    className="pl-10 input-field"
-                    placeholder="Digite a nova senha (min. 6 caracteres)"
+                    id="phone_number"
+                    value={formData.phone_number}
+                    onChange={(e) => handleInputChange('phone_number', e.target.value)}
+                    placeholder="(11) 99999-9999"
                   />
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Lock size={18} className="text-residuall-gray" />
-                  </div>
                 </div>
-              </div>
-
-              <div className="space-y-2">
-                <label htmlFor="confirm-password" className="block text-sm font-medium text-residuall-gray-tableText">
-                  Confirmar Nova Senha
-                </label>
-                <div className="relative">
+                
+                <div className="space-y-2">
+                  <Label htmlFor="professional_role" className="flex items-center">
+                    <Briefcase className="h-4 w-4 mr-2" />
+                    Função Profissional
+                  </Label>
                   <Input
-                    id="confirm-password"
-                    type="password"
-                    value={passwordData.confirmPassword}
-                    onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                    className="pl-10 input-field"
-                    placeholder="Confirme a nova senha"
+                    id="professional_role"
+                    value={formData.professional_role}
+                    onChange={(e) => handleInputChange('professional_role', e.target.value)}
+                    placeholder="Ex: Engenheiro Civil, Arquiteto"
                   />
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Lock size={18} className="text-residuall-gray" />
-                  </div>
                 </div>
               </div>
-
-              {passwordData.newPassword !== passwordData.confirmPassword && passwordData.confirmPassword && (
-                <p className="text-sm text-red-500">As senhas não coincidem</p>
-              )}
-
-              {passwordData.newPassword && passwordData.newPassword.length < 6 && (
-                <p className="text-sm text-red-500">A senha deve ter pelo menos 6 caracteres</p>
-              )}
-
-              <div className="pt-4">
-                <Button
-                  onClick={handlePasswordChange}
-                  className="bg-residuall-brown hover:bg-residuall-brown/90 text-white"
-                  disabled={
-                    !passwordData.currentPassword || 
-                    !passwordData.newPassword || 
-                    !passwordData.confirmPassword ||
-                    passwordData.newPassword !== passwordData.confirmPassword ||
-                    passwordData.newPassword.length < 6
-                  }
+              
+              <div className="space-y-2">
+                <Label htmlFor="biografia" className="flex items-center">
+                  <FileText className="h-4 w-4 mr-2" />
+                  Biografia
+                </Label>
+                <Textarea
+                  id="biografia"
+                  value={formData.biografia}
+                  onChange={(e) => handleInputChange('biografia', e.target.value)}
+                  placeholder="Conte um pouco sobre você e sua experiência profissional"
+                  rows={4}
+                />
+              </div>
+              
+              <div className="flex justify-end pt-4">
+                <Button 
+                  type="submit" 
+                  disabled={updating}
+                  className="bg-residuall-green hover:bg-residuall-green/90"
                 >
-                  Alterar Senha
+                  <Save className="h-4 w-4 mr-2" />
+                  {updating ? 'Salvando...' : 'Salvar Alterações'}
                 </Button>
               </div>
-            </CardContent>
-          </Card>
-        </div>
-      </main>
-    </ProtectedRoute>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Security Info */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <Lock className="h-5 w-5 mr-2" />
+            Informações de Segurança
+          </CardTitle>
+          <CardDescription>
+            Suas informações estão protegidas e seguras
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+              <h4 className="font-medium text-green-900 mb-1">Dados Criptografados</h4>
+              <p className="text-sm text-green-700">
+                Todas as suas informações são armazenadas de forma segura e criptografada.
+              </p>
+            </div>
+            
+            <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <h4 className="font-medium text-blue-900 mb-1">Privacidade Garantida</h4>
+              <p className="text-sm text-blue-700">
+                Seus dados não são compartilhados com terceiros sem sua autorização.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
