@@ -1,5 +1,5 @@
 
-import jsPDF from 'jspdf';
+import { jsPDF } from 'jspdf';
 
 export const exportToPDF = (reportData: any[], title: string) => {
   const pdf = new jsPDF();
