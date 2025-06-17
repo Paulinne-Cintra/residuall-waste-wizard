@@ -249,7 +249,7 @@ export const useTeamMembers = () => {
 
         if (checkError) {
           console.error('Erro ao verificar associações de projeto:', checkError);
-          // Não interromper o processo - continuar mesmo se não conseguir verificar
+          // Continuar mesmo se não conseguir verificar
         }
 
         // Tentar remover associações de projeto se existirem
@@ -269,7 +269,7 @@ export const useTeamMembers = () => {
           }
         }
 
-        // ETAPA 2: Remover o perfil do membro da tabela profiles
+        // ETAPA 2: Remover o perfil do membro da tabela profiles - AÇÃO PRINCIPAL
         console.log(`Tentando remover perfil do membro: ${memberId}`);
         
         const { error: profileError } = await supabase
@@ -279,12 +279,12 @@ export const useTeamMembers = () => {
 
         if (profileError) {
           console.error('Erro ao remover perfil do membro:', profileError);
-          throw profileError;
+          throw new Error(`Não foi possível remover o perfil do membro: ${profileError.message}`);
         }
 
         console.log(`Perfil do membro ${memberId} removido com sucesso`);
         
-        // ETAPA 3: Remover possíveis convites pendentes relacionados ao email do membro
+        // ETAPA 3: Limpar possíveis convites pendentes relacionados ao email do membro
         const memberEmail = members.find(m => m.id === memberId)?.email;
         if (memberEmail) {
           console.log(`Removendo possíveis convites pendentes para email: ${memberEmail}`);
@@ -318,7 +318,7 @@ export const useTeamMembers = () => {
 
         if (invitationError) {
           console.error('Erro ao remover convite:', invitationError);
-          throw invitationError;
+          throw new Error(`Não foi possível remover o convite: ${invitationError.message}`);
         }
 
         console.log(`Convite ${memberId} removido com sucesso`);
@@ -336,7 +336,7 @@ export const useTeamMembers = () => {
     } catch (error: any) {
       console.error('Erro ao remover membro:', error);
       
-      // Mensagens de erro mais específicas e detalhadas
+      // Mensagens de erro específicas e detalhadas
       let errorMessage = "Ocorreu um erro inesperado.";
       
       if (error.code === 'PGRST301') {
@@ -346,9 +346,7 @@ export const useTeamMembers = () => {
       } else if (error.code === '42501') {
         errorMessage = "Permissão negada. Você só pode remover membros que você convidou.";
       } else if (error.code === '23503') {
-        errorMessage = "Não é possível remover o membro devido a dependências no sistema. Remova primeiro suas associações.";
-      } else if (error.code === 'PGRST204') {
-        errorMessage = "Operação não permitida. Verifique suas permissões.";
+        errorMessage = "Não é possível remover o membro devido a dependências no sistema.";
       } else if (error.message) {
         errorMessage = error.message;
       }
