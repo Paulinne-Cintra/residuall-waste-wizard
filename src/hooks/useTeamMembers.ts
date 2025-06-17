@@ -92,23 +92,36 @@ export const useTeamMembers = () => {
 
     try {
       setLoading(true);
+      console.log('🔍 Buscando membros da equipe para usuário:', user.id);
       
       // Buscar perfis de membros reais (se existirem)
+      console.log('📋 Buscando perfis existentes...');
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('*')
         .neq('id', user.id); // Excluir o próprio usuário
 
-      if (profilesError) throw profilesError;
+      if (profilesError) {
+        console.error('❌ Erro ao buscar perfis:', profilesError);
+        throw profilesError;
+      }
+
+      console.log('✅ Perfis encontrados:', profiles);
 
       // Buscar convites pendentes
+      console.log('📮 Buscando convites pendentes...');
       const { data: invitations, error: invitationsError } = await supabase
         .from('team_invitations')
         .select('*')
         .eq('invited_by_user_id', user.id)
         .eq('status', 'pending');
 
-      if (invitationsError) throw invitationsError;
+      if (invitationsError) {
+        console.error('❌ Erro ao buscar convites:', invitationsError);
+        throw invitationsError;
+      }
+
+      console.log('✅ Convites encontrados:', invitations);
 
       const profileMembers: TeamMember[] = (profiles || []).map(profile => ({
         id: profile.id,
@@ -133,9 +146,11 @@ export const useTeamMembers = () => {
         has_account: false
       }));
 
-      setMembers([...profileMembers, ...invitationMembers]);
+      const allMembers = [...profileMembers, ...invitationMembers];
+      console.log('👥 Total de membros carregados:', allMembers.length);
+      setMembers(allMembers);
     } catch (error: any) {
-      console.error('Erro ao buscar membros:', error);
+      console.error('💥 Erro ao buscar membros:', error);
       toast({
         title: "Erro",
         description: "Não foi possível carregar os membros da equipe.",
@@ -164,6 +179,8 @@ export const useTeamMembers = () => {
     }
 
     try {
+      console.log('➕ Adicionando membro:', memberData);
+
       // Verificar se é conta demo
       if (user.email === 'teste@exemplo.com') {
         const newMember: TeamMember = {
@@ -184,8 +201,33 @@ export const useTeamMembers = () => {
         return;
       }
 
+      // Verificar se já existe convite para este email
+      console.log('🔍 Verificando convites existentes para:', memberData.email);
+      const { data: existingInvitation, error: checkError } = await supabase
+        .from('team_invitations')
+        .select('id')
+        .eq('email', memberData.email)
+        .eq('invited_by_user_id', user.id)
+        .eq('status', 'pending')
+        .maybeSingle();
+
+      if (checkError) {
+        console.error('❌ Erro ao verificar convites existentes:', checkError);
+        throw checkError;
+      }
+
+      if (existingInvitation) {
+        toast({
+          title: "Convite já enviado",
+          description: `Já existe um convite pendente para ${memberData.email}.`,
+          variant: "destructive",
+        });
+        return;
+      }
+
       // Criar convite para conta real com token
-      const { error } = await supabase
+      console.log('📨 Criando novo convite...');
+      const { data: newInvitation, error: insertError } = await supabase
         .from('team_invitations')
         .insert([
           {
@@ -195,20 +237,39 @@ export const useTeamMembers = () => {
             status: 'pending',
             token: generateToken()
           }
-        ]);
+        ])
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (insertError) {
+        console.error('❌ Erro ao criar convite:', insertError);
+        throw insertError;
+      }
+
+      console.log('✅ Convite criado com sucesso:', newInvitation);
 
       toast({
         title: "Convite enviado",
         description: `Convite enviado para ${memberData.email}.`,
       });
 
+      // Recarregar lista de membros
       await fetchMembers();
     } catch (error: any) {
+      console.error('💥 Erro ao adicionar membro:', error);
+      
+      let errorMessage = "Ocorreu um erro inesperado.";
+      if (error.code === '42501') {
+        errorMessage = "Você não tem permissão para enviar convites.";
+      } else if (error.code === '23505') {
+        errorMessage = "Este email já foi convidado.";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
       toast({
         title: "Erro ao adicionar membro",
-        description: error.message || "Ocorreu um erro inesperado.",
+        description: errorMessage,
         variant: "destructive",
       });
     }
@@ -225,7 +286,7 @@ export const useTeamMembers = () => {
     }
 
     try {
-      console.log(`Iniciando exclusão do membro: ${memberId}, tem conta: ${hasAccount}`);
+      console.log(`🗑️ Iniciando exclusão do membro: ${memberId}, tem conta: ${hasAccount}`);
       
       // Para conta demo, apenas remover da lista local
       if (user.email === 'teste@exemplo.com') {
@@ -239,10 +300,10 @@ export const useTeamMembers = () => {
 
       // Para contas reais - tratar diferentes cenários
       if (hasAccount) {
-        console.log(`Removendo membro com conta: ${memberId}`);
+        console.log(`👤 Removendo membro com conta: ${memberId}`);
         
         // ETAPA 1: Remover associações de projetos primeiro
-        console.log(`Removendo associações de projeto para membro: ${memberId}`);
+        console.log(`🔗 Removendo associações de projeto para membro: ${memberId}`);
         
         const { error: deleteProjectsError } = await supabase
           .from('team_member_projects')
@@ -250,14 +311,14 @@ export const useTeamMembers = () => {
           .eq('user_id', memberId);
 
         if (deleteProjectsError) {
-          console.error('Erro ao remover associações de projeto:', deleteProjectsError);
+          console.error('⚠️ Erro ao remover associações de projeto:', deleteProjectsError);
           // Continuar mesmo se houver erro - pode não ter associações
         } else {
-          console.log(`Associações de projeto removidas para membro: ${memberId}`);
+          console.log(`✅ Associações de projeto removidas para membro: ${memberId}`);
         }
 
         // ETAPA 2: Remover o perfil do membro da tabela profiles - AÇÃO PRINCIPAL
-        console.log(`Removendo perfil do membro: ${memberId}`);
+        console.log(`🗂️ Removendo perfil do membro: ${memberId}`);
         
         const { error: profileError } = await supabase
           .from('profiles')
@@ -265,24 +326,22 @@ export const useTeamMembers = () => {
           .eq('id', memberId);
 
         if (profileError) {
-          console.error('Erro ao remover perfil do membro:', profileError);
+          console.error('❌ Erro ao remover perfil do membro:', profileError);
           
           // Tratamento específico de erros de permissão
-          if (profileError.code === '42501') {
+          if (profileError.code === '42501' || profileError.code === 'PGRST301') {
             throw new Error('Você não tem permissão para remover este membro. Apenas quem convidou pode removê-lo.');
-          } else if (profileError.code === 'PGRST301') {
-            throw new Error('Permissão negada para remover este perfil.');
           } else {
             throw new Error(`Erro ao remover perfil: ${profileError.message}`);
           }
         }
 
-        console.log(`Perfil do membro ${memberId} removido com sucesso`);
+        console.log(`✅ Perfil do membro ${memberId} removido com sucesso`);
         
         // ETAPA 3: Limpar possíveis convites pendentes relacionados ao email do membro
         const memberEmail = members.find(m => m.id === memberId)?.email;
         if (memberEmail) {
-          console.log(`Removendo possíveis convites pendentes para email: ${memberEmail}`);
+          console.log(`🧹 Removendo possíveis convites pendentes para email: ${memberEmail}`);
           
           const { error: invitationCleanupError } = await supabase
             .from('team_invitations')
@@ -291,7 +350,7 @@ export const useTeamMembers = () => {
             .eq('invited_by_user_id', user.id);
 
           if (invitationCleanupError) {
-            console.error('Aviso: Não foi possível limpar convites pendentes:', invitationCleanupError);
+            console.error('⚠️ Aviso: Não foi possível limpar convites pendentes:', invitationCleanupError);
             // Não interromper - é apenas limpeza
           }
         }
@@ -303,7 +362,7 @@ export const useTeamMembers = () => {
 
       } else {
         // CENÁRIO: Convite pendente - remover da tabela team_invitations
-        console.log(`Removendo convite pendente: ${memberId}`);
+        console.log(`📮 Removendo convite pendente: ${memberId}`);
         
         const { error: invitationError } = await supabase
           .from('team_invitations')
@@ -312,16 +371,16 @@ export const useTeamMembers = () => {
           .eq('invited_by_user_id', user.id);
 
         if (invitationError) {
-          console.error('Erro ao remover convite:', invitationError);
+          console.error('❌ Erro ao remover convite:', invitationError);
           
-          if (invitationError.code === '42501') {
+          if (invitationError.code === '42501' || invitationError.code === 'PGRST301') {
             throw new Error('Você não tem permissão para remover este convite.');
           } else {
             throw new Error(`Erro ao remover convite: ${invitationError.message}`);
           }
         }
 
-        console.log(`Convite ${memberId} removido com sucesso`);
+        console.log(`✅ Convite ${memberId} removido com sucesso`);
         toast({
           title: "Convite removido",
           description: "O convite foi removido com sucesso.",
@@ -329,24 +388,22 @@ export const useTeamMembers = () => {
       }
 
       // ETAPA FINAL: Atualizar a lista de membros
-      console.log('Atualizando lista de membros...');
+      console.log('🔄 Atualizando lista de membros...');
       await fetchMembers();
       return true;
       
     } catch (error: any) {
-      console.error('Erro ao remover membro:', error);
+      console.error('💥 Erro ao remover membro:', error);
       
       // Mensagens de erro específicas e detalhadas
       let errorMessage = "Ocorreu um erro inesperado.";
       
       if (error.message && error.message.includes('permissão')) {
         errorMessage = error.message;
-      } else if (error.code === 'PGRST301') {
+      } else if (error.code === 'PGRST301' || error.code === '42501') {
         errorMessage = "Você não tem permissão para remover este membro.";
       } else if (error.code === 'PGRST116') {
         errorMessage = "Membro não encontrado ou já foi removido.";
-      } else if (error.code === '42501') {
-        errorMessage = "Permissão negada. Você só pode remover membros que você convidou.";
       } else if (error.code === '23503') {
         errorMessage = "Não é possível remover o membro devido a dependências no sistema.";
       } else if (error.message) {
