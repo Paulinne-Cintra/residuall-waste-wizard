@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -92,7 +93,7 @@ const CreateProjectForm = () => {
     setIsLoading(true);
 
     try {
-      // Create project
+      // Create project - Convert string array to JSON string for database storage
       const { data: project, error: projectError } = await supabase
         .from('projects')
         .insert({
@@ -103,7 +104,7 @@ const CreateProjectForm = () => {
           budget: formData.budget ? parseFloat(formData.budget) : null,
           start_date: formData.start_date?.toISOString(),
           planned_end_date: formData.planned_end_date?.toISOString(),
-          responsible_team_contacts: formData.responsible_team_contacts,
+          responsible_team_contacts: JSON.stringify(formData.responsible_team_contacts),
           user_id: user.id,
           status: 'planejamento',
           progress_percentage: 0
@@ -141,7 +142,10 @@ const CreateProjectForm = () => {
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
-      <ProgressSteps currentStep={1} totalSteps={3} />
+      <ProgressSteps 
+        currentStep={1} 
+        steps={['Informações Básicas', 'Materiais', 'Finalização']} 
+      />
       
       <Card>
         <CardHeader>

@@ -29,9 +29,9 @@ import EditProjectForm from '@/components/forms/EditProjectForm';
 const ProjectDetailPage = () => {
   const { projectId } = useParams<{ projectId: string }>();
   const { projects, loading } = useOptimizedProjects();
-  const { materials, loading: materialsLoading } = useProjectMaterials(projectId);
-  const { teamMembers, loading: teamLoading } = useProjectTeamMembers(projectId);
-  const { timeline, loading: timelineLoading } = useProjectTimeline(projectId);
+  const { materials, loading: materialsLoading } = useProjectMaterials();
+  const { teamMembers, loading: teamLoading } = useProjectTeamMembers();
+  const { timeline, loading: timelineLoading } = useProjectTimeline();
   const [project, setProject] = useState<any>(null);
   const [isEditing, setIsEditing] = useState<boolean>(false);
 
@@ -59,6 +59,19 @@ const ProjectDetailPage = () => {
   const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
   };
+
+  // Filter materials and team members for current project
+  const projectMaterials = materials.filter(material => 
+    material.project_id === projectId
+  );
+
+  const projectTeamMembers = teamMembers.filter(member => 
+    member.project_id === projectId
+  );
+
+  const projectTimeline = timeline.filter(item => 
+    item.project_id === projectId
+  );
 
   if (loading) {
     return (
@@ -182,7 +195,7 @@ const ProjectDetailPage = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">{materials.length}</div>
+            <div className="text-2xl font-bold text-gray-900">{projectMaterials.length}</div>
             <p className="text-sm text-gray-500">tipos cadastrados</p>
           </CardContent>
         </Card>
@@ -267,7 +280,7 @@ const ProjectDetailPage = () => {
                 <div className="flex items-center justify-center py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-residuall-green"></div>
                 </div>
-              ) : materials.length === 0 ? (
+              ) : projectMaterials.length === 0 ? (
                 <div className="text-center py-12">
                   <Package className="mx-auto h-16 w-16 text-gray-400 mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum material cadastrado</h3>
@@ -275,7 +288,7 @@ const ProjectDetailPage = () => {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {materials.map((material, index) => (
+                  {projectMaterials.map((material, index) => (
                     <div key={material.id || index} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
                       <div>
                         <h4 className="font-medium text-gray-900">{material.material_type_name}</h4>
@@ -309,7 +322,7 @@ const ProjectDetailPage = () => {
                 <div className="flex items-center justify-center py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-residuall-green"></div>
                 </div>
-              ) : timeline.length === 0 ? (
+              ) : projectTimeline.length === 0 ? (
                 <div className="text-center py-12">
                   <Calendar className="mx-auto h-16 w-16 text-gray-400 mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum dado de cronograma disponível</h3>
@@ -317,7 +330,7 @@ const ProjectDetailPage = () => {
                 </div>
               ) : (
                 <div className="space-y-6">
-                  {timeline.map((phase, index) => (
+                  {projectTimeline.map((phase, index) => (
                     <div key={phase.id || index} className="space-y-2">
                       <div className="flex items-center justify-between">
                         <h4 className="font-medium text-gray-900">{phase.stage_name}</h4>
@@ -349,7 +362,7 @@ const ProjectDetailPage = () => {
                 <div className="flex items-center justify-center py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-residuall-green"></div>
                 </div>
-              ) : teamMembers.length === 0 ? (
+              ) : projectTeamMembers.length === 0 ? (
                 <div className="text-center py-12">
                   <Users className="mx-auto h-16 w-16 text-gray-400 mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum membro de equipe atribuído</h3>
@@ -357,7 +370,7 @@ const ProjectDetailPage = () => {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {teamMembers.map((member, index) => (
+                  {projectTeamMembers.map((member, index) => (
                     <div key={member.id || index} className="flex items-center space-x-4 p-3 border border-gray-200 rounded-lg">
                       <Avatar className="h-10 w-10">
                         <AvatarImage src={member.avatar_url} alt={member.name} />
