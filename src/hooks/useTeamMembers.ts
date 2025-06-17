@@ -225,7 +225,7 @@ export const useTeamMembers = () => {
     }
 
     try {
-      console.log(`Tentando deletar membro: ${memberId}, tem conta: ${hasAccount}`);
+      console.log(`Iniciando exclusão do membro: ${memberId}, tem conta: ${hasAccount}`);
       
       // Para conta demo, apenas remover da lista local
       if (user.email === 'teste@exemplo.com') {
@@ -239,7 +239,9 @@ export const useTeamMembers = () => {
 
       // Para contas reais - tratar diferentes cenários
       if (hasAccount) {
-        // Se o membro tem conta, verificar se há associações em projetos primeiro
+        console.log(`Removendo membro com conta: ${memberId}`);
+        
+        // ETAPA 1: Remover associações de projetos primeiro
         const { data: projectAssignments, error: checkError } = await supabase
           .from('team_member_projects')
           .select('id')
@@ -247,25 +249,29 @@ export const useTeamMembers = () => {
 
         if (checkError) {
           console.error('Erro ao verificar associações de projeto:', checkError);
-          throw checkError;
+          // Não interromper o processo - continuar mesmo se não conseguir verificar
         }
 
-        // Se há associações, removê-las
+        // Tentar remover associações de projeto se existirem
         if (projectAssignments && projectAssignments.length > 0) {
+          console.log(`Encontradas ${projectAssignments.length} associações de projeto para remover`);
+          
           const { error: deleteProjectsError } = await supabase
             .from('team_member_projects')
             .delete()
-            .eq('user_id', memberId)
-            .eq('assigned_by', user.id);
+            .eq('user_id', memberId);
 
           if (deleteProjectsError) {
             console.error('Erro ao remover associações de projeto:', deleteProjectsError);
-            throw deleteProjectsError;
+            // Continuar mesmo se houver erro - pode não ter permissão mas ainda conseguir deletar o perfil
+          } else {
+            console.log(`Removidas ${projectAssignments.length} associações de projeto`);
           }
-          console.log(`Removidas ${projectAssignments.length} associações de projeto`);
         }
 
-        // Agora remover o perfil do membro da tabela profiles
+        // ETAPA 2: Remover o perfil do membro da tabela profiles
+        console.log(`Tentando remover perfil do membro: ${memberId}`);
+        
         const { error: profileError } = await supabase
           .from('profiles')
           .delete()
@@ -277,12 +283,33 @@ export const useTeamMembers = () => {
         }
 
         console.log(`Perfil do membro ${memberId} removido com sucesso`);
+        
+        // ETAPA 3: Remover possíveis convites pendentes relacionados ao email do membro
+        const memberEmail = members.find(m => m.id === memberId)?.email;
+        if (memberEmail) {
+          console.log(`Removendo possíveis convites pendentes para email: ${memberEmail}`);
+          
+          const { error: invitationCleanupError } = await supabase
+            .from('team_invitations')
+            .delete()
+            .eq('email', memberEmail)
+            .eq('invited_by_user_id', user.id);
+
+          if (invitationCleanupError) {
+            console.error('Erro ao limpar convites pendentes:', invitationCleanupError);
+            // Não interromper - é apenas limpeza
+          }
+        }
+
         toast({
           title: "Membro removido",
           description: "O membro foi removido da equipe e de todos os projetos associados.",
         });
+
       } else {
-        // Se é um convite pendente, remover da tabela team_invitations
+        // CENÁRIO: Convite pendente - remover da tabela team_invitations
+        console.log(`Removendo convite pendente: ${memberId}`);
+        
         const { error: invitationError } = await supabase
           .from('team_invitations')
           .delete()
@@ -301,21 +328,27 @@ export const useTeamMembers = () => {
         });
       }
 
-      // Atualizar a lista de membros
+      // ETAPA FINAL: Atualizar a lista de membros
+      console.log('Atualizando lista de membros...');
       await fetchMembers();
       return true;
       
     } catch (error: any) {
       console.error('Erro ao remover membro:', error);
       
-      // Mensagens de erro mais específicas
+      // Mensagens de erro mais específicas e detalhadas
       let errorMessage = "Ocorreu um erro inesperado.";
+      
       if (error.code === 'PGRST301') {
         errorMessage = "Você não tem permissão para remover este membro.";
       } else if (error.code === 'PGRST116') {
         errorMessage = "Membro não encontrado ou já foi removido.";
       } else if (error.code === '42501') {
         errorMessage = "Permissão negada. Você só pode remover membros que você convidou.";
+      } else if (error.code === '23503') {
+        errorMessage = "Não é possível remover o membro devido a dependências no sistema. Remova primeiro suas associações.";
+      } else if (error.code === 'PGRST204') {
+        errorMessage = "Operação não permitida. Verifique suas permissões.";
       } else if (error.message) {
         errorMessage = error.message;
       }
@@ -325,6 +358,7 @@ export const useTeamMembers = () => {
         description: errorMessage,
         variant: "destructive",
       });
+      
       return false;
     }
   };
