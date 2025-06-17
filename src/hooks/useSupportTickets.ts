@@ -94,8 +94,17 @@ export const useSupportTickets = () => {
     ];
   };
 
+  // Estado local para gerenciar tickets demo
+  const [demoTickets, setDemoTickets] = useState<SupportTicket[]>([]);
+
   useEffect(() => {
     fetchTickets();
+  }, [user]);
+
+  useEffect(() => {
+    if (user?.email === 'teste@exemplo.com') {
+      setDemoTickets(getDemoTickets());
+    }
   }, [user]);
 
   const fetchTickets = async () => {
@@ -107,7 +116,7 @@ export const useSupportTickets = () => {
 
     // Verificar se é a conta de demonstração
     if (user.email === 'teste@exemplo.com') {
-      setTickets(getDemoTickets());
+      setTickets(demoTickets.length > 0 ? demoTickets : getDemoTickets());
       setLoading(false);
       return;
     }
@@ -120,68 +129,65 @@ export const useSupportTickets = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      
-      // Para usuários normais, mostrar apenas tickets reais
-      setTickets((data as SupportTicket[]) || []);
-    } catch (error) {
-      console.error('Erro ao buscar chamados:', error);
-      // Para usuários normais, em caso de erro, iniciar vazio
-      setTickets([]);
+
+      setTickets(data || []);
+    } catch (error: any) {
+      console.error('Erro ao buscar tickets:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível carregar os chamados.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  const createTicket = async (ticketData: {
-    full_name: string;
-    email: string;
-    subject: string;
-    message: string;
-  }) => {
+  const deleteTicket = async (ticketId: string): Promise<boolean> => {
     if (!user) {
       toast({
         title: "Erro",
-        description: "Você precisa estar logado para criar um chamado.",
+        description: "Usuário não autenticado.",
         variant: "destructive",
       });
       return false;
     }
 
     try {
-      const { data, error } = await supabase
-        .from('support_tickets')
-        .insert({
-          user_id: user.id,
-          ...ticketData,
-        })
-        .select()
-        .single();
+      // Para conta demo, remover do estado local
+      if (user.email === 'teste@exemplo.com') {
+        const updatedTickets = demoTickets.filter(ticket => ticket.id !== ticketId);
+        setDemoTickets(updatedTickets);
+        setTickets(updatedTickets);
+        return true;
+      }
 
-      if (error) throw error;
-
-      // Criar a primeira mensagem do chamado
-      await supabase
+      // Para contas reais, deletar do banco
+      // Primeiro deletar mensagens relacionadas
+      const { error: messagesError } = await supabase
         .from('support_messages')
-        .insert({
-          ticket_id: data.id,
-          user_id: user.id,
-          sender_name: ticketData.full_name,
-          sender_email: ticketData.email,
-          message: ticketData.message,
-          is_from_user: true,
-        });
+        .delete()
+        .eq('ticket_id', ticketId);
 
-      await fetchTickets();
-      toast({
-        title: "Sucesso",
-        description: "Chamado criado com sucesso!",
-      });
+      if (messagesError) throw messagesError;
+
+      // Depois deletar o ticket
+      const { error: ticketError } = await supabase
+        .from('support_tickets')
+        .delete()
+        .eq('id', ticketId)
+        .eq('user_id', user.id); // Garantir que o usuário só pode deletar seus próprios tickets
+
+      if (ticketError) throw ticketError;
+
+      // Atualizar a lista local
+      setTickets(prev => prev.filter(ticket => ticket.id !== ticketId));
       return true;
-    } catch (error) {
-      console.error('Erro ao criar chamado:', error);
+    } catch (error: any) {
+      console.error('Erro ao deletar ticket:', error);
       toast({
         title: "Erro",
-        description: "Não foi possível criar o chamado.",
+        description: "Não foi possível excluir o chamado.",
         variant: "destructive",
       });
       return false;
@@ -191,7 +197,7 @@ export const useSupportTickets = () => {
   return {
     tickets,
     loading,
-    createTicket,
-    refetch: fetchTickets,
+    deleteTicket,
+    refetch: fetchTickets
   };
 };

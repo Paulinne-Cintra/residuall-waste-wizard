@@ -6,368 +6,127 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useSuppliers } from '@/hooks/useSuppliers';
 import { useProjects } from '@/hooks/useProjects';
-import { Plus } from 'lucide-react';
+import { useFormPersistence } from '@/hooks/useFormPersistence';
+
+interface MaterialFormData {
+  material_type_name: string;
+  project_id: string;
+  estimated_quantity: string;
+  unit_of_measurement: string;
+  cost_per_unit: string;
+  category: string;
+  dimensions_specs: string;
+  stock_quantity: string;
+  minimum_quantity: string;
+}
 
 interface MaterialFormModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: any) => Promise<boolean>;
-  projectId?: string;
 }
 
-const materialTypes = [
-  'Alvenaria',
-  'Argamassa',
-  'Agregado',
-  'Acabamento',
-  'Estrutural',
-  'Hidráulico',
-  'Elétrico',
-  'Madeira',
-  'Metal',
-  'Tintas',
-  'Outros'
-];
-
-const units = [
-  'Unidade',
-  'Metro (m)',
-  'Metro² (m²)',
-  'Metro³ (m³)',
-  'Quilograma (kg)',
-  'Tonelada (t)',
-  'Litro (l)',
-  'Saco',
-  'Lata',
-  'Galão',
-  'Rolo',
-  'Peça'
-];
-
-const STORAGE_KEY = 'materialForm_data';
-
-const MaterialFormModal: React.FC<MaterialFormModalProps> = ({ isOpen, onClose, onSubmit, projectId }) => {
-  const { suppliers, createSupplier } = useSuppliers();
+const MaterialFormModal: React.FC<MaterialFormModalProps> = ({ isOpen, onClose, onSubmit }) => {
   const { projects } = useProjects();
-  
-  const [formData, setFormData] = useState({
-    material_type_name: '',
-    estimated_quantity: '',
-    unit_of_measurement: '',
-    cost_per_unit: '',
-    stock_quantity: '',
-    minimum_quantity: '',
-    category: '',
-    supplier_id: '',
-    project_id: projectId || '',
-    dimensions_specs: ''
-  });
-  
-  const [showNewSupplierForm, setShowNewSupplierForm] = useState(false);
-  const [newSupplier, setNewSupplier] = useState({
-    name: '',
-    contact_email: '',
-    contact_phone: ''
-  });
-  
   const [loading, setLoading] = useState(false);
 
-  // Carregar dados salvos quando o modal abrir
-  useEffect(() => {
-    if (isOpen) {
-      const savedData = localStorage.getItem(STORAGE_KEY);
-      if (savedData) {
-        try {
-          const parsed = JSON.parse(savedData);
-          setFormData({
-            ...parsed,
-            project_id: projectId || parsed.project_id
-          });
-        } catch (error) {
-          console.error('Erro ao carregar dados salvos:', error);
-        }
-      }
+  const { data: formData, setData, clearData, isLoaded } = useFormPersistence<MaterialFormData>({
+    key: 'materialForm_data',
+    defaultValue: {
+      material_type_name: '',
+      project_id: '',
+      estimated_quantity: '',
+      unit_of_measurement: '',
+      cost_per_unit: '',
+      category: '',
+      dimensions_specs: '',
+      stock_quantity: '',
+      minimum_quantity: ''
     }
-  }, [isOpen, projectId]);
-
-  // Salvar dados quando houver mudanças
-  useEffect(() => {
-    if (isOpen) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
-    }
-  }, [formData, isOpen]);
-
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleCreateSupplier = async () => {
-    if (!newSupplier.name.trim()) return;
-    
-    const supplier = await createSupplier({
-      name: newSupplier.name,
-      contact_email: newSupplier.contact_email || null,
-      contact_phone: newSupplier.contact_phone || null,
-      address: null
-    });
-    
-    if (supplier) {
-      setFormData(prev => ({ ...prev, supplier_id: supplier.id }));
-      setNewSupplier({ name: '', contact_email: '', contact_phone: '' });
-      setShowNewSupplierForm(false);
-    }
-  };
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    
+
     try {
-      const success = await onSubmit({
+      const materialData = {
         material_type_name: formData.material_type_name,
-        estimated_quantity: parseFloat(formData.estimated_quantity),
-        unit_of_measurement: formData.unit_of_measurement,
-        cost_per_unit: parseFloat(formData.cost_per_unit),
-        stock_quantity: parseFloat(formData.stock_quantity),
-        minimum_quantity: parseFloat(formData.minimum_quantity),
-        category: formData.category,
-        supplier_id: formData.supplier_id,
         project_id: formData.project_id,
-        dimensions_specs: formData.dimensions_specs || undefined
-      });
+        estimated_quantity: formData.estimated_quantity ? parseFloat(formData.estimated_quantity) : null,
+        unit_of_measurement: formData.unit_of_measurement || null,
+        cost_per_unit: formData.cost_per_unit ? parseFloat(formData.cost_per_unit) : null,
+        category: formData.category || null,
+        dimensions_specs: formData.dimensions_specs || null,
+        stock_quantity: formData.stock_quantity ? parseFloat(formData.stock_quantity) : 0,
+        minimum_quantity: formData.minimum_quantity ? parseFloat(formData.minimum_quantity) : 0
+      };
+
+      const success = await onSubmit(materialData);
       
       if (success) {
-        // Limpar dados salvos após sucesso
-        localStorage.removeItem(STORAGE_KEY);
-        
-        // Reset form
-        setFormData({
-          material_type_name: '',
-          estimated_quantity: '',
-          unit_of_measurement: '',
-          cost_per_unit: '',
-          stock_quantity: '',
-          minimum_quantity: '',
-          category: '',
-          supplier_id: '',
-          project_id: projectId || '',
-          dimensions_specs: ''
-        });
+        // Limpar dados do formulário após sucesso
+        clearData();
         onClose();
       }
+    } catch (error) {
+      console.error('Erro ao enviar formulário:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleClose = () => {
-    // Manter dados salvos quando fechar o modal
-    onClose();
-  };
-
-  const clearForm = () => {
-    localStorage.removeItem(STORAGE_KEY);
-    setFormData({
-      material_type_name: '',
-      estimated_quantity: '',
-      unit_of_measurement: '',
-      cost_per_unit: '',
-      stock_quantity: '',
-      minimum_quantity: '',
-      category: '',
-      supplier_id: '',
-      project_id: projectId || '',
-      dimensions_specs: ''
+  const handleInputChange = (field: keyof MaterialFormData, value: string) => {
+    setData({
+      ...formData,
+      [field]: value
     });
   };
 
-  const activeProjects = projects.filter(p => !p.arquivado);
+  const handleClose = () => {
+    onClose();
+  };
+
+  if (!isLoaded) {
+    return null;
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Cadastrar Novo Material</DialogTitle>
+          <DialogTitle>Adicionar Novo Material</DialogTitle>
           <DialogDescription>
-            Preencha os dados do material que será adicionado ao projeto.
+            Preencha as informações do material que será adicionado ao projeto
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Nome do Material */}
-          <div className="space-y-2">
-            <Label htmlFor="material_name">Nome do Material *</Label>
-            <Input
-              id="material_name"
-              value={formData.material_type_name}
-              onChange={(e) => handleInputChange('material_type_name', e.target.value)}
-              placeholder="Ex: Tijolo Cerâmico"
-              required
-            />
-          </div>
-
-          {/* Tipo/Categoria */}
-          <div className="space-y-2">
-            <Label htmlFor="category">Tipo/Categoria *</Label>
-            <Select value={formData.category} onValueChange={(value) => handleInputChange('category', value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione o tipo" />
-              </SelectTrigger>
-              <SelectContent>
-                {materialTypes.map((type) => (
-                  <SelectItem key={type} value={type}>{type}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Quantidade e Unidade */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="quantity">Quantidade *</Label>
+              <Label htmlFor="material_name">Nome do Material *</Label>
               <Input
-                id="quantity"
-                type="number"
-                step="0.01"
-                value={formData.estimated_quantity}
-                onChange={(e) => handleInputChange('estimated_quantity', e.target.value)}
-                placeholder="0"
+                id="material_name"
+                placeholder="Ex: Cimento Portland"
+                value={formData.material_type_name}
+                onChange={(e) => handleInputChange('material_type_name', e.target.value)}
                 required
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="unit">Unidade de Medida *</Label>
-              <Select value={formData.unit_of_measurement} onValueChange={(value) => handleInputChange('unit_of_measurement', value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione" />
-                </SelectTrigger>
-                <SelectContent>
-                  {units.map((unit) => (
-                    <SelectItem key={unit} value={unit}>{unit}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
 
-          {/* Custo e Estoque */}
-          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="cost">Custo por Unidade (R$) *</Label>
-              <Input
-                id="cost"
-                type="number"
-                step="0.01"
-                value={formData.cost_per_unit}
-                onChange={(e) => handleInputChange('cost_per_unit', e.target.value)}
-                placeholder="0,00"
+              <Label htmlFor="project_id">Projeto *</Label>
+              <Select 
+                value={formData.project_id} 
+                onValueChange={(value) => handleInputChange('project_id', value)}
                 required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="stock">Quantidade em Estoque</Label>
-              <Input
-                id="stock"
-                type="number"
-                step="0.01"
-                value={formData.stock_quantity}
-                onChange={(e) => handleInputChange('stock_quantity', e.target.value)}
-                placeholder="0"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="minimum">Quantidade Mínima em Estoque</Label>
-            <Input
-              id="minimum"
-              type="number"
-              step="0.01"
-              value={formData.minimum_quantity}
-              onChange={(e) => handleInputChange('minimum_quantity', e.target.value)}
-              placeholder="0"
-            />
-          </div>
-
-          {/* Fornecedor */}
-          <div className="space-y-2">
-            <Label htmlFor="supplier">Fornecedor *</Label>
-            <div className="flex gap-2">
-              <Select value={formData.supplier_id} onValueChange={(value) => handleInputChange('supplier_id', value)}>
-                <SelectTrigger className="flex-1">
-                  <SelectValue placeholder="Selecione o fornecedor" />
-                </SelectTrigger>
-                <SelectContent>
-                  {suppliers.map((supplier) => (
-                    <SelectItem key={supplier.id} value={supplier.id}>
-                      {supplier.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                onClick={() => setShowNewSupplierForm(!showNewSupplierForm)}
               >
-                <Plus size={16} />
-              </Button>
-            </div>
-          </div>
-
-          {/* Formulário de Novo Fornecedor */}
-          {showNewSupplierForm && (
-            <div className="border rounded-lg p-4 space-y-3 bg-gray-50">
-              <h4 className="font-medium">Novo Fornecedor</h4>
-              <div className="space-y-2">
-                <Label htmlFor="supplier_name">Nome *</Label>
-                <Input
-                  id="supplier_name"
-                  value={newSupplier.name}
-                  onChange={(e) => setNewSupplier(prev => ({ ...prev, name: e.target.value }))}
-                  placeholder="Nome do fornecedor"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="space-y-2">
-                  <Label htmlFor="supplier_email">Email</Label>
-                  <Input
-                    id="supplier_email"
-                    type="email"
-                    value={newSupplier.contact_email}
-                    onChange={(e) => setNewSupplier(prev => ({ ...prev, contact_email: e.target.value }))}
-                    placeholder="email@exemplo.com"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="supplier_phone">Telefone</Label>
-                  <Input
-                    id="supplier_phone"
-                    value={newSupplier.contact_phone}
-                    onChange={(e) => setNewSupplier(prev => ({ ...prev, contact_phone: e.target.value }))}
-                    placeholder="(11) 99999-9999"
-                  />
-                </div>
-              </div>
-              <Button type="button" onClick={handleCreateSupplier} className="w-full">
-                Adicionar Fornecedor
-              </Button>
-            </div>
-          )}
-
-          {/* Projeto - only show if projectId is not provided */}
-          {!projectId && (
-            <div className="space-y-2">
-              <Label htmlFor="project">Projeto *</Label>
-              <Select value={formData.project_id} onValueChange={(value) => handleInputChange('project_id', value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione o projeto" />
                 </SelectTrigger>
                 <SelectContent>
-                  {activeProjects.map((project) => (
+                  {projects.map((project) => (
                     <SelectItem key={project.id} value={project.id}>
                       {project.name}
                     </SelectItem>
@@ -375,30 +134,127 @@ const MaterialFormModal: React.FC<MaterialFormModalProps> = ({ isOpen, onClose, 
                 </SelectContent>
               </Select>
             </div>
-          )}
+          </div>
 
-          {/* Especificações */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="estimated_quantity">Quantidade Estimada</Label>
+              <Input
+                id="estimated_quantity"
+                type="number"
+                step="0.01"
+                placeholder="0"
+                value={formData.estimated_quantity}
+                onChange={(e) => handleInputChange('estimated_quantity', e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="unit_of_measurement">Unidade de Medida</Label>
+              <Select 
+                value={formData.unit_of_measurement} 
+                onValueChange={(value) => handleInputChange('unit_of_measurement', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="kg">Quilograma (kg)</SelectItem>
+                  <SelectItem value="unidade">Unidade</SelectItem>
+                  <SelectItem value="m">Metro (m)</SelectItem>
+                  <SelectItem value="m2">Metro² (m²)</SelectItem>
+                  <SelectItem value="m3">Metro³ (m³)</SelectItem>
+                  <SelectItem value="litro">Litro (l)</SelectItem>
+                  <SelectItem value="saco">Saco</SelectItem>
+                  <SelectItem value="tonelada">Tonelada (t)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="cost_per_unit">Custo por Unidade (R$)</Label>
+              <Input
+                id="cost_per_unit"
+                type="number"
+                step="0.01"
+                placeholder="0,00"
+                value={formData.cost_per_unit}
+                onChange={(e) => handleInputChange('cost_per_unit', e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="category">Categoria</Label>
+              <Select 
+                value={formData.category} 
+                onValueChange={(value) => handleInputChange('category', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione a categoria" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="alvenaria">Alvenaria</SelectItem>
+                  <SelectItem value="estrutural">Estrutural</SelectItem>
+                  <SelectItem value="acabamento">Acabamento</SelectItem>
+                  <SelectItem value="hidraulico">Hidráulico</SelectItem>
+                  <SelectItem value="eletrico">Elétrico</SelectItem>
+                  <SelectItem value="madeira">Madeira</SelectItem>
+                  <SelectItem value="metal">Metal</SelectItem>
+                  <SelectItem value="tintas">Tintas</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="stock_quantity">Estoque Atual</Label>
+              <Input
+                id="stock_quantity"
+                type="number"
+                step="0.01"
+                placeholder="0"
+                value={formData.stock_quantity}
+                onChange={(e) => handleInputChange('stock_quantity', e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="minimum_quantity">Quantidade Mínima</Label>
+              <Input
+                id="minimum_quantity"
+                type="number"
+                step="0.01"
+                placeholder="0"
+                value={formData.minimum_quantity}
+                onChange={(e) => handleInputChange('minimum_quantity', e.target.value)}
+              />
+            </div>
+          </div>
+
           <div className="space-y-2">
-            <Label htmlFor="specs">Especificações/Dimensões</Label>
+            <Label htmlFor="dimensions_specs">Especificações/Dimensões</Label>
             <Textarea
-              id="specs"
+              id="dimensions_specs"
+              placeholder="Descreva especificações técnicas, dimensões ou características especiais"
+              rows={3}
               value={formData.dimensions_specs}
               onChange={(e) => handleInputChange('dimensions_specs', e.target.value)}
-              placeholder="Ex: 20x10x5cm, resistência 2.5MPa"
-              rows={3}
             />
           </div>
 
-          {/* Botões */}
-          <div className="flex gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={clearForm} className="flex-1">
-              Limpar
-            </Button>
-            <Button type="button" variant="outline" onClick={handleClose} className="flex-1">
+          <div className="flex justify-end space-x-2 pt-4">
+            <Button type="button" variant="outline" onClick={handleClose}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={loading} className="flex-1 bg-residuall-green hover:bg-residuall-green/90">
-              {loading ? 'Cadastrando...' : 'Cadastrar Material'}
+            <Button 
+              type="submit" 
+              disabled={loading || !formData.material_type_name || !formData.project_id}
+              className="bg-residuall-green hover:bg-residuall-green/90"
+            >
+              {loading ? 'Adicionando...' : 'Adicionar Material'}
             </Button>
           </div>
         </form>

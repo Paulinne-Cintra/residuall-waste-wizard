@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -45,15 +44,13 @@ const SettingsPage = () => {
         browser_notifications: settings.browser_notifications,
         sms_notifications: settings.sms_notifications,
       });
+      
+      // Aplicar idioma imediatamente quando carregado
+      if (settings.language && i18n.language !== settings.language) {
+        i18n.changeLanguage(settings.language);
+      }
     }
-  }, [settings]);
-
-  // Apply language changes
-  useEffect(() => {
-    if (settings?.language && i18n.language !== settings.language) {
-      i18n.changeLanguage(settings.language);
-    }
-  }, [settings?.language, i18n]);
+  }, [settings, i18n]);
 
   const handleLocalSettingChange = (field: string, value: any) => {
     setLocalSettings(prev => ({
@@ -180,7 +177,7 @@ const SettingsPage = () => {
               </Card>
             </TabsContent>
 
-            {/* Conteúdo da seção Notificações */}
+            {/* ... keep existing code (notificacoes and seguranca sections) */}
             <TabsContent value="notificacoes" className="space-y-6 mt-0">
               <Card className="shadow-sm">
                 <CardContent className="p-6">
@@ -304,7 +301,6 @@ const SettingsPage = () => {
               </Card>
             </TabsContent>
 
-            {/* Conteúdo da seção Segurança */}
             <TabsContent value="seguranca" className="space-y-6 mt-0">
               <Card className="shadow-sm">
                 <CardContent className="p-6">

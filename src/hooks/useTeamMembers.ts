@@ -4,21 +4,17 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
-interface TeamMember {
+export interface TeamMember {
   id: string;
   name: string;
   email: string;
   role: string;
-  status: 'active' | 'away' | 'inactive';
-  created_at: string;
-  profile_picture_url?: string;
-  has_account: boolean;
-  invitation_status?: 'pending' | 'accepted' | 'declined';
+  status: string;
   phone_number?: string;
-  professional_role?: string;
   company_name?: string;
-  biografia?: string;
-  cargo?: string;
+  profile_picture_url?: string;
+  created_at: string;
+  has_account: boolean;
 }
 
 export const useTeamMembers = () => {
@@ -27,151 +23,256 @@ export const useTeamMembers = () => {
   const { user } = useAuth();
   const { toast } = useToast();
 
+  const getDemoMembers = (): TeamMember[] => {
+    return [
+      {
+        id: 'member-1',
+        name: 'Ana Silva',
+        email: 'ana.silva@residuall.com',
+        role: 'Engenheiro Civil',
+        status: 'active',
+        phone_number: '(11) 99999-1111',
+        company_name: 'Construtora ABC',
+        created_at: '2024-01-15T10:00:00Z',
+        has_account: true
+      },
+      {
+        id: 'member-2',
+        name: 'Carlos Mendes',
+        email: 'carlos.mendes@residuall.com',
+        role: 'Arquiteta',
+        status: 'active',
+        phone_number: '(11) 99999-2222',
+        company_name: 'Arquitetura XYZ',
+        created_at: '2024-01-10T14:30:00Z',
+        has_account: true
+      },
+      {
+        id: 'member-3',
+        name: 'Maria Santos',
+        email: 'maria.santos@residuall.com',
+        role: 'Técnico em Edificações',
+        status: 'active',
+        phone_number: '(11) 99999-3333',
+        company_name: 'Técnica DEF',
+        created_at: '2024-01-08T09:15:00Z',
+        has_account: false
+      },
+      {
+        id: 'member-4',
+        name: 'João Oliveira',
+        email: 'joao.oliveira@residuall.com',
+        role: 'Gerente de Projetos',
+        status: 'active',
+        phone_number: '(11) 99999-4444',
+        company_name: 'Gestão GHI',
+        created_at: '2024-01-05T16:45:00Z',
+        has_account: true
+      }
+    ];
+  };
+
   useEffect(() => {
-    if (user) {
-      fetchTeamMembers();
-    }
+    fetchMembers();
   }, [user]);
 
-  const fetchTeamMembers = async () => {
+  const fetchMembers = async () => {
+    if (!user) {
+      setMembers([]);
+      setLoading(false);
+      return;
+    }
+
+    // Para conta de demonstração
+    if (user.email === 'teste@exemplo.com') {
+      setMembers(getDemoMembers());
+      setLoading(false);
+      return;
+    }
+
     try {
-      // Buscar convites pendentes/aceitos apenas (não buscar todos os perfis)
+      setLoading(true);
+      
+      // Buscar perfis de membros reais (se existirem)
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('*')
+        .neq('id', user.id); // Excluir o próprio usuário
+
+      if (profilesError) throw profilesError;
+
+      // Buscar convites pendentes
       const { data: invitations, error: invitationsError } = await supabase
         .from('team_invitations')
         .select('*')
-        .eq('invited_by_user_id', user?.id);
+        .eq('invited_by_user_id', user.id)
+        .eq('status', 'pending');
 
       if (invitationsError) throw invitationsError;
 
-      // Converter convites para formato TeamMember
-      const invitedMembers: TeamMember[] = (invitations || []).map(invitation => ({
+      const profileMembers: TeamMember[] = (profiles || []).map(profile => ({
+        id: profile.id,
+        name: profile.full_name || 'Nome não informado',
+        email: profile.email || '',
+        role: profile.professional_role || 'Função não definida',
+        status: 'active',
+        phone_number: profile.phone_number,
+        company_name: profile.company_name,
+        profile_picture_url: profile.profile_picture_url,
+        created_at: profile.created_at,
+        has_account: true
+      }));
+
+      const invitationMembers: TeamMember[] = (invitations || []).map(invitation => ({
         id: invitation.id,
         name: invitation.name,
         email: invitation.email,
-        role: 'Convidado',
-        status: invitation.status === 'accepted' ? 'active' as const : 
-                invitation.status === 'declined' ? 'inactive' as const : 'away' as const,
+        role: 'Convite Pendente',
+        status: 'inactive',
         created_at: invitation.created_at,
-        has_account: false,
-        invitation_status: invitation.status as 'pending' | 'accepted' | 'declined'
+        has_account: false
       }));
 
-      setMembers(invitedMembers);
-    } catch (error) {
+      setMembers([...profileMembers, ...invitationMembers]);
+    } catch (error: any) {
       console.error('Erro ao buscar membros:', error);
-      setMembers([]);
+      toast({
+        title: "Erro",
+        description: "Não foi possível carregar os membros da equipe.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
   };
 
   const addTeamMember = async (memberData: { name: string; email: string; role: string }) => {
+    if (!user) {
+      toast({
+        title: "Erro",
+        description: "Usuário não autenticado.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
-      if (!user) throw new Error('Usuário não autenticado');
-
-      // Gerar token usando a função do banco de dados
-      const { data: tokenData, error: tokenError } = await supabase.rpc('generate_invitation_token');
-      if (tokenError) throw tokenError;
-
-      const { data, error } = await supabase
-        .from('team_invitations')
-        .insert({
-          email: memberData.email,
+      // Verificar se é conta demo
+      if (user.email === 'teste@exemplo.com') {
+        const newMember: TeamMember = {
+          id: `member-${Date.now()}`,
           name: memberData.name,
-          invited_by_user_id: user.id,
-          status: 'pending',
-          token: tokenData
-        })
-        .select()
-        .single();
+          email: memberData.email,
+          role: memberData.role,
+          status: 'active',
+          created_at: new Date().toISOString(),
+          has_account: false
+        };
+        
+        setMembers(prev => [...prev, newMember]);
+        toast({
+          title: "Membro adicionado",
+          description: `${memberData.name} foi adicionado à equipe.`,
+        });
+        return;
+      }
+
+      // Criar convite para conta real
+      const { error } = await supabase
+        .from('team_invitations')
+        .insert([
+          {
+            invited_by_user_id: user.id,
+            name: memberData.name,
+            email: memberData.email,
+            status: 'pending'
+          }
+        ]);
 
       if (error) throw error;
 
-      await fetchTeamMembers(); // Recarregar lista
-      
       toast({
-        title: "Sucesso!",
-        description: "Membro adicionado à equipe com sucesso!",
+        title: "Convite enviado",
+        description: `Convite enviado para ${memberData.email}.`,
       });
 
-      return data;
-    } catch (error) {
-      console.error('Erro ao adicionar membro:', error);
+      await fetchMembers();
+    } catch (error: any) {
       toast({
-        title: "Erro",
-        description: "Erro ao adicionar membro à equipe.",
+        title: "Erro ao adicionar membro",
+        description: error.message || "Ocorreu um erro inesperado.",
         variant: "destructive",
       });
-      throw error;
     }
   };
 
-  const deleteMember = async (memberId: string, hasAccount: boolean) => {
+  const deleteMember = async (memberId: string, hasAccount: boolean): Promise<boolean> => {
+    if (!user) {
+      toast({
+        title: "Erro",
+        description: "Usuário não autenticado.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
     try {
+      // Para conta demo, apenas remover da lista local
+      if (user.email === 'teste@exemplo.com') {
+        setMembers(prev => prev.filter(member => member.id !== memberId));
+        toast({
+          title: "Membro removido",
+          description: "O membro foi removido da equipe.",
+        });
+        return true;
+      }
+
+      // Para contas reais
       if (hasAccount) {
-        // Remover atribuições de projetos
-        await supabase
+        // Se o membro tem conta, remover da tabela team_member_projects
+        const { error: projectsError } = await supabase
           .from('team_member_projects')
           .delete()
           .eq('user_id', memberId);
+
+        if (projectsError) throw projectsError;
       } else {
-        // Remover convite
-        await supabase
+        // Se é um convite pendente, remover da tabela team_invitations
+        const { error: invitationError } = await supabase
           .from('team_invitations')
           .delete()
           .eq('id', memberId);
+
+        if (invitationError) throw invitationError;
       }
 
-      // Atualizar lista local
-      setMembers(prev => prev.filter(member => member.id !== memberId));
-
       toast({
-        title: "Sucesso!",
-        description: "Membro removido da equipe com sucesso!",
+        title: "Membro removido",
+        description: "O membro foi removido da equipe com sucesso.",
       });
 
+      await fetchMembers();
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao remover membro:', error);
       toast({
-        title: "Erro",
-        description: "Erro ao remover membro da equipe.",
+        title: "Erro ao remover membro",
+        description: error.message || "Ocorreu um erro inesperado.",
         variant: "destructive",
       });
       return false;
     }
   };
 
-  const getMemberProjects = async (memberId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('team_member_projects')
-        .select(`
-          id,
-          projects:project_id (
-            id,
-            name,
-            status,
-            location
-          )
-        `)
-        .eq('user_id', memberId);
-
-      if (error) throw error;
-      return data || [];
-    } catch (error) {
-      console.error('Erro ao buscar projetos do membro:', error);
-      return [];
-    }
+  const refetch = async () => {
+    await fetchMembers();
   };
 
   return {
     members,
     loading,
-    fetchTeamMembers,
     addTeamMember,
     deleteMember,
-    getMemberProjects,
-    refetch: fetchTeamMembers
+    refetch
   };
 };

@@ -2,15 +2,17 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MessageCircle, Clock, CheckCircle, XCircle } from "lucide-react";
+import { MessageCircle, Clock, CheckCircle, XCircle, Trash2 } from "lucide-react";
 import { useSupportTickets } from '@/hooks/useSupportTickets';
 import SupportChat from './SupportChat';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useToast } from "@/hooks/use-toast";
 
 const SupportTicketsList = () => {
-  const { tickets, loading } = useSupportTickets();
+  const { tickets, loading, deleteTicket } = useSupportTickets();
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -35,6 +37,24 @@ const SupportTicketsList = () => {
         return 'bg-green-100 text-green-800';
       default:
         return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const handleDeleteTicket = async (ticketId: string, ticketSubject: string) => {
+    if (window.confirm(`Tem certeza que deseja excluir o chamado "${ticketSubject}"? Esta ação não pode ser desfeita.`)) {
+      const success = await deleteTicket(ticketId);
+      if (success) {
+        toast({
+          title: "Chamado excluído",
+          description: "O chamado foi removido com sucesso.",
+        });
+      } else {
+        toast({
+          title: "Erro",
+          description: "Não foi possível excluir o chamado.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -92,14 +112,23 @@ const SupportTicketsList = () => {
                     Criado em {format(new Date(ticket.created_at), 'dd/MM/yyyy às HH:mm', { locale: ptBR })}
                   </p>
                 </div>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => setSelectedTicketId(ticket.id)}
-                  className="ml-4"
-                >
-                  Ver Conversa
-                </Button>
+                <div className="flex gap-2 ml-4">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setSelectedTicketId(ticket.id)}
+                  >
+                    Ver Conversa
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleDeleteTicket(ticket.id, ticket.subject)}
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </div>
           ))}
