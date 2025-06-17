@@ -1,28 +1,25 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { useUserSettings } from "@/hooks/useUserSettings";
 import { TwoFactorModal } from "@/components/TwoFactorModal";
 import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
-import { ptBR, enUS, es } from 'date-fns/locale';
+import { ptBR } from 'date-fns/locale';
 import { Save } from 'lucide-react';
 
 const SettingsPage = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { settings, loginHistory, loading, saving, saveAllSettings } = useUserSettings();
   const [activeTab, setActiveTab] = useState("geral");
   const [twoFactorModalOpen, setTwoFactorModalOpen] = useState(false);
   
-  // Estado local para as configurações
+  // Estado local para as configurações (sem language)
   const [localSettings, setLocalSettings] = useState({
-    language: 'pt-br',
     email_notifications: false,
     system_alerts: false,
     project_updates: true,
@@ -32,11 +29,10 @@ const SettingsPage = () => {
     sms_notifications: false,
   });
 
-  // Sincronizar configurações locais com as do banco
+  // Sincronizar configurações locais com as do banco (sem language)
   useEffect(() => {
     if (settings) {
       setLocalSettings({
-        language: settings.language,
         email_notifications: settings.email_notifications,
         system_alerts: settings.system_alerts,
         project_updates: settings.project_updates,
@@ -48,45 +44,31 @@ const SettingsPage = () => {
     }
   }, [settings]);
 
-  // Sincronizar idioma do i18n com as configurações carregadas
-  useEffect(() => {
-    if (settings?.language && i18n.language !== settings.language) {
-      i18n.changeLanguage(settings.language);
-    }
-  }, [settings?.language, i18n]);
-
   const handleLocalSettingChange = (field: string, value: any) => {
     setLocalSettings(prev => ({
       ...prev,
       [field]: value
     }));
-
-    // Aplicar imediatamente mudanças de idioma
-    if (field === 'language') {
-      i18n.changeLanguage(value);
-    }
   };
 
   const handleSaveSettings = async () => {
     if (!settings) return;
     
-    const success = await saveAllSettings(localSettings);
+    // Incluir language fixo como 'pt-br' ao salvar
+    const settingsToSave = {
+      ...localSettings,
+      language: 'pt-br'
+    };
+    
+    const success = await saveAllSettings(settingsToSave);
     if (success) {
       console.log('Configurações salvas com sucesso');
     }
   };
 
-  const getDateLocale = () => {
-    switch (localSettings.language) {
-      case 'en-us': return enUS;
-      case 'es': return es;
-      default: return ptBR;
-    }
-  };
-
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return format(date, 'dd/MM/yyyy HH:mm', { locale: getDateLocale() });
+    return format(date, 'dd/MM/yyyy HH:mm', { locale: ptBR });
   };
 
   if (loading) {
@@ -154,33 +136,17 @@ const SettingsPage = () => {
             <TabsContent value="geral" className="space-y-6 mt-0">
               <Card className="shadow-sm">
                 <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold mb-4 text-gray-900">{t('language')}</h3>
+                  <h3 className="text-lg font-semibold mb-4 text-gray-900">{t('general')}</h3>
                   
                   <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="language" className="text-gray-700">{t('language')}</Label>
-                      <Select 
-                        value={localSettings.language} 
-                        onValueChange={(value) => handleLocalSettingChange('language', value)}
-                      >
-                        <SelectTrigger id="language" className="w-full">
-                          <SelectValue placeholder={t('language')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="pt-br">Português (Brasil)</SelectItem>
-                          <SelectItem value="en-us">English (US)</SelectItem>
-                          <SelectItem value="es">Español</SelectItem>
-                          <SelectItem value="fr">Français</SelectItem>
-                          <SelectItem value="de">Deutsch</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                    <p className="text-gray-600">
+                      Configure suas preferências gerais da aplicação.
+                    </p>
                   </div>
                 </CardContent>
               </Card>
             </TabsContent>
 
-            {/* ... keep existing code (notificacoes and seguranca sections) */}
             <TabsContent value="notificacoes" className="space-y-6 mt-0">
               <Card className="shadow-sm">
                 <CardContent className="p-6">
