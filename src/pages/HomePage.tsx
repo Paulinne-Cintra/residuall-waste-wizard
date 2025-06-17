@@ -11,17 +11,17 @@ const HomePage = () => {
   const slides = [
     {
       title: "Construa com propósito, construa com futuro",
-      subtitle: "Transforme a gestão de resíduos da construção civil com inteligência e sustentabilidade",
+      subtitle: "Acesse dados detalhados e transforme cada projeto em uma ação sustentável. Otimize recursos e reduza impactos com soluções práticas e eficientes.",
       image: "/lovable-uploads/a914c69a-7f63-456e-8895-a34d09333659.png"
     },
     {
       title: "Sustentabilidade que faz a diferença",
-      subtitle: "Monitore, analise e otimize o desperdício de materiais em tempo real",
+      subtitle: "Reduza o desperdício na construção com tecnologia e consciência ambiental. Use dados em tempo real para construir com mais eficiência e menos resíduos.",
       image: "/lovable-uploads/e3e209f2-3395-4fc8-a27f-d932a376ff44.png"
     },
     {
       title: "Inovação para um futuro verde",
-      subtitle: "Dashboards inteligentes e relatórios detalhados para decisões sustentáveis",
+      subtitle: "Relatórios inteligentes para decisões conscientes na construção civil. Acesse dados detalhados e transforme cada projeto em uma ação sustentável.",
       image: "/lovable-uploads/bc8267d3-0115-404c-a8c1-b1dcc1b1f9b7.png"
     }
   ];
