@@ -1,260 +1,285 @@
 
 import React, { useState, useEffect } from 'react';
-import { Check, CreditCard, QrCode } from 'lucide-react';
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from 'react-router-dom';
-import QRCodeLib from 'qrcode';
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Check, CreditCard, Smartphone, Copy } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { usePaymentStatus } from '@/hooks/usePaymentStatus';
+import { toast } from 'sonner';
+import QRCode from 'qrcode';
 import AnimatedBackground from '@/components/AnimatedBackground';
 
 const PaymentPage = () => {
-  const { toast } = useToast();
   const navigate = useNavigate();
-  const [selectedPlan, setSelectedPlan] = useState<'premium' | 'enterprise'>('premium');
-  const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>('');
+  const location = useLocation();
+  const { markPaymentCompleted } = usePaymentStatus();
+  const [selectedPlan, setSelectedPlan] = useState<'basic' | 'premium' | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<'pix' | 'credit' | null>(null);
+  const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
+  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
-    generatePixQRCode();
-  }, [selectedPlan]);
+    const searchParams = new URLSearchParams(location.search);
+    const plan = searchParams.get('plan') as 'basic' | 'premium';
+    if (plan) {
+      setSelectedPlan(plan);
+    }
+  }, [location]);
+
+  useEffect(() => {
+    if (selectedPlan && paymentMethod === 'pix') {
+      generatePixQRCode();
+    }
+  }, [selectedPlan, paymentMethod]);
 
   const generatePixQRCode = async () => {
-    const pixKey = '73988372697';
-    const amount = selectedPlan === 'premium' ? '49.90' : '99.90';
-    const description = selectedPlan === 'premium' ? 'Plano Premium RESIDUALL' : 'Plano Enterprise RESIDUALL';
+    if (!selectedPlan) return;
     
-    // Simplified PIX payload for demonstration
-    const pixPayload = `00020101021126580014br.gov.bcb.pix0136${pixKey}5204000053039865406${amount}5802BR5925RESIDUALL GESTAO DE OBRAS6009SAO PAULO62070503***6304`;
+    const pixKey = '73988372697';
+    const amount = selectedPlan === 'basic' ? '49.90' : '99.90';
+    const description = selectedPlan === 'basic' ? 'RESIDUALL Plano Básico' : 'RESIDUALL Plano Premium';
+    
+    // Generate PIX payment string
+    const pixPayload = `00020126580014BR.GOV.BCB.PIX0136${pixKey}520400005303986540${amount.length}${amount}5802BR5925RESIDUALL6009SAO PAULO62070503***6304`;
     
     try {
-      const qrCodeUrl = await QRCodeLib.toDataURL(pixPayload, {
+      const qrUrl = await QRCode.toDataURL(pixPayload, {
         errorCorrectionLevel: 'M',
-        type: 'image/png',
-        quality: 0.92,
-        margin: 1,
+        width: 256,
+        margin: 2,
         color: {
           dark: '#000000',
-          light: '#FFFFFF',
-        },
-        width: 200,
+          light: '#FFFFFF'
+        }
       });
-      setQrCodeDataUrl(qrCodeUrl);
+      setQrCodeUrl(qrUrl);
     } catch (error) {
       console.error('Erro ao gerar QR Code:', error);
+      toast.error('Erro ao gerar QR Code PIX');
     }
   };
 
-  const handlePayment = async (method: string) => {
-    toast({
-      title: "Processando pagamento...",
-      description: "Aguarde enquanto processamos seu pagamento.",
-    });
-
-    // Simulate payment processing
-    setTimeout(() => {
-      toast({
-        title: "Pagamento realizado com sucesso!",
-        description: "Sua assinatura foi ativada. Redirecionando...",
-      });
+  const handlePaymentConfirmation = async () => {
+    if (!selectedPlan) return;
+    
+    setIsProcessing(true);
+    
+    try {
+      // Simulate payment processing
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
-      setTimeout(() => {
-        navigate('/dashboard/confirmation');
-      }, 2000);
-    }, 3000);
+      // Mark payment as completed
+      const success = await markPaymentCompleted(selectedPlan);
+      
+      if (success) {
+        toast.success('Pagamento confirmado com sucesso!');
+        navigate('/confirmation');
+      } else {
+        toast.error('Erro ao confirmar pagamento. Tente novamente.');
+      }
+    } catch (error) {
+      console.error('Erro ao processar pagamento:', error);
+      toast.error('Erro ao processar pagamento');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const copyPixKey = () => {
+    navigator.clipboard.writeText('73988372697');
+    toast.success('Chave PIX copiada!');
   };
 
   const plans = {
-    premium: {
-      name: 'Premium',
+    basic: {
+      name: 'Plano Básico',
       price: 'R$ 49,90',
-      period: '/mês',
       features: [
-        'Até 10 projetos simultâneos',
-        'Controle de desperdício avançado',
-        'Relatórios detalhados',
+        'Até 5 projetos simultâneos',
+        'Relatórios básicos',
         'Suporte por email',
+        'Controle de desperdício',
         'Dashboard completo'
       ]
     },
-    enterprise: {
-      name: 'Enterprise',
+    premium: {
+      name: 'Plano Premium',
       price: 'R$ 99,90',
-      period: '/mês',
       features: [
         'Projetos ilimitados',
-        'Controle de desperdício avançado',
-        'Relatórios customizáveis',
-        'Suporte prioritário 24/7',
-        'API de integração',
-        'Gestão de equipes',
-        'Análises preditivas'
+        'Relatórios avançados com IA',
+        'Suporte prioritário',
+        'Análise preditiva',
+        'Integração com fornecedores',
+        'Gestão de equipe completa'
       ]
     }
   };
 
   return (
     <div className="min-h-screen relative overflow-hidden">
+      {/* Background from LoginPage */}
       <AnimatedBackground />
       
-      <div className="relative z-10 min-h-screen flex items-center justify-center p-4">
-        <div className="max-w-4xl w-full space-y-8">
+      <div className="relative z-10 container mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto">
           {/* Header */}
-          <div className="text-center text-white">
-            <h1 className="text-4xl font-bold mb-2">Finalizar Assinatura</h1>
-            <p className="text-xl opacity-90">Escolha seu plano e método de pagamento</p>
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-white mb-2">Finalizar Pagamento</h1>
+            <p className="text-gray-200">Complete sua assinatura e comece a usar o RESIDUALL</p>
           </div>
 
-          {/* Plan Selection */}
-          <div className="grid md:grid-cols-2 gap-6 mb-8">
-            {Object.entries(plans).map(([planKey, plan]) => (
-              <Card 
-                key={planKey}
-                className={`cursor-pointer transition-all duration-200 ${
-                  selectedPlan === planKey 
-                    ? 'ring-2 ring-residuall-green bg-residuall-green/5' 
-                    : 'hover:shadow-lg'
-                }`}
-                onClick={() => setSelectedPlan(planKey as 'premium' | 'enterprise')}
-              >
-                <CardHeader>
-                  <div className="flex justify-between items-center">
-                    <CardTitle className="text-2xl">{plan.name}</CardTitle>
-                    <div className={`w-4 h-4 rounded-full border-2 ${
-                      selectedPlan === planKey 
-                        ? 'bg-residuall-green border-residuall-green' 
-                        : 'border-gray-300'
-                    }`}>
-                      {selectedPlan === planKey && (
-                        <Check className="w-full h-full text-white p-0.5" />
-                      )}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Plan Summary */}
+            <Card className="bg-white/10 backdrop-blur-sm border-white/20">
+              <CardHeader>
+                <CardTitle className="text-white">Resumo do Pedido</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {selectedPlan && (
+                  <div className="p-4 rounded-lg bg-white/5 border border-white/10">
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h3 className="font-semibold text-white">{plans[selectedPlan].name}</h3>
+                        <p className="text-2xl font-bold text-residuall-green">{plans[selectedPlan].price}</p>
+                        <p className="text-sm text-gray-300">por mês</p>
+                      </div>
+                      <Badge className="bg-residuall-green text-white">Recomendado</Badge>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      {plans[selectedPlan].features.map((feature, index) => (
+                        <div key={index} className="flex items-center space-x-2">
+                          <Check size={16} className="text-residuall-green" />
+                          <span className="text-sm text-gray-300">{feature}</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                  <div className="flex items-baseline">
-                    <span className="text-3xl font-bold text-residuall-green">{plan.price}</span>
-                    <span className="text-gray-500 ml-1">{plan.period}</span>
+                )}
+
+                <div className="border-t border-white/10 pt-4">
+                  <div className="flex justify-between items-center text-white">
+                    <span className="font-semibold">Total:</span>
+                    <span className="text-xl font-bold text-residuall-green">
+                      {selectedPlan ? plans[selectedPlan].price : 'R$ 0,00'}
+                    </span>
                   </div>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-3">
-                    {plan.features.map((feature, index) => (
-                      <li key={index} className="flex items-center text-sm">
-                        <Check className="h-4 w-4 text-residuall-green mr-2 flex-shrink-0" />
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                </div>
+              </CardContent>
+            </Card>
 
-          {/* Payment Methods */}
-          <Card className="backdrop-blur-sm bg-white/95">
-            <CardHeader>
-              <CardTitle>Método de Pagamento</CardTitle>
-              <CardDescription>
-                Escolha como deseja pagar sua assinatura {plans[selectedPlan].name}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Tabs defaultValue="pix" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="pix" className="flex items-center gap-2">
-                    <QrCode className="h-4 w-4" />
-                    PIX
-                  </TabsTrigger>
-                  <TabsTrigger value="credit" className="flex items-center gap-2">
-                    <CreditCard className="h-4 w-4" />
-                    Cartão de Crédito
-                  </TabsTrigger>
-                </TabsList>
+            {/* Payment Methods */}
+            <Card className="bg-white/10 backdrop-blur-sm border-white/20">
+              <CardHeader>
+                <CardTitle className="text-white">Método de Pagamento</CardTitle>
+                <CardDescription className="text-gray-300">
+                  Escolha como deseja pagar sua assinatura
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Payment Method Selection */}
+                <div className="space-y-4">
+                  <button
+                    onClick={() => setPaymentMethod('pix')}
+                    className={`w-full p-4 rounded-lg border transition-all ${
+                      paymentMethod === 'pix' 
+                        ? 'border-residuall-green bg-residuall-green/10' 
+                        : 'border-white/20 bg-white/5 hover:bg-white/10'
+                    }`}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <Smartphone className="h-6 w-6 text-residuall-green" />
+                      <div className="text-left">
+                        <div className="font-medium text-white">PIX</div>
+                        <div className="text-sm text-gray-300">Aprovação instantânea</div>
+                      </div>
+                    </div>
+                  </button>
 
-                <TabsContent value="pix" className="space-y-6">
-                  <div className="text-center space-y-4">
-                    <div className="bg-white p-6 rounded-lg border border-gray-200 inline-block">
-                      {qrCodeDataUrl ? (
-                        <img src={qrCodeDataUrl} alt="QR Code PIX" className="mx-auto" />
-                      ) : (
-                        <div className="w-48 h-48 bg-gray-100 flex items-center justify-center">
-                          <span className="text-gray-500">Gerando QR Code...</span>
+                  <button
+                    onClick={() => setPaymentMethod('credit')}
+                    className={`w-full p-4 rounded-lg border transition-all ${
+                      paymentMethod === 'credit' 
+                        ? 'border-residuall-green bg-residuall-green/10' 
+                        : 'border-white/20 bg-white/5 hover:bg-white/10'
+                    }`}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <CreditCard className="h-6 w-6 text-residuall-green" />
+                      <div className="text-left">
+                        <div className="font-medium text-white">Cartão de Crédito</div>
+                        <div className="text-sm text-gray-300">Visa, Mastercard, Elo</div>
+                      </div>
+                    </div>
+                  </button>
+                </div>
+
+                {/* PIX Payment */}
+                {paymentMethod === 'pix' && (
+                  <div className="space-y-4">
+                    <div className="text-center">
+                      <h3 className="font-semibold text-white mb-2">Pagamento via PIX</h3>
+                      <p className="text-sm text-gray-300 mb-4">
+                        Escaneie o QR Code ou copie a chave PIX para fazer o pagamento
+                      </p>
+                      
+                      {qrCodeUrl && (
+                        <div className="bg-white p-4 rounded-lg inline-block">
+                          <img src={qrCodeUrl} alt="QR Code PIX" className="mx-auto" />
                         </div>
                       )}
                     </div>
-                    <div className="text-sm text-gray-600 space-y-2">
-                      <p className="font-medium">Valor: {plans[selectedPlan].price}</p>
-                      <p>Escaneie o QR Code com seu app de banco ou carteira digital</p>
-                    </div>
-                    <Button 
-                      onClick={() => handlePayment('pix')}
-                      className="w-full bg-residuall-green hover:bg-residuall-green/90"
-                      size="lg"
+
+                    <Button
+                      onClick={handlePaymentConfirmation}
+                      disabled={isProcessing}
+                      className="w-full bg-residuall-green hover:bg-residuall-green/90 text-white"
                     >
-                      Confirmar Pagamento PIX
+                      {isProcessing ? 'Processando...' : 'Confirmar Pagamento'}
                     </Button>
                   </div>
-                </TabsContent>
+                )}
 
-                <TabsContent value="credit" className="space-y-4">
-                  <div className="grid grid-cols-1 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Número do Cartão
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="1234 5678 9012 3456"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-residuall-green"
-                      />
+                {/* Credit Card Payment */}
+                {paymentMethod === 'credit' && (
+                  <div className="space-y-4">
+                    <div className="text-center">
+                      <h3 className="font-semibold text-white mb-2">Pagamento com Cartão</h3>
+                      <p className="text-sm text-gray-300 mb-4">
+                        Você será redirecionado para nossa plataforma de pagamento segura
+                      </p>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Validade
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="MM/AA"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-residuall-green"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          CVV
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="123"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-residuall-green"
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Nome no Cartão
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="Seu Nome Completo"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-residuall-green"
-                      />
-                    </div>
+
+                    <Button
+                      onClick={handlePaymentConfirmation}
+                      disabled={isProcessing}
+                      className="w-full bg-residuall-green hover:bg-residuall-green/90 text-white"
+                    >
+                      {isProcessing ? 'Processando...' : 'Pagar com Cartão'}
+                    </Button>
                   </div>
-                  <Button 
-                    onClick={() => handlePayment('credit')}
-                    className="w-full bg-residuall-green hover:bg-residuall-green/90"
-                    size="lg"
-                  >
-                    Pagar {plans[selectedPlan].price}
-                  </Button>
-                </TabsContent>
-              </Tabs>
-            </CardContent>
-          </Card>
+                )}
 
-          {/* Security Notice */}
-          <div className="text-center text-white/80 text-sm">
-            <p>🔒 Transação 100% segura e criptografada</p>
+                {!paymentMethod && (
+                  <div className="text-center py-8">
+                    <p className="text-gray-400">Selecione um método de pagamento acima</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Back Button */}
+          <div className="text-center mt-8">
+            <Button
+              variant="outline"
+              onClick={() => navigate('/planos')}
+              className="border-white/20 text-white hover:bg-white/10"
+            >
+              Voltar para Planos
+            </Button>
           </div>
         </div>
       </div>
