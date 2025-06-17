@@ -31,9 +31,9 @@ const MaterialFormModal: React.FC<MaterialFormModalProps> = ({ isOpen, onClose, 
   const { projects } = useProjects();
   const [loading, setLoading] = useState(false);
 
-  const { data: formData, setData, clearData, isLoaded } = useFormPersistence<MaterialFormData>({
+  const { formData, updateFormData, clearFormData, setFormData } = useFormPersistence<MaterialFormData>({
     key: 'materialForm_data',
-    defaultValue: {
+    defaultValues: {
       material_type_name: '',
       project_id: '',
       estimated_quantity: '',
@@ -67,7 +67,7 @@ const MaterialFormModal: React.FC<MaterialFormModalProps> = ({ isOpen, onClose, 
       
       if (success) {
         // Limpar dados do formulário após sucesso
-        clearData();
+        clearFormData();
         onClose();
       }
     } catch (error) {
@@ -78,8 +78,7 @@ const MaterialFormModal: React.FC<MaterialFormModalProps> = ({ isOpen, onClose, 
   };
 
   const handleInputChange = (field: keyof MaterialFormData, value: string) => {
-    setData({
-      ...formData,
+    updateFormData({
       [field]: value
     });
   };
@@ -87,10 +86,6 @@ const MaterialFormModal: React.FC<MaterialFormModalProps> = ({ isOpen, onClose, 
   const handleClose = () => {
     onClose();
   };
-
-  if (!isLoaded) {
-    return null;
-  }
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
