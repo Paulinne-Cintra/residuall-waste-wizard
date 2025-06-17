@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   ArrowLeft, 
   Calendar, 
@@ -19,33 +18,62 @@ import {
   Edit
 } from 'lucide-react';
 import { useOptimizedProjects } from '@/hooks/useOptimizedProjects';
-import { useProjectMaterials } from '@/hooks/useProjectMaterials';
-import { useProjectTeamMembers } from '@/hooks/useProjectTeamMembers';
-import { useProjectTimeline } from '@/hooks/useProjectTimeline';
 import Chart from '@/components/Chart';
 import EditProjectForm from '@/components/forms/EditProjectForm';
 
 const ProjectDetailPage = () => {
   const { projectId } = useParams<{ projectId: string }>();
   const { projects, loading } = useOptimizedProjects();
-  const { materials, loading: materialsLoading } = useProjectMaterials();
-  const { teamMembers, loading: teamLoading } = useProjectTeamMembers(projectId);
-  const { timeline, loading: timelineLoading } = useProjectTimeline(projectId);
   const [project, setProject] = useState<any>(null);
   const [isEditing, setIsEditing] = useState<boolean>(false);
 
-  const wasteData = [
-    { month: 'Jan', waste: 2.3, cost: 1200 },
-    { month: 'Fev', waste: 3.1, cost: 1800 },
-    { month: 'Mar', waste: 1.8, cost: 950 },
-    { month: 'Abr', waste: 2.7, cost: 1400 }
-  ];
+  const mockProjectDetails = {
+    materials: [
+      { name: 'Concreto', quantity: 150, unit: 'm³', cost: 45000, waste: 8.2 },
+      { name: 'Aço', quantity: 12, unit: 'ton', cost: 28000, waste: 5.1 },
+      { name: 'Tijolos', quantity: 50000, unit: 'un', cost: 15000, waste: 12.3 },
+      { name: 'Cimento', quantity: 200, unit: 'sac', cost: 8000, waste: 3.7 }
+    ],
+    timeline: [
+      { phase: 'Fundação', progress: 100, status: 'Concluída' },
+      { phase: 'Estrutura', progress: 85, status: 'Em andamento' },
+      { phase: 'Alvenaria', progress: 60, status: 'Em andamento' },
+      { phase: 'Acabamento', progress: 0, status: 'Pendente' }
+    ],
+    wasteData: [
+      { month: 'Jan', waste: 2.3, cost: 1200 },
+      { month: 'Fev', waste: 3.1, cost: 1800 },
+      { month: 'Mar', waste: 1.8, cost: 950 },
+      { month: 'Abr', waste: 2.7, cost: 1400 }
+    ],
+    team: [
+      { name: 'Ana Silva', role: 'Gerente de Projeto', avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=40' },
+      { name: 'Carlos Mendes', role: 'Arquiteto', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40' },
+      { name: 'João Oliveira', role: 'Engenheiro', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40' }
+    ]
+  };
 
   useEffect(() => {
     if (projects.length > 0 && projectId) {
       const foundProject = projects.find(p => p.id === projectId);
       if (foundProject) {
         setProject(foundProject);
+      } else {
+        // Projeto fictício para demonstração
+        setProject({
+          id: projectId,
+          name: 'Edifício Residencial Sustentável',
+          location: 'São Paulo, SP',
+          status: 'em_andamento',
+          progress_percentage: 68,
+          materials_count: 4,
+          created_at: '2024-01-15T08:00:00Z',
+          budget: 2500000,
+          start_date: '2024-01-15',
+          planned_end_date: '2024-12-20',
+          description_notes: 'Projeto de edifício residencial com foco em sustentabilidade e redução de desperdícios.',
+          project_type: 'Residencial'
+        });
       }
     }
   }, [projects, projectId]);
@@ -54,19 +82,6 @@ const ProjectDetailPage = () => {
     setProject(updatedProject);
     setIsEditing(false);
   };
-
-  const getInitials = (name: string) => {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase();
-  };
-
-  // Filter materials for current project
-  const projectMaterials = materials.filter(material => 
-    material.project_id === projectId
-  );
-
-  // teamMembers and timeline are already filtered by projectId in their hooks
-  const projectTeamMembers = teamMembers;
-  const projectTimeline = timeline;
 
   if (loading) {
     return (
@@ -177,7 +192,7 @@ const ProjectDetailPage = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-gray-900">
-              R$ {project.budget ? (project.budget / 1000000).toFixed(1) : '0'}M
+              R$ {project.budget ? (project.budget / 1000000).toFixed(1) : '2.5'}M
             </div>
           </CardContent>
         </Card>
@@ -190,7 +205,7 @@ const ProjectDetailPage = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">{projectMaterials.length}</div>
+            <div className="text-2xl font-bold text-gray-900">{project.materials_count || 4}</div>
             <p className="text-sm text-gray-500">tipos cadastrados</p>
           </CardContent>
         </Card>
@@ -203,9 +218,7 @@ const ProjectDetailPage = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">
-              {project.planned_end_date ? new Date(project.planned_end_date).toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' }) : 'N/A'}
-            </div>
+            <div className="text-2xl font-bold text-gray-900">Dec/24</div>
             <p className="text-sm text-gray-500">conclusão prevista</p>
           </CardContent>
         </Card>
@@ -232,7 +245,7 @@ const ProjectDetailPage = () => {
                 <CardDescription>Evolução do desperdício de materiais</CardDescription>
               </CardHeader>
               <CardContent>
-                <Chart type="line" data={wasteData} />
+                <Chart type="line" data={mockProjectDetails.wasteData} />
               </CardContent>
             </Card>
 
@@ -244,19 +257,17 @@ const ProjectDetailPage = () => {
                 <div>
                   <h4 className="font-medium text-gray-900">Descrição</h4>
                   <p className="text-sm text-gray-600 mt-1">
-                    {project.description_notes || 'Nenhuma descrição disponível'}
+                    {project.description_notes || 'Projeto de edifício residencial com foco em sustentabilidade e redução de desperdícios.'}
                   </p>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <h4 className="font-medium text-gray-900">Data de Início</h4>
-                    <p className="text-sm text-gray-600">
-                      {project.start_date ? new Date(project.start_date).toLocaleDateString('pt-BR') : 'Não definida'}
-                    </p>
+                    <p className="text-sm text-gray-600">{new Date(project.start_date || '2024-01-15').toLocaleDateString('pt-BR')}</p>
                   </div>
                   <div>
                     <h4 className="font-medium text-gray-900">Tipo</h4>
-                    <p className="text-sm text-gray-600">{project.project_type || 'Não definido'}</p>
+                    <p className="text-sm text-gray-600">{project.project_type || 'Residencial'}</p>
                   </div>
                 </div>
               </CardContent>
@@ -268,40 +279,28 @@ const ProjectDetailPage = () => {
           <Card>
             <CardHeader>
               <CardTitle>Materiais do Projeto</CardTitle>
-              <CardDescription>Lista de materiais cadastrados para este projeto</CardDescription>
+              <CardDescription>Lista de materiais cadastrados e seus desperdícios</CardDescription>
             </CardHeader>
             <CardContent>
-              {materialsLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-residuall-green"></div>
-                </div>
-              ) : projectMaterials.length === 0 ? (
-                <div className="text-center py-12">
-                  <Package className="mx-auto h-16 w-16 text-gray-400 mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum material cadastrado</h3>
-                  <p className="text-gray-500">Cadastre materiais para este projeto para começar o controle de desperdício.</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {projectMaterials.map((material, index) => (
-                    <div key={material.id || index} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                      <div>
-                        <h4 className="font-medium text-gray-900">{material.material_type_name}</h4>
-                        <p className="text-sm text-gray-500">
-                          {material.estimated_quantity} {material.unit_of_measurement} • R$ {material.cost_per_unit ? (Number(material.cost_per_unit) * Number(material.estimated_quantity)).toLocaleString() : '0'}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <div className="flex items-center text-sm">
-                          <AlertTriangle className="h-4 w-4 mr-1 text-orange-500" />
-                          <span className="text-orange-600 font-medium">0%</span>
-                        </div>
-                        <p className="text-xs text-gray-500">desperdício</p>
-                      </div>
+              <div className="space-y-4">
+                {mockProjectDetails.materials.map((material, index) => (
+                  <div key={index} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                    <div>
+                      <h4 className="font-medium text-gray-900">{material.name}</h4>
+                      <p className="text-sm text-gray-500">
+                        {material.quantity} {material.unit} • R$ {material.cost.toLocaleString()}
+                      </p>
                     </div>
-                  ))}
-                </div>
-              )}
+                    <div className="text-right">
+                      <div className="flex items-center text-sm">
+                        <AlertTriangle className="h-4 w-4 mr-1 text-orange-500" />
+                        <span className="text-orange-600 font-medium">{material.waste}%</span>
+                      </div>
+                      <p className="text-xs text-gray-500">desperdício</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -313,32 +312,20 @@ const ProjectDetailPage = () => {
               <CardDescription>Progresso das fases da obra</CardDescription>
             </CardHeader>
             <CardContent>
-              {timelineLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-residuall-green"></div>
-                </div>
-              ) : projectTimeline.length === 0 ? (
-                <div className="text-center py-12">
-                  <Calendar className="mx-auto h-16 w-16 text-gray-400 mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum dado de cronograma disponível</h3>
-                  <p className="text-gray-500">Registre etapas e medições de desperdício para visualizar o cronograma.</p>
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  {projectTimeline.map((phase, index) => (
-                    <div key={phase.id || index} className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <h4 className="font-medium text-gray-900">{phase.stage_name}</h4>
-                        <Badge variant={phase.status === 'Concluída' ? 'default' : phase.status === 'Em andamento' ? 'secondary' : 'outline'}>
-                          {phase.status}
-                        </Badge>
-                      </div>
-                      <Progress value={phase.progress} className="h-2" />
-                      <p className="text-sm text-gray-500">{phase.progress}% concluído</p>
+              <div className="space-y-6">
+                {mockProjectDetails.timeline.map((phase, index) => (
+                  <div key={index} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-medium text-gray-900">{phase.phase}</h4>
+                      <Badge variant={phase.status === 'Concluída' ? 'default' : phase.status === 'Em andamento' ? 'secondary' : 'outline'}>
+                        {phase.status}
+                      </Badge>
                     </div>
-                  ))}
-                </div>
-              )}
+                    <Progress value={phase.progress} className="h-2" />
+                    <p className="text-sm text-gray-500">{phase.progress}% concluído</p>
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -350,37 +337,24 @@ const ProjectDetailPage = () => {
                 <Users className="h-5 w-5 mr-2" />
                 Equipe do Projeto
               </CardTitle>
-              <CardDescription>Membros responsáveis por este projeto</CardDescription>
+              <CardDescription>Membros responsáveis pelo projeto</CardDescription>
             </CardHeader>
             <CardContent>
-              {teamLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-residuall-green"></div>
-                </div>
-              ) : projectTeamMembers.length === 0 ? (
-                <div className="text-center py-12">
-                  <Users className="mx-auto h-16 w-16 text-gray-400 mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum membro de equipe atribuído</h3>
-                  <p className="text-gray-500">Atribua membros da sua equipe a este projeto.</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {projectTeamMembers.map((member, index) => (
-                    <div key={member.id || index} className="flex items-center space-x-4 p-3 border border-gray-200 rounded-lg">
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage src={member.avatar_url} alt={member.name} />
-                        <AvatarFallback className="bg-residuall-green text-white">
-                          {getInitials(member.name)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <h4 className="font-medium text-gray-900">{member.name}</h4>
-                        <p className="text-sm text-gray-500">{member.role}</p>
-                      </div>
+              <div className="space-y-4">
+                {mockProjectDetails.team.map((member, index) => (
+                  <div key={index} className="flex items-center space-x-4 p-3 border border-gray-200 rounded-lg">
+                    <img
+                      src={member.avatar}
+                      alt={member.name}
+                      className="h-10 w-10 rounded-full"
+                    />
+                    <div>
+                      <h4 className="font-medium text-gray-900">{member.name}</h4>
+                      <p className="text-sm text-gray-500">{member.role}</p>
                     </div>
-                  ))}
-                </div>
-              )}
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

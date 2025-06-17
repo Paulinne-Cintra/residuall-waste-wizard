@@ -1,394 +1,488 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, X } from 'lucide-react';
-import { cn } from "@/lib/utils";
-import { format } from "date-fns";
-import { ProgressSteps } from "@/components/ProgressSteps";
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
-import { toast } from 'sonner';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Plus, Trash2, MapPin, Calendar, Users, FileText, Layers } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useProjects } from '@/hooks/useProjects';
+import { useToast } from '@/hooks/use-toast';
+import { useFormPersistence } from '@/hooks/useFormPersistence';
 
-const STORAGE_KEY = 'create_project_form';
+const projectSchema = z.object({
+  name: z.string().min(1, 'Nome do projeto é obrigatório'),
+  description: z.string().min(1, 'Descrição é obrigatória'),
+  location: z.string().min(1, 'Localização é obrigatória'),
+  start_date: z.string().min(1, 'Data de início é obrigatória'),
+  planned_end_date: z.string().min(1, 'Data prevista de término é obrigatória'),
+  responsible_team_contacts: z.string().optional(),
+  stage: z.enum(['planejamento', 'em_andamento', 'pausado', 'concluido']),
+  materials: z.array(z.object({
+    name: z.string().min(1, 'Nome do material é obrigatório'),
+    quantity: z.number().min(0.01, 'Quantidade deve ser maior que 0'),
+    unit: z.string().min(1, 'Unidade é obrigatória'),
+    supplier: z.string().optional(),
+    cost_per_unit: z.number().min(0, 'Custo deve ser maior ou igual a 0'),
+  })),
+});
 
-const CreateProjectForm = () => {
+type ProjectFormData = z.infer<typeof projectSchema>;
+
+interface Material {
+  name: string;
+  quantity: number;
+  unit: string;
+  supplier: string;
+  cost_per_unit: number;
+}
+
+const STORAGE_KEY = 'create-project-form';
+
+const CreateProjectForm: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const [isLoading, setIsLoading] = useState(false);
-  
-  // Clear localStorage on component mount to ensure clean form
+  const { toast } = useToast();
+  const { addProject } = useProjects();
+
+  // Clear form data when accessing the form for a new project
   useEffect(() => {
-    localStorage.removeItem(STORAGE_KEY);
+    const currentPath = window.location.pathname;
+    if (currentPath.includes('/projetos/novo')) {
+      // Clear any existing form data
+      sessionStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(STORAGE_KEY);
+      sessionStorage.removeItem('editing-project-id');
+      sessionStorage.removeItem('hasUnsavedData');
+    }
   }, []);
 
-  // Form state - initialized with empty values
-  const [formData, setFormData] = useState({
+  const defaultValues: ProjectFormData = {
     name: '',
-    description_notes: '',
+    description: '',
     location: '',
-    project_type: '',
-    budget: '',
-    start_date: undefined as Date | undefined,
-    planned_end_date: undefined as Date | undefined,
-    responsible_team_contacts: [] as string[]
+    start_date: '',
+    planned_end_date: '',
+    responsible_team_contacts: '',
+    stage: 'planejamento',
+    materials: [] // Start with empty array
+  };
+
+  const { 
+    formData, 
+    updateFormData, 
+    clearFormData, 
+    markDataAsSaved,
+    isLoading
+  } = useFormPersistence<ProjectFormData>({
+    key: STORAGE_KEY,
+    defaultValues,
+    storage: 'sessionStorage',
+    debounceMs: 300
   });
 
-  const [materials, setMaterials] = useState<Array<{
-    type: string;
-    quantity: string;
-    unit: string;
-    cost: string;
-  }>>([]);
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors, isSubmitting },
+    reset
+  } = useForm<ProjectFormData>({
+    resolver: zodResolver(projectSchema),
+    defaultValues: formData
+  });
 
-  const [newContact, setNewContact] = useState('');
+  // Sync form with persisted data
+  useEffect(() => {
+    if (!isLoading && formData) {
+      Object.keys(formData).forEach((key) => {
+        setValue(key as keyof ProjectFormData, formData[key as keyof ProjectFormData]);
+      });
+    }
+  }, [formData, setValue, isLoading]);
+
+  // Watch form changes and persist
+  const watchedValues = watch();
+  useEffect(() => {
+    if (!isLoading) {
+      updateFormData(watchedValues);
+    }
+  }, [watchedValues, updateFormData, isLoading]);
+
+  const [materials, setMaterials] = useState<Material[]>([]);
+
+  useEffect(() => {
+    if (formData.materials) {
+      // Ensure all material properties are defined
+      const validMaterials = formData.materials.map(material => ({
+        name: material.name || '',
+        quantity: material.quantity || 0,
+        unit: material.unit || '',
+        supplier: material.supplier || '',
+        cost_per_unit: material.cost_per_unit || 0,
+      }));
+      setMaterials(validMaterials);
+    }
+  }, [formData.materials]);
 
   const addMaterial = () => {
-    setMaterials([...materials, { type: '', quantity: '', unit: '', cost: '' }]);
+    const newMaterial: Material = {
+      name: '',
+      quantity: 0,
+      unit: '',
+      supplier: '',
+      cost_per_unit: 0,
+    };
+    const updatedMaterials = [...materials, newMaterial];
+    setMaterials(updatedMaterials);
+    updateFormData({ ...formData, materials: updatedMaterials });
   };
 
   const removeMaterial = (index: number) => {
-    setMaterials(materials.filter((_, i) => i !== index));
+    const updatedMaterials = materials.filter((_, i) => i !== index);
+    setMaterials(updatedMaterials);
+    updateFormData({ ...formData, materials: updatedMaterials });
   };
 
-  const updateMaterial = (index: number, field: string, value: string) => {
+  const updateMaterial = (index: number, field: keyof Material, value: string | number) => {
     const updatedMaterials = materials.map((material, i) => 
       i === index ? { ...material, [field]: value } : material
     );
     setMaterials(updatedMaterials);
+    updateFormData({ ...formData, materials: updatedMaterials });
   };
 
-  const addContact = () => {
-    if (newContact.trim() && !formData.responsible_team_contacts.includes(newContact)) {
-      setFormData({
-        ...formData,
-        responsible_team_contacts: [...formData.responsible_team_contacts, newContact.trim()]
-      });
-      setNewContact('');
-    }
-  };
-
-  const removeContact = (contact: string) => {
-    setFormData({
-      ...formData,
-      responsible_team_contacts: formData.responsible_team_contacts.filter(c => c !== contact)
-    });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user) {
-      toast.error('Usuário não autenticado');
-      return;
-    }
-
-    setIsLoading(true);
-
+  const onSubmit = async (data: ProjectFormData) => {
     try {
-      // Create project - Convert string array to JSON string for database storage
-      const { data: project, error: projectError } = await supabase
-        .from('projects')
-        .insert({
-          name: formData.name,
-          description_notes: formData.description_notes,
-          location: formData.location,
-          project_type: formData.project_type,
-          budget: formData.budget ? parseFloat(formData.budget) : null,
-          start_date: formData.start_date?.toISOString(),
-          planned_end_date: formData.planned_end_date?.toISOString(),
-          responsible_team_contacts: JSON.stringify(formData.responsible_team_contacts),
-          user_id: user.id,
-          status: 'planejamento',
-          progress_percentage: 0
-        })
-        .select()
-        .single();
+      const projectData = {
+        ...data,
+        materials: materials.filter(m => m.name.trim() !== ''), // Filter empty materials
+        start_date: new Date(data.start_date).toISOString(),
+        planned_end_date: new Date(data.planned_end_date).toISOString(),
+      };
 
-      if (projectError) throw projectError;
-
-      // Create materials if any
-      if (materials.length > 0) {
-        const materialPromises = materials.map(material => 
-          supabase.from('project_materials').insert({
-            project_id: project.id,
-            material_type_name: material.type,
-            estimated_quantity: parseFloat(material.quantity) || 0,
-            unit_of_measurement: material.unit,
-            cost_per_unit: parseFloat(material.cost) || 0
-          })
-        );
-
-        await Promise.all(materialPromises);
-      }
-
-      toast.success('Projeto criado com sucesso!');
-      localStorage.removeItem(STORAGE_KEY);
+      await addProject(projectData);
+      
+      // Mark data as saved and clear
+      markDataAsSaved();
+      clearFormData();
+      
+      toast({
+        title: "Projeto criado com sucesso!",
+        description: "O projeto foi adicionado ao sistema.",
+      });
+      
       navigate('/dashboard/projetos');
     } catch (error) {
       console.error('Erro ao criar projeto:', error);
-      toast.error('Erro ao criar projeto. Tente novamente.');
-    } finally {
-      setIsLoading(false);
+      toast({
+        title: "Erro ao criar projeto",
+        description: "Houve um problema ao salvar o projeto. Tente novamente.",
+        variant: "destructive",
+      });
     }
   };
 
+  const handleClearForm = () => {
+    const confirmClear = window.confirm('Tem certeza que deseja limpar todos os dados do formulário?');
+    if (confirmClear) {
+      clearFormData();
+      reset(defaultValues);
+      setMaterials([]);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-residuall-green"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-4xl mx-auto space-y-8">
-      <ProgressSteps 
-        currentStep={1} 
-        steps={['Informações Básicas', 'Materiais', 'Finalização']} 
-      />
-      
-      <Card>
-        <CardHeader>
-          <CardTitle>Criar Novo Projeto</CardTitle>
-          <CardDescription>Preencha as informações básicas do seu projeto</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Basic Information */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="name">Nome do Projeto *</Label>
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">Criar Novo Projeto</h2>
+          <p className="text-gray-600">Preencha os detalhes do seu projeto de construção</p>
+        </div>
+        <Button 
+          type="button" 
+          variant="outline" 
+          onClick={handleClearForm}
+          className="text-red-600 border-red-600 hover:bg-red-50"
+        >
+          Limpar Formulário
+        </Button>
+      </div>
+
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+        {/* Informações Básicas */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="w-5 h-5" />
+              Informações Básicas
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Nome do Projeto *
+              </label>
+              <Input
+                {...register('name')}
+                placeholder="Ex: Residencial Green Valley"
+                className={errors.name ? 'border-red-500' : ''}
+              />
+              {errors.name && (
+                <p className="text-sm text-red-600 mt-1">{errors.name.message}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Descrição *
+              </label>
+              <Textarea
+                {...register('description')}
+                placeholder="Descreva o projeto, seus objetivos e características principais..."
+                rows={4}
+                className={errors.description ? 'border-red-500' : ''}
+              />
+              {errors.description && (
+                <p className="text-sm text-red-600 mt-1">{errors.description.message}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Localização *
+              </label>
+              <div className="relative">
+                <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  placeholder="Ex: Edifício Residencial Centro"
-                  required
+                  {...register('location')}
+                  placeholder="Ex: São Paulo, SP - Zona Sul"
+                  className={`pl-10 ${errors.location ? 'border-red-500' : ''}`}
                 />
               </div>
+              {errors.location && (
+                <p className="text-sm text-red-600 mt-1">{errors.location.message}</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
 
-              <div className="space-y-2">
-                <Label htmlFor="location">Localização *</Label>
+        {/* Cronograma */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="w-5 h-5" />
+              Cronograma
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Data de Início *
+                </label>
                 <Input
-                  id="location"
-                  value={formData.location}
-                  onChange={(e) => setFormData({...formData, location: e.target.value})}
-                  placeholder="Ex: São Paulo, SP"
-                  required
+                  type="date"
+                  {...register('start_date')}
+                  className={errors.start_date ? 'border-red-500' : ''}
                 />
+                {errors.start_date && (
+                  <p className="text-sm text-red-600 mt-1">{errors.start_date.message}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Data Prevista de Término *
+                </label>
+                <Input
+                  type="date"
+                  {...register('planned_end_date')}
+                  className={errors.planned_end_date ? 'border-red-500' : ''}
+                />
+                {errors.planned_end_date && (
+                  <p className="text-sm text-red-600 mt-1">{errors.planned_end_date.message}</p>
+                )}
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="description">Descrição</Label>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Status Inicial
+              </label>
+              <Select defaultValue="planejamento" onValueChange={(value) => setValue('stage', value as any)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="planejamento">Planejamento</SelectItem>
+                  <SelectItem value="em_andamento">Em Andamento</SelectItem>
+                  <SelectItem value="pausado">Pausado</SelectItem>
+                  <SelectItem value="concluido">Concluído</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Equipe Responsável */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="w-5 h-5" />
+              Equipe Responsável
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Contatos da Equipe
+              </label>
               <Textarea
-                id="description"
-                value={formData.description_notes}
-                onChange={(e) => setFormData({...formData, description_notes: e.target.value})}
-                placeholder="Descreva os objetivos e características do projeto..."
+                {...register('responsible_team_contacts')}
+                placeholder="Ex: João Silva (Engenheiro) - joao@email.com, Maria Santos (Arquiteta) - maria@email.com"
                 rows={3}
               />
+              <p className="text-sm text-gray-500 mt-1">
+                Liste os principais responsáveis e seus contatos
+              </p>
             </div>
+          </CardContent>
+        </Card>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="type">Tipo de Projeto</Label>
-                <Select onValueChange={(value) => setFormData({...formData, project_type: value})}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o tipo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="residencial">Residencial</SelectItem>
-                    <SelectItem value="comercial">Comercial</SelectItem>
-                    <SelectItem value="industrial">Industrial</SelectItem>
-                    <SelectItem value="infraestrutura">Infraestrutura</SelectItem>
-                  </SelectContent>
-                </Select>
+        {/* Materiais */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Layers className="w-5 h-5" />
+              Materiais
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {materials.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <p>Nenhum material adicionado ainda</p>
+                <p className="text-sm">Clique no botão abaixo para adicionar materiais</p>
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="budget">Orçamento (R$)</Label>
-                <Input
-                  id="budget"
-                  type="number"
-                  value={formData.budget}
-                  onChange={(e) => setFormData({...formData, budget: e.target.value})}
-                  placeholder="Ex: 1500000"
-                />
-              </div>
-            </div>
-
-            {/* Dates */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label>Data de Início</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
+            ) : (
+              materials.map((material, index) => (
+                <div key={index} className="border rounded-lg p-4 space-y-4">
+                  <div className="flex justify-between items-center">
+                    <h4 className="font-medium">Material {index + 1}</h4>
                     <Button
+                      type="button"
                       variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !formData.start_date && "text-muted-foreground"
-                      )}
+                      size="sm"
+                      onClick={() => removeMaterial(index)}
+                      className="text-red-600 border-red-600 hover:bg-red-50"
                     >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {formData.start_date ? format(formData.start_date, "dd/MM/yyyy") : "Selecionar data"}
+                      <Trash2 className="w-4 h-4" />
                     </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={formData.start_date}
-                      onSelect={(date) => setFormData({...formData, start_date: date})}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Data de Conclusão Prevista</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !formData.planned_end_date && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {formData.planned_end_date ? format(formData.planned_end_date, "dd/MM/yyyy") : "Selecionar data"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={formData.planned_end_date}
-                      onSelect={(date) => setFormData({...formData, planned_end_date: date})}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-            </div>
-
-            {/* Materials Section */}
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <Label className="text-base font-medium">Materiais do Projeto</Label>
-                <Button type="button" onClick={addMaterial} variant="outline" size="sm">
-                  Adicionar Material
-                </Button>
-              </div>
-
-              {materials.map((material, index) => (
-                <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 border rounded-lg">
-                  <div className="space-y-2">
-                    <Label>Tipo de Material</Label>
-                    <Input
-                      value={material.type}
-                      onChange={(e) => updateMaterial(index, 'type', e.target.value)}
-                      placeholder="Ex: Cimento"
-                    />
                   </div>
-
-                  <div className="space-y-2">
-                    <Label>Quantidade</Label>
-                    <Input
-                      type="number"
-                      value={material.quantity}
-                      onChange={(e) => updateMaterial(index, 'quantity', e.target.value)}
-                      placeholder="Ex: 100"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Unidade</Label>
-                    <Select onValueChange={(value) => updateMaterial(index, 'unit', value)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Unidade" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="kg">kg</SelectItem>
-                        <SelectItem value="m³">m³</SelectItem>
-                        <SelectItem value="m²">m²</SelectItem>
-                        <SelectItem value="unidade">unidade</SelectItem>
-                        <SelectItem value="saco">saco</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Custo por Unidade (R$)</Label>
-                    <div className="flex gap-2">
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Nome do Material *
+                      </label>
+                      <Input
+                        value={material.name}
+                        onChange={(e) => updateMaterial(index, 'name', e.target.value)}
+                        placeholder="Ex: Cimento Portland"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Quantidade *
+                      </label>
                       <Input
                         type="number"
                         step="0.01"
-                        value={material.cost}
-                        onChange={(e) => updateMaterial(index, 'cost', e.target.value)}
-                        placeholder="Ex: 25.50"
+                        value={material.quantity}
+                        onChange={(e) => updateMaterial(index, 'quantity', parseFloat(e.target.value) || 0)}
+                        placeholder="0"
                       />
-                      <Button
-                        type="button"
-                        onClick={() => removeMaterial(index)}
-                        variant="outline"
-                        size="sm"
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Unidade *
+                      </label>
+                      <Input
+                        value={material.unit}
+                        onChange={(e) => updateMaterial(index, 'unit', e.target.value)}
+                        placeholder="Ex: kg, m³, unidade"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Fornecedor
+                      </label>
+                      <Input
+                        value={material.supplier}
+                        onChange={(e) => updateMaterial(index, 'supplier', e.target.value)}
+                        placeholder="Nome do fornecedor"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Custo por Unidade (R$)
+                      </label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        value={material.cost_per_unit}
+                        onChange={(e) => updateMaterial(index, 'cost_per_unit', parseFloat(e.target.value) || 0)}
+                        placeholder="0,00"
+                      />
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
+              ))
+            )}
+            
+            <Button
+              type="button"
+              variant="outline"
+              onClick={addMaterial}
+              className="w-full"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Adicionar Material
+            </Button>
+          </CardContent>
+        </Card>
 
-            {/* Team Contacts */}
-            <div className="space-y-4">
-              <Label className="text-base font-medium">Contatos da Equipe Responsável</Label>
-              
-              <div className="flex gap-2">
-                <Input
-                  value={newContact}
-                  onChange={(e) => setNewContact(e.target.value)}
-                  placeholder="Email ou nome do responsável"
-                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addContact())}
-                />
-                <Button type="button" onClick={addContact} variant="outline">
-                  Adicionar
-                </Button>
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                {formData.responsible_team_contacts.map((contact, index) => (
-                  <Badge key={index} variant="secondary" className="flex items-center gap-1">
-                    {contact}
-                    <X 
-                      className="h-3 w-3 cursor-pointer" 
-                      onClick={() => removeContact(contact)}
-                    />
-                  </Badge>
-                ))}
-              </div>
-            </div>
-
-            {/* Submit Buttons */}
-            <div className="flex justify-end space-x-4 pt-6">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => navigate('/dashboard/projetos')}
-                disabled={isLoading}
-              >
-                Cancelar
-              </Button>
-              <Button type="submit" disabled={isLoading}>
-                {isLoading ? 'Criando...' : 'Criar Projeto'}
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+        {/* Botões de Ação */}
+        <div className="flex gap-4 pt-6">
+          <Button type="submit" disabled={isSubmitting} className="flex-1">
+            {isSubmitting ? 'Criando...' : 'Criar Projeto'}
+          </Button>
+          <Button 
+            type="button" 
+            variant="outline" 
+            onClick={() => navigate('/dashboard/projetos')}
+            className="flex-1"
+          >
+            Cancelar
+          </Button>
+        </div>
+      </form>
     </div>
   );
 };
