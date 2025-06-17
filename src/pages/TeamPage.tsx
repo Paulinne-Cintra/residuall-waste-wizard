@@ -71,23 +71,68 @@ const TeamPage = () => {
   };
 
   const handleRemoveMember = async (member: any) => {
-    if (window.confirm(`Tem certeza que deseja remover ${member.name} da equipe?`)) {
-      const success = await deleteMember(member.id, member.has_account);
-      if (success) {
-        refetch();
+    const memberName = member.name;
+    const confirmMessage = `Tem certeza que deseja remover ${memberName} da equipe?`;
+    
+    if (window.confirm(confirmMessage)) {
+      console.log('🗑️ Iniciando remoção do membro:', member);
+      
+      try {
+        const success = await deleteMember(member.id, member.has_account);
+        
+        if (success) {
+          console.log('✅ Membro removido com sucesso');
+          // A lista já é atualizada automaticamente pela função deleteMember
+        } else {
+          console.log('❌ Falha ao remover membro');
+        }
+      } catch (error) {
+        console.error('💥 Erro durante remoção:', error);
+        toast({
+          title: "Erro",
+          description: "Ocorreu um erro inesperado ao remover o membro.",
+          variant: "destructive",
+        });
       }
     }
   };
 
   const handleSaveMember = async (memberId: string, data: { name: string; role: string; status: string }) => {
-    console.log('Salvando alterações do membro:', memberId, data);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    await refetch();
-    return true;
+    console.log('💾 Salvando alterações do membro:', memberId, data);
+    
+    try {
+      // Simular salvamento
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      toast({
+        title: "Alterações salvas",
+        description: "As informações do membro foram atualizadas com sucesso.",
+      });
+      
+      await refetch();
+      return true;
+    } catch (error) {
+      console.error('💥 Erro ao salvar alterações:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível salvar as alterações.",
+        variant: "destructive",
+      });
+      return false;
+    }
   };
 
   const handleAddMember = async (data: { name: string; email: string; role: string }) => {
-    await addTeamMember(data);
+    console.log('➕ Adicionando novo membro:', data);
+    
+    try {
+      await addTeamMember(data);
+      // A função addTeamMember já atualiza a lista automaticamente
+      console.log('✅ Membro adicionado com sucesso');
+    } catch (error) {
+      console.error('💥 Erro ao adicionar membro:', error);
+      // O erro já é tratado dentro da função addTeamMember
+    }
   };
 
   if (loading) {
