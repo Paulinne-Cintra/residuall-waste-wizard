@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -225,6 +224,8 @@ export const useTeamMembers = () => {
     }
 
     try {
+      console.log(`Tentando deletar membro: ${memberId}, tem conta: ${hasAccount}`);
+      
       // Para conta demo, apenas remover da lista local
       if (user.email === 'teste@exemplo.com') {
         setMembers(prev => prev.filter(member => member.id !== memberId));
@@ -235,15 +236,38 @@ export const useTeamMembers = () => {
         return true;
       }
 
-      // Para contas reais
+      // Para contas reais - tratar diferentes cenários
       if (hasAccount) {
-        // Se o membro tem conta, remover da tabela team_member_projects
-        const { error: projectsError } = await supabase
+        // Se o membro tem conta, verificar se há associações em projetos primeiro
+        const { data: projectAssignments, error: checkError } = await supabase
           .from('team_member_projects')
-          .delete()
+          .select('id')
           .eq('user_id', memberId);
 
-        if (projectsError) throw projectsError;
+        if (checkError) {
+          console.error('Erro ao verificar associações de projeto:', checkError);
+          throw checkError;
+        }
+
+        // Se há associações, removê-las
+        if (projectAssignments && projectAssignments.length > 0) {
+          const { error: deleteProjectsError } = await supabase
+            .from('team_member_projects')
+            .delete()
+            .eq('user_id', memberId)
+            .eq('assigned_by', user.id);
+
+          if (deleteProjectsError) {
+            console.error('Erro ao remover associações de projeto:', deleteProjectsError);
+            throw deleteProjectsError;
+          }
+          console.log(`Removidas ${projectAssignments.length} associações de projeto`);
+        }
+
+        toast({
+          title: "Membro removido",
+          description: "O membro foi removido da equipe e de todos os projetos associados.",
+        });
       } else {
         // Se é um convite pendente, remover da tabela team_invitations
         const { error: invitationError } = await supabase
@@ -252,21 +276,38 @@ export const useTeamMembers = () => {
           .eq('id', memberId)
           .eq('invited_by_user_id', user.id);
 
-        if (invitationError) throw invitationError;
+        if (invitationError) {
+          console.error('Erro ao remover convite:', invitationError);
+          throw invitationError;
+        }
+
+        console.log(`Convite ${memberId} removido com sucesso`);
+        toast({
+          title: "Convite removido",
+          description: "O convite foi removido com sucesso.",
+        });
       }
 
-      toast({
-        title: "Membro removido",
-        description: "O membro foi removido da equipe com sucesso.",
-      });
-
+      // Atualizar a lista de membros
       await fetchMembers();
       return true;
+      
     } catch (error: any) {
       console.error('Erro ao remover membro:', error);
+      
+      // Mensagens de erro mais específicas
+      let errorMessage = "Ocorreu um erro inesperado.";
+      if (error.code === 'PGRST301') {
+        errorMessage = "Você não tem permissão para remover este membro.";
+      } else if (error.code === 'PGRST116') {
+        errorMessage = "Membro não encontrado ou já foi removido.";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "Erro ao remover membro",
-        description: error.message || "Ocorreu um erro inesperado.",
+        description: errorMessage,
         variant: "destructive",
       });
       return false;
