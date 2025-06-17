@@ -9,31 +9,56 @@ interface Profile {
   full_name?: string;
   email?: string;
   phone_number?: string;
-  cargo?: string;
   professional_role?: string;
   biografia?: string;
   avatar_url?: string;
   created_at: string;
+  updated_at?: string;
+}
+
+interface LoginHistoryEntry {
+  id: string;
+  login_date: string;
+  device_info?: string;
+  location?: string;
+  success: boolean;
+}
+
+interface PaymentStatus {
+  id: string;
+  payment_completed: boolean;
+  subscription_active: boolean;
+  plan_name?: string;
+  subscription_expires_at?: string;
 }
 
 export const useProfile = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  
+  // Estados principais
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [loginHistory, setLoginHistory] = useState<LoginHistoryEntry[]>([]);
+  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus | null>(null);
+  
+  // Estados de loading
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [changingPassword, setChangingPassword] = useState(false);
 
-  const loadProfile = async () => {
+  // Função para carregar perfil do usuário
+  const loadProfile = async (): Promise<boolean> => {
     if (!user) {
+      console.log('👤 No user found, skipping profile load');
       setLoading(false);
-      return;
+      return false;
     }
 
     try {
       console.log('📋 Loading profile for user:', user.id);
       
-      const { data, error } = await supabase
+      const { data: existingProfile, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
@@ -44,50 +69,100 @@ export const useProfile = () => {
         throw error;
       }
 
-      if (data) {
-        setProfile(data);
-        console.log('✅ Profile loaded successfully:', data);
+      if (existingProfile) {
+        console.log('✅ Profile found:', existingProfile);
+        setProfile(existingProfile);
+        return true;
       } else {
-        // Criar perfil padrão se não existir
-        console.log('🔧 Creating default profile...');
-        const defaultProfile = {
+        // Criar perfil padrão para novo usuário
+        console.log('🔧 Creating default profile for new user...');
+        const newProfile = {
           id: user.id,
           full_name: user.user_metadata?.full_name || '',
           email: user.email || '',
           phone_number: user.user_metadata?.phone_number || '',
-          cargo: user.user_metadata?.cargo || '',
           professional_role: user.user_metadata?.professional_role || '',
           biografia: '',
           avatar_url: user.user_metadata?.avatar_url || '',
         };
 
-        const { data: newProfile, error: insertError } = await supabase
+        const { data: createdProfile, error: insertError } = await supabase
           .from('profiles')
-          .insert(defaultProfile)
+          .insert(newProfile)
           .select()
           .single();
 
         if (insertError) {
-          console.error('❌ Error creating default profile:', insertError);
+          console.error('❌ Error creating profile:', insertError);
           throw insertError;
         }
-        
-        setProfile(newProfile);
-        console.log('✅ Default profile created:', newProfile);
+
+        console.log('✅ Profile created successfully:', createdProfile);
+        setProfile(createdProfile);
+        return true;
       }
     } catch (err: any) {
       console.error('💥 Error in loadProfile:', err);
       toast({
         title: "Erro ao carregar perfil",
-        description: "Não foi possível carregar seus dados. Tente novamente.",
+        description: "Não foi possível carregar seus dados. Tente recarregar a página.",
         variant: "destructive",
       });
-    } finally {
-      setLoading(false);
+      return false;
     }
   };
 
-  const updateProfile = async (updates: Partial<Profile>) => {
+  // Função para carregar histórico de login
+  const loadLoginHistory = async () => {
+    if (!user) return;
+
+    try {
+      console.log('📊 Loading login history...');
+      const { data, error } = await supabase
+        .from('login_history')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('login_date', { ascending: false })
+        .limit(10);
+
+      if (error) {
+        console.error('❌ Error loading login history:', error);
+        return;
+      }
+
+      console.log('✅ Login history loaded:', data?.length || 0, 'entries');
+      setLoginHistory(data || []);
+    } catch (err) {
+      console.error('💥 Error loading login history:', err);
+    }
+  };
+
+  // Função para carregar status de pagamento
+  const loadPaymentStatus = async () => {
+    if (!user) return;
+
+    try {
+      console.log('💳 Loading payment status...');
+      const { data, error } = await supabase
+        .from('payment_status')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (error) {
+        console.error('❌ Error loading payment status:', error);
+        return;
+      }
+
+      console.log('✅ Payment status loaded:', data);
+      setPaymentStatus(data);
+    } catch (err) {
+      console.error('💥 Error loading payment status:', err);
+    }
+  };
+
+  // Função para atualizar perfil
+  const updateProfile = async (updates: Partial<Profile>): Promise<boolean> => {
     if (!user || !profile) {
       toast({
         title: "Erro",
@@ -99,7 +174,7 @@ export const useProfile = () => {
 
     setUpdating(true);
     try {
-      console.log('📝 Updating profile with data:', updates);
+      console.log('📝 Updating profile with:', updates);
       
       const { data, error } = await supabase
         .from('profiles')
@@ -113,8 +188,8 @@ export const useProfile = () => {
         throw error;
       }
 
-      setProfile(data);
       console.log('✅ Profile updated successfully:', data);
+      setProfile(data);
       
       toast({
         title: "Perfil atualizado",
@@ -125,7 +200,7 @@ export const useProfile = () => {
     } catch (err: any) {
       console.error('💥 Error updating profile:', err);
       
-      let errorMessage = "Não foi possível salvar suas alterações. Tente novamente.";
+      let errorMessage = "Não foi possível salvar suas alterações.";
       if (err.code === '42501') {
         errorMessage = "Você não tem permissão para atualizar este perfil.";
       } else if (err.message) {
@@ -143,7 +218,8 @@ export const useProfile = () => {
     }
   };
 
-  const uploadAvatar = async (file: File) => {
+  // Função para upload de avatar
+  const uploadAvatar = async (file: File): Promise<boolean> => {
     if (!user) {
       toast({
         title: "Erro",
@@ -153,7 +229,7 @@ export const useProfile = () => {
       return false;
     }
 
-    // Validar tipo de arquivo
+    // Validações do arquivo
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
     if (!allowedTypes.includes(file.type)) {
       toast({
@@ -164,7 +240,6 @@ export const useProfile = () => {
       return false;
     }
 
-    // Validar tamanho (2MB máximo)
     if (file.size > 2 * 1024 * 1024) {
       toast({
         title: "Arquivo muito grande",
@@ -179,9 +254,10 @@ export const useProfile = () => {
       console.log('📤 Uploading avatar:', file.name);
 
       const fileExt = file.name.split('.').pop();
-      const fileName = `avatar.${fileExt}`;
+      const fileName = `avatar-${Date.now()}.${fileExt}`;
       const filePath = `${user.id}/${fileName}`;
 
+      // Upload do arquivo
       const { error: uploadError } = await supabase.storage
         .from('avatars')
         .upload(filePath, file, {
@@ -194,12 +270,14 @@ export const useProfile = () => {
         throw uploadError;
       }
 
+      // Obter URL pública
       const { data: { publicUrl } } = supabase.storage
         .from('avatars')
         .getPublicUrl(filePath);
 
       console.log('🔗 Public URL generated:', publicUrl);
 
+      // Atualizar perfil com nova URL
       const success = await updateProfile({ avatar_url: publicUrl });
       
       if (success) {
@@ -223,7 +301,9 @@ export const useProfile = () => {
     }
   };
 
-  const changePassword = async (newPassword: string) => {
+  // Função para alterar senha
+  const changePassword = async (newPassword: string): Promise<boolean> => {
+    setChangingPassword(true);
     try {
       console.log('🔐 Changing password...');
       
@@ -236,6 +316,7 @@ export const useProfile = () => {
         throw error;
       }
 
+      console.log('✅ Password changed successfully');
       toast({
         title: "Senha alterada",
         description: "Sua senha foi alterada com sucesso.",
@@ -246,30 +327,57 @@ export const useProfile = () => {
       console.error('💥 Error changing password:', err);
       toast({
         title: "Erro ao alterar senha",
-        description: err.message || "Não foi possível alterar sua senha. Tente novamente.",
+        description: err.message || "Não foi possível alterar sua senha.",
         variant: "destructive",
       });
       return false;
+    } finally {
+      setChangingPassword(false);
     }
   };
 
+  // Função para recarregar todos os dados
+  const refetch = async () => {
+    setLoading(true);
+    try {
+      await Promise.all([
+        loadProfile(),
+        loadLoginHistory(),
+        loadPaymentStatus()
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Effect para carregar dados quando usuário muda
   useEffect(() => {
     if (user) {
-      loadProfile();
+      console.log('👤 User changed, loading profile data...');
+      refetch();
     } else {
+      // Limpar dados quando usuário faz logout
       setProfile(null);
+      setLoginHistory([]);
+      setPaymentStatus(null);
       setLoading(false);
     }
   }, [user]);
 
   return {
+    // Estados
     profile,
+    loginHistory,
+    paymentStatus,
     loading,
     updating,
     uploadingAvatar,
+    changingPassword,
+    
+    // Funções
     updateProfile,
     uploadAvatar,
     changePassword,
-    refetch: loadProfile,
+    refetch,
   };
 };
