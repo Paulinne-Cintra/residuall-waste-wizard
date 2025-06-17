@@ -14,7 +14,7 @@ export const ProgressSteps = ({
         const isCompleted = stepNumber < currentStep;
         const isCurrent = stepNumber === currentStep;
         return <div key={index} className="flex items-center bg-[sidebar-item-active-text] bg-transparent">
-              <div className="flex items-center">
+              <div className="flex items-center bg-[residuall-green-DEFAULT] bg-transparent">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-semibold ${isCompleted ? 'bg-residuall-green' : isCurrent ? 'bg-residuall-orange' : 'bg-gray-300'}`}>
                   {isCompleted ? <Check size={16} /> : stepNumber}
                 </div>
