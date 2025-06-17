@@ -45,15 +45,14 @@ const CreateProjectForm: React.FC = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [materials, setMaterials] = useState<Material[]>([
-    { id: '1', name: '', quantity: '', unit: '', cost: '', category: '' }
-  ]);
+  const [materials, setMaterials] = useState<Material[]>([]);
 
   const {
     register,
     handleSubmit,
     watch,
     setValue,
+    reset,
     formState: { errors },
   } = useForm<ProjectFormData>({
     resolver: zodResolver(projectSchema),
@@ -73,37 +72,39 @@ const CreateProjectForm: React.FC = () => {
   // Observar mudanças no formulário para persistência
   const watchedFields = watch();
 
-  // Carregar dados salvos do localStorage
+  // Limpar dados do localStorage e inicializar formulário limpo
   useEffect(() => {
-    const savedData = localStorage.getItem(STORAGE_KEY);
-    if (savedData) {
-      try {
-        const { formData, materialsData } = JSON.parse(savedData);
-        
-        // Restaurar dados do formulário
-        Object.keys(formData).forEach(key => {
-          if (formData[key]) {
-            setValue(key as keyof ProjectFormData, formData[key]);
-          }
-        });
+    console.log('CreateProjectForm: Limpando dados salvos e inicializando formulário limpo');
+    
+    // Limpar dados salvos do localStorage
+    localStorage.removeItem(STORAGE_KEY);
+    
+    // Resetar formulário para valores padrão vazios
+    reset({
+      name: '',
+      description_notes: '',
+      location: '',
+      project_type: '',
+      start_date: '',
+      planned_end_date: '',
+      budget: '',
+      responsible_team_contacts: '',
+      dimensions_details: '',
+    });
+    
+    // Inicializar materiais como array vazio (sem materiais pré-definidos)
+    setMaterials([]);
+  }, [reset]);
 
-        // Restaurar materiais
-        if (materialsData && materialsData.length > 0) {
-          setMaterials(materialsData);
-        }
-      } catch (error) {
-        console.error('Erro ao carregar dados salvos:', error);
-      }
+  // Salvar dados no localStorage apenas quando houver mudanças (após inicialização)
+  useEffect(() => {
+    if (watchedFields.name || materials.length > 0) {
+      const dataToSave = {
+        formData: watchedFields,
+        materialsData: materials
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
     }
-  }, [setValue]);
-
-  // Salvar dados no localStorage quando houver mudanças
-  useEffect(() => {
-    const dataToSave = {
-      formData: watchedFields,
-      materialsData: materials
-    };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
   }, [watchedFields, materials]);
 
   const addMaterial = () => {
@@ -119,9 +120,7 @@ const CreateProjectForm: React.FC = () => {
   };
 
   const removeMaterial = (id: string) => {
-    if (materials.length > 1) {
-      setMaterials(materials.filter(material => material.id !== id));
-    }
+    setMaterials(materials.filter(material => material.id !== id));
   };
 
   const updateMaterial = (id: string, field: keyof Material, value: string) => {
@@ -189,7 +188,8 @@ const CreateProjectForm: React.FC = () => {
 
   const clearForm = () => {
     localStorage.removeItem(STORAGE_KEY);
-    window.location.reload();
+    reset();
+    setMaterials([]);
   };
 
   return (
@@ -312,113 +312,128 @@ const CreateProjectForm: React.FC = () => {
               <CardHeader>
                 <CardTitle className="text-lg">Materiais do Projeto</CardTitle>
                 <CardDescription>
-                  Adicione os materiais que serão utilizados neste projeto
+                  Adicione os materiais que serão utilizados neste projeto (opcional)
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {materials.map((material, index) => (
-                  <div key={material.id} className="border rounded-lg p-4 space-y-4">
-                    <div className="flex justify-between items-center">
-                      <h4 className="font-medium">Material {index + 1}</h4>
-                      {materials.length > 1 && (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeMaterial(material.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      <div className="space-y-2">
-                        <Label>Nome do Material</Label>
-                        <Input
-                          placeholder="Ex: Tijolo cerâmico"
-                          value={material.name}
-                          onChange={(e) => updateMaterial(material.id, 'name', e.target.value)}
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label>Quantidade</Label>
-                        <Input
-                          type="number"
-                          placeholder="0"
-                          value={material.quantity}
-                          onChange={(e) => updateMaterial(material.id, 'quantity', e.target.value)}
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label>Unidade</Label>
-                        <Select 
-                          value={material.unit}
-                          onValueChange={(value) => updateMaterial(material.id, 'unit', value)}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecione" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="unidade">Unidade</SelectItem>
-                            <SelectItem value="kg">Quilograma (kg)</SelectItem>
-                            <SelectItem value="m">Metro (m)</SelectItem>
-                            <SelectItem value="m2">Metro² (m²)</SelectItem>
-                            <SelectItem value="m3">Metro³ (m³)</SelectItem>
-                            <SelectItem value="litro">Litro (l)</SelectItem>
-                            <SelectItem value="saco">Saco</SelectItem>
-                            <SelectItem value="tonelada">Tonelada (t)</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label>Categoria</Label>
-                        <Select 
-                          value={material.category}
-                          onValueChange={(value) => updateMaterial(material.id, 'category', value)}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecione" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="alvenaria">Alvenaria</SelectItem>
-                            <SelectItem value="estrutural">Estrutural</SelectItem>
-                            <SelectItem value="acabamento">Acabamento</SelectItem>
-                            <SelectItem value="hidraulico">Hidráulico</SelectItem>
-                            <SelectItem value="eletrico">Elétrico</SelectItem>
-                            <SelectItem value="madeira">Madeira</SelectItem>
-                            <SelectItem value="metal">Metal</SelectItem>
-                            <SelectItem value="tintas">Tintas</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label>Custo Unitário (R$)</Label>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          placeholder="0,00"
-                          value={material.cost}
-                          onChange={(e) => updateMaterial(material.id, 'cost', e.target.value)}
-                        />
-                      </div>
-                    </div>
+                {materials.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-gray-500 mb-4">Nenhum material adicionado ainda</p>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={addMaterial}
+                      className="w-full"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Adicionar primeiro material
+                    </Button>
                   </div>
-                ))}
+                ) : (
+                  <>
+                    {materials.map((material, index) => (
+                      <div key={material.id} className="border rounded-lg p-4 space-y-4">
+                        <div className="flex justify-between items-center">
+                          <h4 className="font-medium">Material {index + 1}</h4>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeMaterial(material.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
 
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={addMaterial}
-                  className="w-full"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Adicionar mais materiais
-                </Button>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          <div className="space-y-2">
+                            <Label>Nome do Material</Label>
+                            <Input
+                              placeholder="Ex: Tijolo cerâmico"
+                              value={material.name}
+                              onChange={(e) => updateMaterial(material.id, 'name', e.target.value)}
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label>Quantidade</Label>
+                            <Input
+                              type="number"
+                              placeholder="0"
+                              value={material.quantity}
+                              onChange={(e) => updateMaterial(material.id, 'quantity', e.target.value)}
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label>Unidade</Label>
+                            <Select 
+                              value={material.unit}
+                              onValueChange={(value) => updateMaterial(material.id, 'unit', value)}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecione" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="unidade">Unidade</SelectItem>
+                                <SelectItem value="kg">Quilograma (kg)</SelectItem>
+                                <SelectItem value="m">Metro (m)</SelectItem>
+                                <SelectItem value="m2">Metro² (m²)</SelectItem>
+                                <SelectItem value="m3">Metro³ (m³)</SelectItem>
+                                <SelectItem value="litro">Litro (l)</SelectItem>
+                                <SelectItem value="saco">Saco</SelectItem>
+                                <SelectItem value="tonelada">Tonelada (t)</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label>Categoria</Label>
+                            <Select 
+                              value={material.category}
+                              onValueChange={(value) => updateMaterial(material.id, 'category', value)}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecione" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="alvenaria">Alvenaria</SelectItem>
+                                <SelectItem value="estrutural">Estrutural</SelectItem>
+                                <SelectItem value="acabamento">Acabamento</SelectItem>
+                                <SelectItem value="hidraulico">Hidráulico</SelectItem>
+                                <SelectItem value="eletrico">Elétrico</SelectItem>
+                                <SelectItem value="madeira">Madeira</SelectItem>
+                                <SelectItem value="metal">Metal</SelectItem>
+                                <SelectItem value="tintas">Tintas</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label>Custo Unitário (R$)</Label>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              placeholder="0,00"
+                              value={material.cost}
+                              onChange={(e) => updateMaterial(material.id, 'cost', e.target.value)}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={addMaterial}
+                      className="w-full"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Adicionar mais materiais
+                    </Button>
+                  </>
+                )}
               </CardContent>
             </Card>
 

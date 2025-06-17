@@ -6,6 +6,7 @@ import { ProgressSteps } from '../components/ProgressSteps';
 import { useAuth } from '@/hooks/useAuth';
 import { usePaymentStatus } from '@/hooks/usePaymentStatus';
 import { useToast } from '@/hooks/use-toast';
+import QRCode from 'qrcode';
 
 interface Plan {
   id: string;
@@ -79,6 +80,7 @@ const PaymentPage = () => {
   const [showPaymentForm, setShowPaymentForm] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('credit-card');
   const [loading, setLoading] = useState(false);
+  const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>('');
   const [formData, setFormData] = useState({
     cardName: '',
     cardNumber: '',
@@ -97,10 +99,80 @@ const PaymentPage = () => {
     }
   }, [user, navigate]);
 
+  // Gerar QR Code PIX quando método PIX for selecionado e há plano
+  useEffect(() => {
+    if (paymentMethod === 'pix' && currentPlanData && currentPlanData.price !== 'Grátis') {
+      generatePixQRCode();
+    }
+  }, [paymentMethod, currentPlanData]);
+
+  const generatePixQRCode = async () => {
+    if (!currentPlanData || currentPlanData.price === 'Grátis') return;
+
+    const pixKey = '73988372697';
+    const amount = currentPlanData.price.replace(',', '.');
+    const recipientName = 'RESIDUALL LTDA';
+    const city = 'SAO PAULO';
+    const transactionId = `RESIDUALL${Date.now()}`;
+
+    // Gerar BR Code (PIX code) simplificado
+    const pixPayload = generatePixPayload({
+      pixKey,
+      amount: parseFloat(amount),
+      recipientName,
+      city,
+      transactionId,
+      description: `Pagamento ${currentPlanData.name}`
+    });
+
+    try {
+      const qrCodeUrl = await QRCode.toDataURL(pixPayload, {
+        width: 256,
+        margin: 2,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF'
+        }
+      });
+      setQrCodeDataUrl(qrCodeUrl);
+    } catch (error) {
+      console.error('Erro ao gerar QR Code:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível gerar o QR Code PIX.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const generatePixPayload = ({ pixKey, amount, recipientName, city, transactionId, description }: {
+    pixKey: string;
+    amount: number;
+    recipientName: string;
+    city: string;
+    transactionId: string;
+    description: string;
+  }) => {
+    // Implementação simplificada do BR Code PIX
+    const payload = [
+      '00020126',
+      '580014BR.GOV.BCB.PIX',
+      `0136${pixKey}`,
+      `52040000`,
+      `5303986`,
+      `5802BR`,
+      `5913${recipientName}`,
+      `6009${city}`,
+      `62070503***`,
+      '6304'
+    ].join('');
+
+    return payload;
+  };
+
   const handlePlanSelection = (plan: Plan) => {
     setCurrentPlanData(plan);
     if (plan.price === 'Grátis') {
-      // Para plano gratuito, simular conclusão imediata
       handlePaymentCompletion(plan);
     } else {
       setShowPaymentForm(true);
@@ -125,7 +197,6 @@ const PaymentPage = () => {
       title: successMessage,
     });
 
-    // Redirecionar baseado na origem
     setTimeout(() => {
       if (fromProfile || isUpgrade) {
         navigate('/dashboard/perfil', { 
@@ -151,7 +222,6 @@ const PaymentPage = () => {
     
     setLoading(true);
     
-    // Simular processamento de pagamento
     setTimeout(() => {
       handlePaymentCompletion(currentPlanData);
     }, 2000);
@@ -166,15 +236,72 @@ const PaymentPage = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col relative overflow-hidden login-animated-bg">
+    <div className="min-h-screen flex flex-col relative overflow-hidden">
       <Header />
+      
+      {/* Fundo com degradê dinâmico em tons terrosos - copiado do LoginPage */}
+      <div 
+        className="absolute inset-0 w-full h-full"
+        style={{
+          background: 'linear-gradient(135deg, #556B2F 0%, #D2691E 50%, #556B2F 100%)',
+          backgroundSize: '200% 200%',
+          animation: 'gradient-shift 15s ease-in-out infinite'
+        }}
+      />
+      
+      {/* Película branca translúcida como véu */}
+      <div className="absolute inset-0 w-full h-full bg-white/25 backdrop-blur-[0.5px]" />
+      
+      {/* Elementos arquitetônicos geométricos de baixa opacidade */}
+      <div className="absolute inset-0 w-full h-full opacity-8">
+        <svg width="100%" height="100%" className="absolute inset-0">
+          {/* Silhuetas de prédios */}
+          <g className="text-white/15">
+            <rect x="8%" y="25%" width="4%" height="50%" fill="none" stroke="currentColor" strokeWidth="0.5" />
+            <rect x="8.5%" y="35%" width="1%" height="3%" fill="none" stroke="currentColor" strokeWidth="0.3" />
+            <rect x="10%" y="35%" width="1%" height="3%" fill="none" stroke="currentColor" strokeWidth="0.3" />
+            <rect x="8.5%" y="45%" width="1%" height="3%" fill="none" stroke="currentColor" strokeWidth="0.3" />
+            <rect x="10%" y="45%" width="1%" height="3%" fill="none" stroke="currentColor" strokeWidth="0.3" />
+            
+            <rect x="85%" y="20%" width="6%" height="55%" fill="none" stroke="currentColor" strokeWidth="0.5" />
+            <rect x="86%" y="30%" width="1.5%" height="4%" fill="none" stroke="currentColor" strokeWidth="0.3" />
+            <rect x="88.5%" y="30%" width="1.5%" height="4%" fill="none" stroke="currentColor" strokeWidth="0.3" />
+            <rect x="86%" y="45%" width="1.5%" height="4%" fill="none" stroke="currentColor" strokeWidth="0.3" />
+            <rect x="88.5%" y="45%" width="1.5%" height="4%" fill="none" stroke="currentColor" strokeWidth="0.3" />
+          </g>
+          
+          {/* Plantas técnicas e linhas de construção */}
+          <g className="text-white/12">
+            <line x1="15%" y1="15%" x2="40%" y2="15%" strokeWidth="0.5" stroke="currentColor" strokeDasharray="3,2" />
+            <line x1="15%" y1="18%" x2="35%" y2="18%" strokeWidth="0.3" stroke="currentColor" strokeDasharray="2,2" />
+            <circle cx="45%" cy="16.5%" r="1.5" fill="none" stroke="currentColor" strokeWidth="0.3" />
+            
+            <line x1="60%" y1="85%" x2="85%" y2="85%" strokeWidth="0.5" stroke="currentColor" strokeDasharray="3,2" />
+            <line x1="65%" y1="88%" x2="80%" y2="88%" strokeWidth="0.3" stroke="currentColor" strokeDasharray="2,2" />
+            <rect x="70%" y="82%" width="8" height="8" fill="none" stroke="currentColor" strokeWidth="0.3" />
+          </g>
+          
+          {/* Estruturas geométricas sutis */}
+          <g className="text-white/10">
+            <polygon points="150,100 170,80 190,100 170,120" fill="none" stroke="currentColor" strokeWidth="0.5" />
+            <circle cx="92%" cy="25%" r="15" fill="none" stroke="currentColor" strokeWidth="0.4" />
+            
+            {/* Padrão de tijolos */}
+            <g transform="translate(5%, 60%)">
+              <rect width="20" height="8" fill="none" stroke="currentColor" strokeWidth="0.3" />
+              <rect x="10" y="8" width="20" height="8" fill="none" stroke="currentColor" strokeWidth="0.3" />
+              <rect y="16" width="20" height="8" fill="none" stroke="currentColor" strokeWidth="0.3" />
+            </g>
+          </g>
+        </svg>
+      </div>
       
       <main className="flex-grow flex items-center justify-center py-12 relative z-10 px-4 pt-20 md:pt-24">
         <div className="w-full max-w-6xl">
           {/* Progress Steps */}
           <ProgressSteps currentStep={currentStep} steps={steps} />
 
-          {/* Mensagem específica para mudança de plano */}
+          {/* mensagens específicas para upgrade e redirecionamento */}
           {isUpgrade && (
             <div className="bg-residuall-green/10 border border-residuall-green rounded-lg p-4 mb-6 text-center">
               <p className="text-residuall-green font-medium">
@@ -183,7 +310,6 @@ const PaymentPage = () => {
             </div>
           )}
 
-          {/* Mensagem de redirecionamento se veio do dashboard */}
           {message && (
             <div className="bg-residuall-orange/10 border border-residuall-orange rounded-lg p-4 mb-6 text-center">
               <p className="text-residuall-orange font-medium">{message}</p>
@@ -191,7 +317,7 @@ const PaymentPage = () => {
           )}
 
           {!showPaymentForm ? (
-            // Seleção de Planos
+            // seleção de planos
             <div>
               <div className="text-center mb-8">
                 <h1 className="font-montserrat font-bold text-3xl text-residuall-green mb-4">
@@ -392,9 +518,43 @@ const PaymentPage = () => {
                   </div>
                 </div>
 
+                {/* PIX QR Code */}
+                {paymentMethod === 'pix' && currentPlanData && currentPlanData.price !== 'Grátis' && (
+                  <div className="mb-6 p-4 bg-gray-50 rounded-lg text-center">
+                    <h4 className="font-semibold text-residuall-green mb-3">
+                      Pague com PIX
+                    </h4>
+                    {qrCodeDataUrl ? (
+                      <div className="space-y-3">
+                        <img 
+                          src={qrCodeDataUrl} 
+                          alt="QR Code PIX" 
+                          className="mx-auto w-48 h-48 border rounded"
+                        />
+                        <p className="text-sm text-gray-600">
+                          Escaneie o QR Code com seu app bancário
+                        </p>
+                        <div className="bg-white p-3 rounded border">
+                          <p className="text-xs text-gray-500 mb-1">Chave PIX:</p>
+                          <p className="font-mono text-sm">73988372697</p>
+                        </div>
+                        <div className="bg-white p-3 rounded border">
+                          <p className="text-xs text-gray-500 mb-1">Valor:</p>
+                          <p className="font-semibold text-lg text-residuall-green">
+                            R$ {currentPlanData.price}
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-residuall-green mx-auto"></div>
+                    )}
+                  </div>
+                )}
+
                 <form onSubmit={handleSubmit} className="space-y-4">
                   {paymentMethod === 'credit-card' && (
                     <>
+                      {/* campos do cartão de crédito */}
                       <div>
                         <label className="block text-sm font-montserrat font-medium text-residuall-gray mb-2">
                           Nome no Cartão
@@ -461,20 +621,22 @@ const PaymentPage = () => {
                     </>
                   )}
 
-                  <div>
-                    <label className="block text-sm font-montserrat font-medium text-residuall-gray mb-2">
-                      CPF ou CNPJ
-                    </label>
-                    <input
-                      type="text"
-                      name="cpfCnpj"
-                      value={formData.cpfCnpj}
-                      onChange={handleInputChange}
-                      className="input-modern"
-                      placeholder="000.000.000-00"
-                      required
-                    />
-                  </div>
+                  {paymentMethod !== 'pix' && (
+                    <div>
+                      <label className="block text-sm font-montserrat font-medium text-residuall-gray mb-2">
+                        CPF ou CNPJ
+                      </label>
+                      <input
+                        type="text"
+                        name="cpfCnpj"
+                        value={formData.cpfCnpj}
+                        onChange={handleInputChange}
+                        className="input-modern"
+                        placeholder="000.000.000-00"
+                        required
+                      />
+                    </div>
+                  )}
 
                   {/* Security Message */}
                   <div className="flex items-center p-4 bg-green-50 rounded-lg">
@@ -485,19 +647,40 @@ const PaymentPage = () => {
                   </div>
 
                   {/* Submit Button */}
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed font-montserrat font-semibold text-lg py-4 mt-6"
-                  >
-                    {loading ? 'Processando...' : 'Finalizar Assinatura'}
-                  </button>
+                  {paymentMethod === 'pix' ? (
+                    <button
+                      type="button"
+                      onClick={() => handlePaymentCompletion(currentPlanData!)}
+                      className="btn-primary w-full font-montserrat font-semibold text-lg py-4 mt-6"
+                    >
+                      Confirmar Pagamento PIX
+                    </button>
+                  ) : (
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed font-montserrat font-semibold text-lg py-4 mt-6"
+                    >
+                      {loading ? 'Processando...' : 'Finalizar Assinatura'}
+                    </button>
+                  )}
                 </form>
               </div>
             </div>
           )}
         </div>
       </main>
+      
+      <style>{`
+        @keyframes gradient-shift {
+          0%, 100% {
+            background-position: 0% 50%;
+          }
+          50% {
+            background-position: 100% 50%;
+          }
+        }
+      `}</style>
     </div>
   );
 };
