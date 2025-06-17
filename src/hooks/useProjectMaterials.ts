@@ -3,109 +3,86 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
-interface ProjectMaterial {
+export interface ProjectMaterial {
   id: string;
-  project_id: string;
   material_type_name: string;
-  estimated_quantity: number | null;
-  unit_of_measurement: string | null;
-  dimensions_specs: string | null;
-  cost_per_unit: number | null;
-  stock_quantity: number | null;
-  minimum_quantity: number | null;
-  category: string | null;
-  supplier_id: string | null;
-  created_at: string;
-  updated_at: string;
+  estimated_quantity: number;
+  cost_per_unit: number;
+  unit_of_measurement: string;
+  category: string;
+  stock_quantity: number;
+  minimum_quantity: number;
+  total_estimated_cost: number;
+  waste_percentage?: number;
 }
 
-interface UseProjectMaterialsResult {
-  materials: ProjectMaterial[];
-  loading: boolean;
-  error: string | null;
-  createMaterial: (materialData: any) => Promise<boolean>;
-}
-
-export const useProjectMaterials = (): UseProjectMaterialsResult => {
-  const { user } = useAuth();
+export const useProjectMaterials = (projectId: string) => {
   const [materials, setMaterials] = useState<ProjectMaterial[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchMaterials = async () => {
-      setLoading(true);
-      setError(null);
-
-      if (!user) {
-        setError("Usuário não autenticado.");
+      if (!user || !projectId) {
+        setMaterials([]);
         setLoading(false);
         return;
       }
 
       try {
-        console.log('Buscando materiais para o usuário:', user.id);
+        console.log('Buscando materiais para projeto:', projectId);
+        
         const { data, error } = await supabase
           .from('project_materials')
           .select(`
-            *,
-            projects!inner(user_id)
+            id,
+            material_type_name,
+            estimated_quantity,
+            cost_per_unit,
+            unit_of_measurement,
+            category,
+            stock_quantity,
+            minimum_quantity,
+            waste_entries(
+              wasted_quantity
+            )
           `)
-          .eq('projects.user_id', user.id);
+          .eq('project_id', projectId);
 
         if (error) {
           console.error('Erro ao buscar materiais:', error);
           throw error;
         }
-        
-        console.log('Materiais encontrados:', data);
-        setMaterials(data as ProjectMaterial[]);
-      } catch (err: any) {
-        console.error('Erro na busca de materiais:', err);
-        setError(err.message);
+
+        const processedMaterials = (data || []).map(material => {
+          const totalWasted = material.waste_entries?.reduce((sum: number, entry: any) => sum + entry.wasted_quantity, 0) || 0;
+          const wastePercentage = material.estimated_quantity > 0 ? (totalWasted / material.estimated_quantity) * 100 : 0;
+          
+          return {
+            id: material.id,
+            material_type_name: material.material_type_name,
+            estimated_quantity: material.estimated_quantity || 0,
+            cost_per_unit: material.cost_per_unit || 0,
+            unit_of_measurement: material.unit_of_measurement || '',
+            category: material.category || '',
+            stock_quantity: material.stock_quantity || 0,
+            minimum_quantity: material.minimum_quantity || 0,
+            total_estimated_cost: (material.estimated_quantity || 0) * (material.cost_per_unit || 0),
+            waste_percentage: wastePercentage
+          };
+        });
+
+        setMaterials(processedMaterials);
+      } catch (error) {
+        console.error('Erro ao buscar materiais do projeto:', error);
+        setMaterials([]);
       } finally {
         setLoading(false);
       }
     };
 
-    if (user) {
-      fetchMaterials();
-    } else {
-      setMaterials([]);
-      setLoading(false);
-    }
-  }, [user]);
+    fetchMaterials();
+  }, [user, projectId]);
 
-  const createMaterial = async (materialData: any): Promise<boolean> => {
-    if (!user) {
-      setError("Usuário não autenticado.");
-      return false;
-    }
-
-    try {
-      const { data, error } = await supabase
-        .from('project_materials')
-        .insert([materialData])
-        .select();
-
-      if (error) {
-        console.error('Erro ao criar material:', error);
-        setError(error.message);
-        return false;
-      }
-
-      if (data && data.length > 0) {
-        setMaterials(prev => [...prev, data[0] as ProjectMaterial]);
-        return true;
-      }
-
-      return false;
-    } catch (err: any) {
-      console.error('Erro ao criar material:', err);
-      setError(err.message);
-      return false;
-    }
-  };
-
-  return { materials, loading, error, createMaterial };
+  return { materials, loading };
 };

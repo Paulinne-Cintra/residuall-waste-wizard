@@ -7,11 +7,16 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Badge } from "@/components/ui/badge";
 import { useProjects } from '@/hooks/useProjects';
 import { useProjectStageWaste } from '@/hooks/useProjectStageWaste';
+import { useReports } from '@/hooks/useReports';
+import { exportToPDF, exportToCSV } from '@/utils/reportExports';
+import { useToast } from '@/hooks/use-toast';
 import { Link } from 'react-router-dom';
 
 const ReportsPage = () => {
   const { projects, loading } = useProjects();
   const { stageWaste } = useProjectStageWaste();
+  const { reports } = useReports();
+  const { toast } = useToast();
   const [statusFilter, setStatusFilter] = useState('Status');
   const [dateFilter, setDateFilter] = useState('Data');
 
@@ -25,8 +30,8 @@ const ReportsPage = () => {
     );
   }
 
-  // Criar relatórios únicos por projeto
-  const reports = projects.map(project => {
+  // Criar relatórios únicos por projeto usando dados reais
+  const projectReports = projects.map(project => {
     const projectWasteData = stageWaste.filter(waste => waste.project_id === project.id);
     const totalWaste = projectWasteData.reduce((sum, waste) => sum + waste.waste_quantity, 0);
     const totalCost = projectWasteData.reduce((sum, waste) => sum + (waste.waste_cost || 0), 0);
@@ -63,6 +68,42 @@ const ReportsPage = () => {
   const getProjectStatus = (projectId: string) => {
     const project = projects.find(p => p.id === projectId);
     return project?.status || 'indefinido';
+  };
+
+  const handleExportPDF = (report: any) => {
+    try {
+      const reportData = reports.filter(r => r.project_id === report.project_id);
+      exportToPDF(reportData, report.title);
+      toast({
+        title: "PDF gerado com sucesso!",
+        description: "O relatório foi baixado em formato PDF.",
+      });
+    } catch (error) {
+      console.error('Erro ao gerar PDF:', error);
+      toast({
+        title: "Erro ao gerar PDF",
+        description: "Ocorreu um erro ao gerar o relatório em PDF.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleExportCSV = (report: any) => {
+    try {
+      const reportData = reports.filter(r => r.project_id === report.project_id);
+      exportToCSV(reportData, report.title.replace(/\s+/g, '_').toLowerCase());
+      toast({
+        title: "CSV gerado com sucesso!",
+        description: "O relatório foi baixado em formato CSV.",
+      });
+    } catch (error) {
+      console.error('Erro ao gerar CSV:', error);
+      toast({
+        title: "Erro ao gerar CSV",
+        description: "Ocorreu um erro ao gerar o relatório em CSV.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -120,7 +161,7 @@ const ReportsPage = () => {
           <CardDescription>Relatórios de análise de desperdício por projeto</CardDescription>
         </CardHeader>
         <CardContent>
-          {reports.length === 0 ? (
+          {projectReports.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-gray-500 mb-4">Nenhum relatório disponível</p>
               <p className="text-sm text-gray-400">Crie projetos para gerar relatórios automaticamente</p>
@@ -141,7 +182,7 @@ const ReportsPage = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {reports.map((report) => (
+                  {projectReports.map((report) => (
                     <tr key={report.id} className="border-b border-gray-100 hover:bg-gray-50">
                       <td className="py-3 px-4">
                         <div>
@@ -169,9 +210,21 @@ const ReportsPage = () => {
                               Ver
                             </Button>
                           </Link>
-                          <Button variant="outline" size="sm">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleExportPDF(report)}
+                          >
                             <Download className="h-4 w-4 mr-1" />
                             PDF
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleExportCSV(report)}
+                          >
+                            <Download className="h-4 w-4 mr-1" />
+                            CSV
                           </Button>
                         </div>
                       </td>
