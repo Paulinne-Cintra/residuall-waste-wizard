@@ -146,6 +146,13 @@ export const useTeamMembers = () => {
     }
   };
 
+  // Função para gerar token único
+  const generateToken = () => {
+    return Array.from(crypto.getRandomValues(new Uint8Array(32)))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+  };
+
   const addTeamMember = async (memberData: { name: string; email: string; role: string }) => {
     if (!user) {
       toast({
@@ -177,7 +184,7 @@ export const useTeamMembers = () => {
         return;
       }
 
-      // Criar convite para conta real
+      // Criar convite para conta real com token
       const { error } = await supabase
         .from('team_invitations')
         .insert([
@@ -185,7 +192,8 @@ export const useTeamMembers = () => {
             invited_by_user_id: user.id,
             name: memberData.name,
             email: memberData.email,
-            status: 'pending'
+            status: 'pending',
+            token: generateToken()
           }
         ]);
 

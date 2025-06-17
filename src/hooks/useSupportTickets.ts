@@ -130,7 +130,13 @@ export const useSupportTickets = () => {
 
       if (error) throw error;
 
-      setTickets(data || []);
+      // Garantir que os status estejam no tipo correto
+      const typedTickets: SupportTicket[] = (data || []).map(ticket => ({
+        ...ticket,
+        status: ticket.status as 'Aberto' | 'Respondido' | 'Encerrado'
+      }));
+
+      setTickets(typedTickets);
     } catch (error: any) {
       console.error('Erro ao buscar tickets:', error);
       toast({
@@ -140,6 +146,81 @@ export const useSupportTickets = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const createTicket = async (ticketData: {
+    full_name: string;
+    email: string;
+    subject: string;
+    message: string;
+  }): Promise<boolean> => {
+    if (!user) {
+      toast({
+        title: "Erro",
+        description: "Usuário não autenticado.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    try {
+      // Para conta demo, adicionar ao estado local
+      if (user.email === 'teste@exemplo.com') {
+        const newTicket: SupportTicket = {
+          id: `ticket-${Date.now()}`,
+          user_id: user.id,
+          full_name: ticketData.full_name,
+          email: ticketData.email,
+          subject: ticketData.subject,
+          message: ticketData.message,
+          status: 'Aberto',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+        
+        const updatedTickets = [newTicket, ...demoTickets];
+        setDemoTickets(updatedTickets);
+        setTickets(updatedTickets);
+        
+        toast({
+          title: "Chamado criado",
+          description: "Seu chamado foi enviado com sucesso!",
+        });
+        return true;
+      }
+
+      // Para contas reais, inserir no banco
+      const { error } = await supabase
+        .from('support_tickets')
+        .insert([
+          {
+            user_id: user.id,
+            full_name: ticketData.full_name,
+            email: ticketData.email,
+            subject: ticketData.subject,
+            message: ticketData.message,
+            status: 'Aberto'
+          }
+        ]);
+
+      if (error) throw error;
+
+      toast({
+        title: "Chamado criado",
+        description: "Seu chamado foi enviado com sucesso!",
+      });
+
+      await fetchTickets();
+      return true;
+    } catch (error: any) {
+      console.error('Erro ao criar ticket:', error);
+      toast({
+        title: "Erro ao criar chamado",
+        description: error.message || "Ocorreu um erro inesperado.",
+        variant: "destructive",
+      });
+      return false;
     }
   };
 
@@ -197,6 +278,7 @@ export const useSupportTickets = () => {
   return {
     tickets,
     loading,
+    createTicket,
     deleteTicket,
     refetch: fetchTickets
   };
