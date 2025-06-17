@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -264,6 +265,18 @@ export const useTeamMembers = () => {
           console.log(`Removidas ${projectAssignments.length} associações de projeto`);
         }
 
+        // Agora remover o perfil do membro da tabela profiles
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .delete()
+          .eq('id', memberId);
+
+        if (profileError) {
+          console.error('Erro ao remover perfil do membro:', profileError);
+          throw profileError;
+        }
+
+        console.log(`Perfil do membro ${memberId} removido com sucesso`);
         toast({
           title: "Membro removido",
           description: "O membro foi removido da equipe e de todos os projetos associados.",
@@ -301,6 +314,8 @@ export const useTeamMembers = () => {
         errorMessage = "Você não tem permissão para remover este membro.";
       } else if (error.code === 'PGRST116') {
         errorMessage = "Membro não encontrado ou já foi removido.";
+      } else if (error.code === '42501') {
+        errorMessage = "Permissão negada. Você só pode remover membros que você convidou.";
       } else if (error.message) {
         errorMessage = error.message;
       }

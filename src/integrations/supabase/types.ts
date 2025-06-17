@@ -932,6 +932,10 @@ export type Database = {
       }
     }
     Functions: {
+      can_delete_team_member_profile: {
+        Args: { target_user_id: string }
+        Returns: boolean
+      }
       generate_invitation_token: {
         Args: Record<PropertyKey, never>
         Returns: string
