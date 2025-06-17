@@ -240,6 +240,11 @@ export const useSupportTickets = () => {
         const updatedTickets = demoTickets.filter(ticket => ticket.id !== ticketId);
         setDemoTickets(updatedTickets);
         setTickets(updatedTickets);
+        
+        toast({
+          title: "Chamado excluído",
+          description: "O chamado foi removido com sucesso.",
+        });
         return true;
       }
 
@@ -263,6 +268,11 @@ export const useSupportTickets = () => {
 
       // Atualizar a lista local
       setTickets(prev => prev.filter(ticket => ticket.id !== ticketId));
+      
+      toast({
+        title: "Chamado excluído",
+        description: "O chamado foi removido com sucesso.",
+      });
       return true;
     } catch (error: any) {
       console.error('Erro ao deletar ticket:', error);

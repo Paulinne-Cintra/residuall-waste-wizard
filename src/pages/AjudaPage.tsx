@@ -20,11 +20,6 @@ const AjudaPage = () => {
 
   return (
     <div className="flex-1 p-6 bg-residuall-gray-light">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-residuall-gray-tableText">Central de Ajuda</h1>
-        <p className="text-residuall-gray">Encontre respostas para suas dúvidas ou entre em contato conosco</p>
-      </div>
-
       <div className="mt-6 space-y-8">
         {/* Seção de Perguntas Frequentes */}
         <div className="bg-white p-6 rounded-lg shadow">

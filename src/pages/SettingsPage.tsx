@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -44,13 +45,15 @@ const SettingsPage = () => {
         browser_notifications: settings.browser_notifications,
         sms_notifications: settings.sms_notifications,
       });
-      
-      // Aplicar idioma imediatamente quando carregado
-      if (settings.language && i18n.language !== settings.language) {
-        i18n.changeLanguage(settings.language);
-      }
     }
-  }, [settings, i18n]);
+  }, [settings]);
+
+  // Sincronizar idioma do i18n com as configurações carregadas
+  useEffect(() => {
+    if (settings?.language && i18n.language !== settings.language) {
+      i18n.changeLanguage(settings.language);
+    }
+  }, [settings?.language, i18n]);
 
   const handleLocalSettingChange = (field: string, value: any) => {
     setLocalSettings(prev => ({
@@ -161,7 +164,7 @@ const SettingsPage = () => {
                         onValueChange={(value) => handleLocalSettingChange('language', value)}
                       >
                         <SelectTrigger id="language" className="w-full">
-                          <SelectValue placeholder="Selecione o idioma" />
+                          <SelectValue placeholder={t('language')} />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="pt-br">Português (Brasil)</SelectItem>

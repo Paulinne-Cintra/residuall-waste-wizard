@@ -3,83 +3,59 @@ import { useState, useEffect } from 'react';
 
 interface UseFormPersistenceOptions {
   key: string;
-  defaultValue: any;
-  autoSave?: boolean;
+  defaultValues?: any;
+  storage?: 'localStorage' | 'sessionStorage';
 }
 
-export const useFormPersistence = <T>({ 
-  key, 
-  defaultValue, 
-  autoSave = true 
+export const useFormPersistence = <T>({
+  key,
+  defaultValues = {},
+  storage = 'sessionStorage'
 }: UseFormPersistenceOptions) => {
-  const [data, setData] = useState<T>(defaultValue);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [formData, setFormData] = useState<T>(defaultValues);
 
-  // Carregar dados do localStorage quando o hook for inicializado
+  // Carregar dados do storage na inicialização
   useEffect(() => {
     try {
-      const savedData = localStorage.getItem(key);
-      if (savedData) {
-        const parsed = JSON.parse(savedData);
-        setData(parsed);
+      const storageObj = storage === 'localStorage' ? localStorage : sessionStorage;
+      const saved = storageObj.getItem(key);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        setFormData({ ...defaultValues, ...parsed });
       }
     } catch (error) {
-      console.error(`Erro ao carregar dados do localStorage para a chave "${key}":`, error);
-    } finally {
-      setIsLoaded(true);
+      console.warn('Erro ao carregar dados do formulário:', error);
     }
-  }, [key]);
+  }, [key, storage]);
 
-  // Salvar dados no localStorage quando houver mudanças (se autoSave estiver ativo)
+  // Salvar dados no storage quando formData mudar
   useEffect(() => {
-    if (isLoaded && autoSave) {
-      try {
-        localStorage.setItem(key, JSON.stringify(data));
-      } catch (error) {
-        console.error(`Erro ao salvar dados no localStorage para a chave "${key}":`, error);
-      }
-    }
-  }, [data, key, autoSave, isLoaded]);
-
-  const saveData = (newData: T) => {
-    setData(newData);
-    if (!autoSave) {
-      try {
-        localStorage.setItem(key, JSON.stringify(newData));
-      } catch (error) {
-        console.error(`Erro ao salvar dados manualmente no localStorage para a chave "${key}":`, error);
-      }
-    }
-  };
-
-  const clearData = () => {
     try {
-      localStorage.removeItem(key);
-      setData(defaultValue);
+      const storageObj = storage === 'localStorage' ? localStorage : sessionStorage;
+      storageObj.setItem(key, JSON.stringify(formData));
     } catch (error) {
-      console.error(`Erro ao limpar dados do localStorage para a chave "${key}":`, error);
+      console.warn('Erro ao salvar dados do formulário:', error);
     }
+  }, [formData, key, storage]);
+
+  const updateFormData = (updates: Partial<T>) => {
+    setFormData(prev => ({ ...prev, ...updates }));
   };
 
-  const updateData = (updater: (prev: T) => T) => {
-    setData(prev => {
-      const newData = updater(prev);
-      if (!autoSave) {
-        try {
-          localStorage.setItem(key, JSON.stringify(newData));
-        } catch (error) {
-          console.error(`Erro ao atualizar dados no localStorage para a chave "${key}":`, error);
-        }
-      }
-      return newData;
-    });
+  const clearFormData = () => {
+    try {
+      const storageObj = storage === 'localStorage' ? localStorage : sessionStorage;
+      storageObj.removeItem(key);
+      setFormData(defaultValues);
+    } catch (error) {
+      console.warn('Erro ao limpar dados do formulário:', error);
+    }
   };
 
   return {
-    data,
-    setData: saveData,
-    updateData,
-    clearData,
-    isLoaded
+    formData,
+    updateFormData,
+    clearFormData,
+    setFormData
   };
 };

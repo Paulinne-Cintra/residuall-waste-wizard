@@ -249,7 +249,8 @@ export const useTeamMembers = () => {
         const { error: invitationError } = await supabase
           .from('team_invitations')
           .delete()
-          .eq('id', memberId);
+          .eq('id', memberId)
+          .eq('invited_by_user_id', user.id);
 
         if (invitationError) throw invitationError;
       }
