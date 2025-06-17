@@ -11,7 +11,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { useProjects } from '@/hooks/useProjects';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { Plus, Trash2 } from 'lucide-react';
 
 const projectSchema = z.object({
@@ -42,7 +43,8 @@ const STORAGE_KEY = 'createProject_formData';
 const CreateProjectForm: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { createProject, loading } = useProjects();
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(false);
   const [materials, setMaterials] = useState<Material[]>([
     { id: '1', name: '', quantity: '', unit: '', cost: '', category: '' }
   ]);
@@ -128,16 +130,41 @@ const CreateProjectForm: React.FC = () => {
     ));
   };
 
-  const onSubmit = async (data: ProjectFormData) => {
-    try {
-      const projectData = {
-        ...data,
-        budget: data.budget ? parseFloat(data.budget) : null,
-        start_date: data.start_date || null,
-        planned_end_date: data.planned_end_date || null,
-      };
+  const createProject = async (data: ProjectFormData) => {
+    if (!user) {
+      throw new Error('Usuário não autenticado');
+    }
 
-      const success = await createProject(projectData);
+    const { error } = await supabase
+      .from('projects')
+      .insert([
+        {
+          user_id: user.id,
+          name: data.name,
+          description_notes: data.description_notes || null,
+          location: data.location || null,
+          project_type: data.project_type,
+          start_date: data.start_date || null,
+          planned_end_date: data.planned_end_date || null,
+          budget: data.budget ? parseFloat(data.budget) : null,
+          responsible_team_contacts: data.responsible_team_contacts || null,
+          dimensions_details: data.dimensions_details || null,
+          status: 'planejamento',
+          arquivado: false
+        }
+      ]);
+
+    if (error) {
+      throw error;
+    }
+
+    return true;
+  };
+
+  const onSubmit = async (data: ProjectFormData) => {
+    setLoading(true);
+    try {
+      const success = await createProject(data);
       
       if (success) {
         // Limpar dados salvos após sucesso
@@ -149,12 +176,14 @@ const CreateProjectForm: React.FC = () => {
         });
         navigate('/dashboard/projetos');
       }
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Erro ao criar projeto",
-        description: "Ocorreu um erro inesperado. Tente novamente.",
+        description: error.message || "Ocorreu um erro inesperado. Tente novamente.",
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
