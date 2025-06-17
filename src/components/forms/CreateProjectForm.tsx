@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -47,16 +48,15 @@ const CreateProjectForm: React.FC = () => {
   const { toast } = useToast();
   const { addProject } = useProjects();
 
-  // Configurar persistência de formulário com limpeza condicional
-  const [shouldClearOnMount, setShouldClearOnMount] = useState(false);
-  
+  // Clear form data when accessing the form for a new project
   useEffect(() => {
-    // Verificar se é uma navegação para criar novo projeto
     const currentPath = window.location.pathname;
     if (currentPath.includes('/projetos/novo')) {
-      // Limpar dados apenas se for explicitamente um novo projeto
-      const isNewProject = !sessionStorage.getItem('editing-project-id');
-      setShouldClearOnMount(isNewProject);
+      // Clear any existing form data
+      sessionStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(STORAGE_KEY);
+      sessionStorage.removeItem('editing-project-id');
+      sessionStorage.removeItem('hasUnsavedData');
     }
   }, []);
 
@@ -68,7 +68,7 @@ const CreateProjectForm: React.FC = () => {
     planned_end_date: '',
     responsible_team_contacts: '',
     stage: 'planejamento',
-    materials: [] // Iniciar com array vazio
+    materials: [] // Start with empty array
   };
 
   const { 
@@ -96,7 +96,7 @@ const CreateProjectForm: React.FC = () => {
     defaultValues: formData
   });
 
-  // Sincronizar form com dados persistidos
+  // Sync form with persisted data
   useEffect(() => {
     if (!isLoading && formData) {
       Object.keys(formData).forEach((key) => {
@@ -105,16 +105,7 @@ const CreateProjectForm: React.FC = () => {
     }
   }, [formData, setValue, isLoading]);
 
-  // Limpar formulário se for um novo projeto
-  useEffect(() => {
-    if (shouldClearOnMount) {
-      clearFormData();
-      reset(defaultValues);
-      sessionStorage.removeItem('editing-project-id');
-    }
-  }, [shouldClearOnMount, clearFormData, reset, defaultValues]);
-
-  // Observar mudanças no formulário e persistir
+  // Watch form changes and persist
   const watchedValues = watch();
   useEffect(() => {
     if (!isLoading) {
@@ -122,10 +113,20 @@ const CreateProjectForm: React.FC = () => {
     }
   }, [watchedValues, updateFormData, isLoading]);
 
-  const [materials, setMaterials] = useState<Material[]>(formData.materials || []);
+  const [materials, setMaterials] = useState<Material[]>([]);
 
   useEffect(() => {
-    setMaterials(formData.materials || []);
+    if (formData.materials) {
+      // Ensure all material properties are defined
+      const validMaterials = formData.materials.map(material => ({
+        name: material.name || '',
+        quantity: material.quantity || 0,
+        unit: material.unit || '',
+        supplier: material.supplier || '',
+        cost_per_unit: material.cost_per_unit || 0,
+      }));
+      setMaterials(validMaterials);
+    }
   }, [formData.materials]);
 
   const addMaterial = () => {
@@ -159,14 +160,14 @@ const CreateProjectForm: React.FC = () => {
     try {
       const projectData = {
         ...data,
-        materials: materials.filter(m => m.name.trim() !== ''), // Filtrar materiais vazios
+        materials: materials.filter(m => m.name.trim() !== ''), // Filter empty materials
         start_date: new Date(data.start_date).toISOString(),
         planned_end_date: new Date(data.planned_end_date).toISOString(),
       };
 
       await addProject(projectData);
       
-      // Marcar dados como salvos e limpar
+      // Mark data as saved and clear
       markDataAsSaved();
       clearFormData();
       

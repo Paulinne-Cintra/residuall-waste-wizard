@@ -27,6 +27,7 @@ interface UseProjectsResult {
   loading: boolean;
   error: string | null;
   archiveProject: (projectId: string) => Promise<boolean>;
+  addProject: (projectData: any) => Promise<void>;
   refetch: () => void;
 }
 
@@ -86,6 +87,75 @@ export const useProjects = (): UseProjectsResult => {
     }
   };
 
+  const addProject = async (projectData: any): Promise<void> => {
+    if (!user) {
+      throw new Error('Usuário não autenticado');
+    }
+
+    try {
+      console.log('📝 Criando novo projeto:', projectData);
+      
+      // Preparar dados do projeto
+      const projectToInsert = {
+        user_id: user.id,
+        name: projectData.name,
+        location: projectData.location,
+        description_notes: projectData.description,
+        status: projectData.stage,
+        start_date: projectData.start_date,
+        planned_end_date: projectData.planned_end_date,
+        responsible_team_contacts: projectData.responsible_team_contacts,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      const { data: project, error: projectError } = await supabase
+        .from('projects')
+        .insert([projectToInsert])
+        .select()
+        .single();
+
+      if (projectError) {
+        console.error('❌ Erro ao criar projeto:', projectError);
+        throw projectError;
+      }
+
+      console.log('✅ Projeto criado com sucesso:', project);
+
+      // Adicionar materiais se existirem
+      if (projectData.materials && projectData.materials.length > 0) {
+        const materialsToInsert = projectData.materials.map((material: any) => ({
+          project_id: project.id,
+          material_type_name: material.name,
+          estimated_quantity: material.quantity,
+          unit_of_measurement: material.unit,
+          cost_per_unit: material.cost_per_unit,
+          supplier_id: material.supplier ? null : null, // TODO: implement supplier lookup
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        }));
+
+        const { error: materialsError } = await supabase
+          .from('project_materials')
+          .insert(materialsToInsert);
+
+        if (materialsError) {
+          console.error('⚠️ Erro ao criar materiais:', materialsError);
+          // Não falhar a criação do projeto por causa dos materiais
+        } else {
+          console.log('✅ Materiais criados com sucesso');
+        }
+      }
+
+      // Atualizar lista local
+      setProjects(prev => [project as Project, ...prev]);
+      
+    } catch (err: any) {
+      console.error('💥 Erro ao criar projeto:', err);
+      throw err;
+    }
+  };
+
   const archiveProject = async (projectId: string): Promise<boolean> => {
     try {
       console.log('📦 Arquivando projeto:', projectId);
@@ -138,5 +208,5 @@ export const useProjects = (): UseProjectsResult => {
   console.log('- Error:', error);
   console.log('- User:', user?.email);
 
-  return { projects, loading, error, archiveProject, refetch: fetchProjects };
+  return { projects, loading, error, archiveProject, addProject, refetch: fetchProjects };
 };
