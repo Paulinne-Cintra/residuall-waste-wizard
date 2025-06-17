@@ -7,13 +7,13 @@ export const ProgressSteps = ({
   currentStep,
   steps
 }: ProgressStepsProps) => {
-  return <div className="flex items-center justify-center mb-8 rounded-lg bg-[sidebar-item-hover-bg]">
+  return <div className="flex items-center justify-center mb-8 bg-[sidebar-item-active-bg] bg-sidebar-ring rounded-none">
       <div className="flex items-center space-x-4">
         {steps.map((step, index) => {
         const stepNumber = index + 1;
         const isCompleted = stepNumber < currentStep;
         const isCurrent = stepNumber === currentStep;
-        return <div key={index} className="flex items-center">
+        return <div key={index} className="flex items-center bg-[sidebar-item-active-text] bg-transparent">
               <div className="flex items-center">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-semibold ${isCompleted ? 'bg-residuall-green' : isCurrent ? 'bg-residuall-orange' : 'bg-gray-300'}`}>
                   {isCompleted ? <Check size={16} /> : stepNumber}
