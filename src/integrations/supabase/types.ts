@@ -944,18 +944,6 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
-      global_search: {
-        Args: { search_term: string; user_id_param: string }
-        Returns: {
-          result_type: string
-          result_id: string
-          title: string
-          description: string
-          additional_info: string
-          created_at: string
-          relevance_score: number
-        }[]
-      }
       search_projects: {
         Args: { search_term: string; user_id_param: string }
         Returns: {

@@ -31,10 +31,7 @@ const DashboardHeader = ({ pageTitle }: DashboardHeaderProps) => {
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
-      console.log('Realizando busca global para:', searchQuery.trim());
-      navigate(`/dashboard/busca?q=${encodeURIComponent(searchQuery.trim())}`);
-    }
+    console.log('Pesquisando por:', searchQuery);
   };
 
   const toggleNotifications = () => {
@@ -74,12 +71,12 @@ const DashboardHeader = ({ pageTitle }: DashboardHeaderProps) => {
         </div>
       )}
 
-      {/* Busca Global */}
+      {/* Busca */}
       <form onSubmit={handleSearchSubmit} className="relative flex-1 max-w-md mx-auto">
         <div className="relative">
           <input
             type="text"
-            placeholder="Buscar projetos, materiais, relatórios..."
+            placeholder="Buscar projetos, relatórios..."
             className="header-search pl-10"
             value={searchQuery}
             onChange={handleSearchChange}

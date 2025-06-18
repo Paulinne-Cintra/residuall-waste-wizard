@@ -1,105 +1,105 @@
-
-import { Suspense, lazy } from 'react';
+// src/App.tsx
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+
+// Auth Provider
+import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { PaymentProtectedRoute } from "@/components/PaymentProtectedRoute";
-import DashboardLayout from "@/components/DashboardLayout";
 
-// Lazy loading das páginas para melhor performance
-const Index = lazy(() => import("./pages/Index"));
-const LoginPage = lazy(() => import("./pages/LoginPage"));
-const RegisterPage = lazy(() => import("./pages/RegisterPage"));
-const PaymentPage = lazy(() => import("./pages/PaymentPage"));
-const PlansPage = lazy(() => import("./pages/PlansPage"));
-const ConfirmationPage = lazy(() => import("./pages/ConfirmationPage"));
-const AboutPage = lazy(() => import("./pages/AboutPage"));
+// Páginas principais do site
+import HomePage from "./pages/HomePage";
+import AboutPage from "./pages/AboutPage";
+import PlansPage from "./pages/PlansPage";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
 
-// Dashboard pages
-const Dashboard = lazy(() => import("./pages/Dashboard"));
-const ProjectsPage = lazy(() => import("./pages/ProjectsPage"));
-const CreateProjectPage = lazy(() => import("./pages/CreateProjectPage"));
-const ProjectDetailPage = lazy(() => import("./pages/ProjectDetailPage"));
-const MaterialsPage = lazy(() => import("./pages/MaterialsPage"));
-const ReportsPage = lazy(() => import("./pages/ReportsPage"));
-const ReportDetailPage = lazy(() => import("./pages/ReportDetailPage"));
-const TeamPage = lazy(() => import("./pages/TeamPage"));
-const ProfilePage = lazy(() => import("./pages/ProfilePage"));
-const RecommendationsPage = lazy(() => import("./pages/RecommendationsPage"));
-const SettingsPage = lazy(() => import("./pages/SettingsPage"));
-const ArquivadosPage = lazy(() => import("./pages/ArquivadosPage"));
-const AjudaPage = lazy(() => import("./pages/AjudaPage"));
-const SearchResultsPage = lazy(() => import("./pages/SearchResultsPage"));
-const NotFound = lazy(() => import("./pages/NotFound"));
+// Páginas do dashboard
+import Dashboard from "./pages/Dashboard";
+import ProjectsPage from "./pages/ProjectsPage";
+import CreateProjectPage from "./pages/CreateProjectPage";
+import ProjectDetailPage from "./pages/ProjectDetailPage";
+import ReportDetailPage from "./pages/ReportDetailPage";
+import MaterialsPage from "./pages/MaterialsPage";
+import ReportsPage from "./pages/ReportsPage";
+import TeamPage from "./pages/TeamPage";
+import ProfilePage from "./pages/ProfilePage";
+import RecommendationsPage from "./pages/RecommendationsPage";
+import SettingsPage from "./pages/SettingsPage";
+import ArquivadosPage from "./pages/ArquivadosPage";
+import AjudaPage from "./pages/AjudaPage";
+
+import DashboardLayout from "./components/DashboardLayout";
+import NotFound from "./pages/NotFound";
+import PaymentPage from "./pages/PaymentPage";
+import ConfirmationPage from "./pages/ConfirmationPage";
+import { PaymentProtectedRoute } from "./components/PaymentProtectedRoute";
 
 const queryClient = new QueryClient();
 
-function App() {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <AuthProvider>
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <Suspense fallback={<div className="flex items-center justify-center min-h-screen">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-residuall-green"></div>
-          </div>}>
-            <Routes>
-              {/* Public routes */}
-              <Route path="/" element={<Index />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/cadastro" element={<RegisterPage />} />
-              <Route path="/planos" element={<PlansPage />} />
-              <Route path="/sobre" element={<AboutPage />} />
-              
-              {/* Protected routes that require authentication */}
-              <Route path="/pagamento" element={
-                <ProtectedRoute>
-                  <PaymentPage />
-                </ProtectedRoute>
-              } />
-              
-              <Route path="/confirmacao" element={
-                <ProtectedRoute>
-                  <ConfirmationPage />
-                </ProtectedRoute>
-              } />
-
-              {/* Dashboard routes - require both authentication and payment */}
-              <Route path="/dashboard" element={
-                <ProtectedRoute>
-                  <PaymentProtectedRoute>
-                    <DashboardLayout />
-                  </PaymentProtectedRoute>
-                </ProtectedRoute>
-              }>
-                <Route index element={<Dashboard />} />
-                <Route path="projetos" element={<ProjectsPage />} />
-                <Route path="projetos/novo" element={<CreateProjectPage />} />
-                <Route path="projetos/:id" element={<ProjectDetailPage />} />
-                <Route path="materiais" element={<MaterialsPage />} />
-                <Route path="relatorios" element={<ReportsPage />} />
-                <Route path="relatorios/:id" element={<ReportDetailPage />} />
-                <Route path="time" element={<TeamPage />} />
-                <Route path="perfil" element={<ProfilePage />} />
-                <Route path="recomendacoes" element={<RecommendationsPage />} />
-                <Route path="configuracoes" element={<SettingsPage />} />
-                <Route path="arquivados" element={<ArquivadosPage />} />
-                <Route path="ajuda" element={<AjudaPage />} />
-                <Route path="busca" element={<SearchResultsPage />} />
-              </Route>
-
-              {/* 404 route */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Suspense>
+          <AppRoutes />
         </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
+      </AuthProvider>
+    </TooltipProvider>
+  </QueryClientProvider>
+);
+
+// Componente auxiliar para a lógica de roteamento principal
+const AppRoutes = () => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-residuall-green-default"></div>
+      </div>
+    );
+  }
+
+  return (
+    <Routes>
+      {/* Rotas públicas */}
+      <Route path="/" element={user ? <Navigate to="/dashboard" replace /> : <HomePage />} />
+      <Route path="/sobre" element={<AboutPage />} />
+      <Route path="/planos" element={<PlansPage />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/cadastro" element={<RegisterPage />} />
+      <Route path="/pagamento" element={<PaymentPage />} />
+      <Route path="/confirmacao" element={<ConfirmationPage />} />
+      
+      {/* Rotas do dashboard (protegidas por autenticação E pagamento) */}
+      <Route path="/dashboard" element={
+        <PaymentProtectedRoute>
+          <DashboardLayout />
+        </PaymentProtectedRoute>
+      }>
+        <Route index element={<Dashboard />} />
+        <Route path="projetos" element={<ProjectsPage />} />
+        <Route path="projetos/novo" element={<CreateProjectPage />} />
+        <Route path="projetos/:projectId" element={<ProjectDetailPage />} />
+        <Route path="materiais" element={<MaterialsPage />} />
+        <Route path="relatorios" element={<ReportsPage />} />
+        <Route path="relatorios/:reportId" element={<ReportDetailPage />} />
+        <Route path="time" element={<TeamPage />} />
+        <Route path="perfil" element={<ProfilePage />} />
+        <Route path="recomendacoes" element={<RecommendationsPage />} />
+        <Route path="configuracoes" element={<SettingsPage />} />
+        <Route path="arquivados" element={<ArquivadosPage />} />
+        <Route path="ajuda" element={<AjudaPage />} />
+      </Route>
+      
+      <Route path="*" element={<NotFound />} />
+    </Routes>
   );
-}
+};
 
 export default App;
