@@ -23,6 +23,7 @@ const DashboardLayout: React.FC = () => {
       '/dashboard/configuracoes': 'Configurações',
       '/dashboard/arquivados': 'Arquivados',
       '/dashboard/ajuda': 'Ajuda & Suporte',
+      '/dashboard/busca': 'Busca Global',
     };
 
     // Verificar rotas dinâmicas
